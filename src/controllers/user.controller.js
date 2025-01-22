@@ -6,6 +6,14 @@ import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import Wallet from "../models/wallet.models.js";
+import Asset from "../models/asset.models.js";
+import JobPosting from "../models/jobPosting.models.js";
+import JobApplication from "../models/jobApplication.models.js";
+import ForumThread from "../models/forumThread.models.js";
+import ForumComment from "../models/forumComment.models.js";
+import AssetReview from "../models/assetReview.models.js";
+import JobReview from "../models/jobReview.models.js";
 
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, password, username } = req.body;
@@ -228,4 +236,246 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 });
 
-export { registerUser, loginUser, logoutUser, getUserDashboard, refreshAccessToken };
+const getCurrentUser = asyncHandler(async (req, res) => {
+    try {
+        const user = await User.findById(req.user?.id);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Remove sensitive information
+        const { password, refreshToken, ...userInfo } = user;
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "User profile fetched successfully",
+                    { user: userInfo }
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to fetch user profile"
+        );
+    }
+});
+
+const updateUserProfile = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { fullName, email, username } = req.body;
+    let avatarLocalPath;
+    let coverImageLocalPath;
+
+    try {
+        // Check if user exists
+        const user = await User.findById(id);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Verify authorization (only allow users to update their own profile or admin)
+        if (req.user.id !== id && !req.user.isAdmin) {
+            throw new ApiError(403, "Unauthorized to update this profile");
+        }
+
+        // Handle file uploads if present
+        if (req.files) {
+            if (req.files.avatar) {
+                avatarLocalPath = req.files.avatar[0]?.path;
+            }
+            if (req.files.coverImage) {
+                coverImageLocalPath = req.files.coverImage[0]?.path;
+            }
+        }
+
+        // Upload new files to Azure if provided
+        let newAvatar, newCoverImage;
+        if (avatarLocalPath) {
+            newAvatar = await uploadToAzureBlob(avatarLocalPath);
+            // Delete old avatar if exists
+            if (user.avatar) {
+                await deleteFromAzureBlob(user.avatar);
+            }
+        }
+        if (coverImageLocalPath) {
+            newCoverImage = await uploadToAzureBlob(coverImageLocalPath);
+            // Delete old cover image if exists
+            if (user.coverImage) {
+                await deleteFromAzureBlob(user.coverImage);
+            }
+        }
+
+        // Update user data
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    fullName: fullName || user.fullName,
+                    email: email || user.email,
+                    username: username ? username.toLowerCase() : user.username,
+                    avatar: newAvatar?.url || user.avatar,
+                    coverImage: newCoverImage?.url || user.coverImage,
+                    updated_at: new Date()
+                }
+            },
+            { new: true }
+        );
+
+        // Remove sensitive information
+        const { password: _, refreshToken: __, ...userResponse } = updatedUser;
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "User profile updated successfully",
+                    userResponse
+                )
+            );
+
+    } catch (error) {
+        // Clean up local files if they exist
+        if (avatarLocalPath && fs.existsSync(avatarLocalPath)) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath && fs.existsSync(coverImageLocalPath)) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to update user profile"
+        );
+    }
+});
+
+const getUserProfile = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Remove sensitive information
+        const { password, refreshToken, ...userProfile } = user;
+
+        // Add additional profile information if needed
+        const profile = {
+            ...userProfile,
+            isCurrentUser: req.user?.id === id
+        };
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "User profile fetched successfully",
+                    { profile }
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to fetch user profile"
+        );
+    }
+});
+
+const deleteUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        throw new ApiError(400, "User ID is required");
+    }
+
+    try {
+        // Check if user exists
+        const user = await User.findById(id);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Verify authorization (only allow users to delete their own account or admin)
+        if (req.user.id !== id && !req.user.isAdmin) {
+            throw new ApiError(403, "Unauthorized to delete this account");
+        }
+
+        // Delete user's files from Azure Blob Storage if they exist
+        if (user.avatar) {
+            try {
+                await deleteFromAzureBlob(user.avatar);
+            } catch (error) {
+                console.error("Error deleting avatar:", error);
+            }
+        }
+        if (user.coverImage) {
+            try {
+                await deleteFromAzureBlob(user.coverImage);
+            } catch (error) {
+                console.error("Error deleting cover image:", error);
+            }
+        }
+
+        // Delete user's associated data
+        try {
+            await Promise.all([
+                Wallet.findOneAndDelete({ user_id: id }),
+                Asset.deleteMany({ creator_id: id }),
+                JobPosting.deleteMany({ business_id: id }),
+                JobApplication.deleteMany({ developer_id: id }),
+                ForumThread.deleteMany({ user_id: id }),
+                ForumComment.deleteMany({ user_id: id }),
+                AssetReview.deleteMany({ user_id: id }),
+                JobReview.deleteMany({ reviewer_id: id }),
+            ]);
+        } catch (error) {
+            console.error("Error deleting associated data:", error);
+        }
+
+        // Finally, delete the user
+        await User.findByIdAndDelete(id);
+
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production"
+        };
+
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(
+                new ApiResponse(
+                    200,
+                    "User account and associated data deleted successfully"
+                )
+            );
+
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to delete user account"
+        );
+    }
+});
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    getUserDashboard,
+    getCurrentUser,
+    updateUserProfile,
+    getUserProfile,
+    deleteUser
+};

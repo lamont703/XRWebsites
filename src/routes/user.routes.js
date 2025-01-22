@@ -4,7 +4,11 @@ import {
     loginUser, 
     logoutUser, 
     refreshAccessToken,
-    getUserDashboard
+    getUserDashboard,
+    getCurrentUser,
+    updateUserProfile,
+    getUserProfile,
+    deleteUser
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload, handleFileCleanup } from "../middlewares/multer.middlewares.js";
@@ -26,5 +30,22 @@ router.route("/logout").post(verifyJWT, logoutUser);
 
 // Protected routes
 router.route("/dashboard").get(verifyJWT, getUserDashboard);
+router.route("/me").get(verifyJWT, getCurrentUser);
+router.route("/:id/profile").get(getUserProfile);
+
+router.route("/:id").put(
+    verifyJWT,
+    upload.fields([
+        { name: "avatar", maxCount: 1 },
+        { name: "coverImage", maxCount: 1 }
+    ]),
+    handleFileCleanup,
+    updateUserProfile
+);
+
+router.route("/:id/delete").delete(
+    verifyJWT,
+    deleteUser
+);
 
 export default router;

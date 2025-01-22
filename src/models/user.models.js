@@ -111,6 +111,51 @@ const User = {
         } catch (error) {
             throw new ApiError(500, "Error updating refresh token");
         }
+    },
+
+    async findByIdAndUpdate(id, update, options = {}) {
+        try {
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.id = @id",
+                parameters: [{ name: "@id", value: id }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            const user = resources[0];
+            
+            if (!user) return null;
+
+            // Apply updates
+            const updatedUser = { ...user, ...update.$set };
+            
+            // Update the document
+            const { resource } = await container.items.upsert(updatedUser);
+            return options.new ? resource : user;
+        } catch (error) {
+            console.error("Error in findByIdAndUpdate:", error);
+            throw error;
+        }
+    },
+
+    async findByIdAndDelete(id) {
+        try {
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.id = @id",
+                parameters: [{ name: "@id", value: id }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            const user = resources[0];
+            
+            if (!user) return null;
+
+            // Delete the user document
+            await container.item(id, id).delete();
+            return user;
+        } catch (error) {
+            console.error("Error in findByIdAndDelete:", error);
+            throw error;
+        }
     }
 };
 

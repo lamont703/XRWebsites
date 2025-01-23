@@ -70,6 +70,7 @@ const registerUser = asyncHandler(async (req, res) => {
             email,
             username: username.toLowerCase(),
             password: hashedPassword,
+            isAdmin: false
         });
 
         const createdUser = await User.findById(user.id);
@@ -167,24 +168,71 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const getUserDashboard = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user.id);
+    const userId = req.user.id;
     
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
+    try {
+        // Get user data
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
 
-    // Remove sensitive information
-    const { password, refreshToken, ...userInfo } = user;
+        // Get user's wallet
+        const wallet = await Wallet.findOne({ user_id: userId });
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200, 
-                "User dashboard fetched successfully",
-                { user: userInfo }
-            )
+        // Get user's assets
+        const assets = await Asset.find({ creator_id: userId });
+
+        // Get user's job postings/applications
+        const jobPostings = await JobPosting.find({ business_id: userId });
+        const jobApplications = await JobApplication.find({ developer_id: userId });
+
+        // Get user's forum activity
+        const forumThreads = await ForumThread.find({ user_id: userId });
+        const forumComments = await ForumComment.find({ user_id: userId });
+
+        // Get user's reviews
+        const assetReviews = await AssetReview.find({ user_id: userId });
+        const jobReviews = await JobReview.find({ reviewer_id: userId });
+
+        // Remove sensitive information
+        const { password, refreshToken, ...userInfo } = user;
+
+        // Construct dashboard response
+        const dashboardData = {
+            user: userInfo,
+            wallet,
+            stats: {
+                totalAssets: assets.length,
+                totalJobPostings: jobPostings.length,
+                totalApplications: jobApplications.length,
+                totalForumPosts: forumThreads.length + forumComments.length,
+                totalReviews: assetReviews.length + jobReviews.length
+            },
+            recentActivity: {
+                assets: assets.slice(0, 5), // Last 5 assets
+                jobPostings: jobPostings.slice(0, 5),
+                jobApplications: jobApplications.slice(0, 5),
+                forumActivity: [...forumThreads, ...forumComments].slice(0, 5),
+                reviews: [...assetReviews, ...jobReviews].slice(0, 5)
+            }
+        };
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "User dashboard fetched successfully",
+                    dashboardData
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to fetch dashboard data"
         );
+    }
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {

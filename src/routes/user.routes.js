@@ -33,7 +33,7 @@ router.route("/dashboard").get(verifyJWT, getUserDashboard);
 router.route("/me").get(verifyJWT, getCurrentUser);
 router.route("/:id/profile").get(getUserProfile);
 
-router.route("/:id").put(
+router.route("/:id/update").put(
     verifyJWT,
     upload.fields([
         { name: "avatar", maxCount: 1 },

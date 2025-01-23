@@ -12,7 +12,7 @@ const cosmosClient = new CosmosClient({
 });
 
 //get database and container
-const container = cosmosClient.database(process.env.COSMOS_DB_NAME).container("Users");
+export const container = cosmosClient.database(process.env.COSMOS_DB_NAME).container("Users");
 
 //create model
 const User = {
@@ -46,6 +46,11 @@ const User = {
             if (!userData.id) {
                 userData.id = `user-${Date.now()}`;
             }
+            
+            // Ensure isAdmin is explicitly set, default to false
+            userData.isAdmin = userData.isAdmin || false;
+            userData.adminRole = userData.adminRole || null; // Can be 'super', 'manager', etc.
+            
             const { resource } = await container.items.create(userData);
             return resource;
         } catch (error) {
@@ -154,6 +159,56 @@ const User = {
             return user;
         } catch (error) {
             console.error("Error in findByIdAndDelete:", error);
+            throw error;
+        }
+    },
+
+    // Add method to promote user to admin
+    async promoteToAdmin(userId, adminRole = 'admin') {
+        try {
+            const user = await this.findById(userId);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            user.isAdmin = true;
+            user.adminRole = adminRole;
+            user.updatedAt = new Date();
+
+            const { resource } = await container.items.upsert(user);
+            return resource;
+        } catch (error) {
+            console.error("Error in promoteToAdmin:", error);
+            throw error;
+        }
+    },
+
+    // Add this method after the existing methods in User object
+    async find() {
+        try {
+            const querySpec = {
+                query: "SELECT * FROM c"
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            return resources;
+        } catch (error) {
+            console.error("Error in find:", error);
+            throw error;
+        }
+    },
+
+    // Add this method to the User object
+    async countDocuments() {
+        try {
+            const querySpec = {
+                query: "SELECT VALUE COUNT(1) FROM c"
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            return resources[0] || 0;
+        } catch (error) {
+            console.error("Error in countDocuments:", error);
             throw error;
         }
     }

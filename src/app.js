@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/error.middlewares.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
 import userRouter from "./routes/user.routes.js";
+import walletRouter from "./routes/wallet.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 
 //create express app
 const app = express();
@@ -29,6 +31,8 @@ app.use(cookieParser());
 // use routes
 app.use("/api/v1/healthcheck", healthcheckRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/wallets", walletRouter);
+app.use("/api/v1/admin", adminRouter);
 
 // error handler
 app.use(errorHandler);

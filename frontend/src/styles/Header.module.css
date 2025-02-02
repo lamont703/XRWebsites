@@ -1,0 +1,22 @@
+.header {
+background: linear-gradient(135deg, #1a1c2e 0%, #0f172a 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.37);
+  color: white;
+}
+
+.profileButton {
+  transition: transform 0.2s ease;
+}
+
+.profileButton:hover {
+  transform: translateY(-1px);
+}
+
+.dropdownMenu {
+  background: rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+} 

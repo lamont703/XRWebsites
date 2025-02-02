@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRWebsites.io - Wallet</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .wallet-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .wallet-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .balance-text {
+            color: #00d4ff;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .transaction-item {
+            border-left: 3px solid #00d4ff;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-overlay {
+            background: rgba(30, 30, 47, 0.9);
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 p-4">
+            <div class="text-2xl font-bold text-blue-400 mb-8">XRWebsites.io</div>
+            <div id="sidebarUserInfo" class="mb-6 p-4 border-b border-gray-700"></div>
+            <nav class="space-y-2">
+                <a href="./dashboard.html" class="block p-2 rounded hover:bg-gray-700">Dashboard</a>
+                <a href="./wallet.html" class="block p-2 rounded bg-blue-600">Wallet</a>
+                <a href="./nftAsset.html" class="block p-2 rounded hover:bg-gray-700">NFTs</a>
+                <a href="./job.html" class="block p-2 rounded hover:bg-gray-700">Jobs</a>
+                <a href="./tokenCreator.html" class="block p-2 rounded hover:bg-gray-700">Create Token</a>
+                <a href="./settings.html" class="block p-2 rounded hover:bg-gray-700">Settings</a>
+                <a href="./jobMarketplace.html" class="block p-2 rounded hover:bg-gray-700">Job Marketplace</a>
+                <button id="logoutBtn" class="w-full mt-4 p-2 rounded bg-red-600 hover:bg-red-700 text-white">
+                    Logout
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Wallet Overview -->
+            <div id="walletInfo" class="wallet-card p-6 mb-8">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Actions Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <button id="depositBtn" class="wallet-card p-6 text-center hover:bg-gray-700">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <h3>Deposit</h3>
+                </button>
+                <button id="withdrawBtn" class="wallet-card p-6 text-center hover:bg-gray-700">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <h3>Withdraw</h3>
+                </button>
+                <button id="connectWalletBtn" class="wallet-card p-6 text-center hover:bg-gray-700">
+                    <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                        </path>
+                    </svg>
+                    <h3>Connect External Wallet</h3>
+                </button>
+            </div>
+
+            <!-- Transactions & NFTs Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="wallet-card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Recent Transactions</h3>
+                    <div id="recentTransactions"></div>
+                </div>
+                <div class="wallet-card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Your NFTs</h3>
+                    <div id="nftGallery" class="grid grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+        // Initialize wallet page
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                if (!checkAuth()) return;
+                await loadWalletData();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Wallet initialization failed:', error);
+                showError('Failed to load wallet');
+            }
+        });
+
+        async function loadWalletData() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/wallets`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // If wallet doesn't exist, try to create one
+                        await createNewWallet();
+                        return loadWalletData(); // Retry loading after creation
+                    }
+                    throw new Error('Failed to fetch wallet data');
+                }
+
+                const { data } = await response.json();
+                updateWalletUI(data);
+            } catch (error) {
+                console.error('Wallet error:', error);
+                showError(error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Add this new function to create a wallet
+        async function createNewWallet() {
+            const response = await fetch(`${API_BASE_URL}/wallet`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    currency: 'USD',
+                    type: 'wallet'
+                }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create wallet');
+            }
+
+            return response.json();
+        }
+
+        function updateWalletUI(data) {
+            // Update wallet info
+            document.getElementById('walletInfo').innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Your Wallet</h2>
+                    <span class="text-sm text-gray-400">Wallet ID: ${data.id}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-400 mb-2">Available Balance</p>
+                        <p class="balance-text">$${data.balance.toFixed(2)}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400 mb-2">Status</p>
+                        <p class="text-green-400 font-semibold">${data.status}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+
+            document.getElementById('withdrawBtn').addEventListener('click', () => {
+                showError('Withdraw feature coming soon');
+            });
+
+            document.getElementById('connectWalletBtn').addEventListener('click', () => {
+                showError('External wallet connection coming soon');
+            });
+        }
+    </script>
+</body>
+
+</html>

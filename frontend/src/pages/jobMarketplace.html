@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRWebsites.io - Job Marketplace</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .job-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .filter-card {
+            background: rgba(30, 30, 47, 0.5);
+            border-radius: 10px;
+        }
+
+        .tag {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-400">XRWebsites.io</div>
+            <div class="flex items-center space-x-6">
+                <a href="/" class="hover:text-blue-400">Home</a>
+                <a href="/about" class="hover:text-blue-400">About</a>
+                <a href="/jobMarketplace.html" class="text-blue-400">Jobs</a>
+                <div id="authButtons">
+                    <a href="login.html" class="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">Job Marketplace</h1>
+                <p class="text-gray-400">Find XR development opportunities or post your project</p>
+            </div>
+            <button onclick="handlePostJob()" class="bg-blue-600 px-6 py-3 rounded-lg hover:bg-blue-700">
+                Post a Job
+            </button>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="filter-card p-6 mb-8">
+            <div class="flex space-x-4 mb-4">
+                <input type="text" placeholder="Search jobs..."
+                    class="flex-1 bg-gray-800 p-3 rounded-lg border border-gray-700 focus:border-blue-400 focus:outline-none">
+                <button class="bg-blue-600 px-6 rounded-lg hover:bg-blue-700">Search</button>
+            </div>
+            <div class="flex space-x-4">
+                <select class="bg-gray-800 p-2 rounded-lg border border-gray-700">
+                    <option>All Categories</option>
+                    <option>VR Development</option>
+                    <option>AR Development</option>
+                    <option>3D Modeling</option>
+                    <option>Unity Development</option>
+                </select>
+                <select class="bg-gray-800 p-2 rounded-lg border border-gray-700">
+                    <option>Experience Level</option>
+                    <option>Entry Level</option>
+                    <option>Intermediate</option>
+                    <option>Expert</option>
+                </select>
+                <select class="bg-gray-800 p-2 rounded-lg border border-gray-700">
+                    <option>Budget Range</option>
+                    <option>$1000 - $5000</option>
+                    <option>$5000 - $10000</option>
+                    <option>$10000+</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Job Listings -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="jobListings">
+            <!-- Job cards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadJobs();
+        });
+
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/jobs/public`);
+                const data = await response.json();
+                renderJobs(data.jobs);
+            } catch (error) {
+                showError('Failed to load jobs');
+            }
+        }
+
+        function renderJobs(jobs) {
+            const jobsHtml = jobs.map(job => `
+                <div class="job-card p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold">${job.title}</h3>
+                        <span class="text-blue-400 font-bold">$${job.budget}</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">${job.description}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${job.skills.map(skill => `<span class="tag">${skill}</span>`).join('')}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-400">Posted ${new Date(job.createdAt).toLocaleDateString()}</span>
+                        <button onclick="handleApply('${job.id}')" 
+                            class="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700">
+                            Apply Now
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('jobListings').innerHTML = jobsHtml;
+        }
+
+        function handlePostJob() {
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            // Redirect to job posting form
+            window.location.href = 'job.html?action=post';
+        }
+
+        function handleApply(jobId) {
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            // Redirect to application form
+            window.location.href = `job.html?action=apply&jobId=${jobId}`;
+        }
+
+        function isAuthenticated() {
+            return localStorage.getItem('token') !== null;
+        }
+
+        function checkAuthStatus() {
+            const authButtons = document.getElementById('authButtons');
+            if (isAuthenticated()) {
+                authButtons.innerHTML = `
+                    <a href="dashboard.html" class="text-blue-400 mr-4">Dashboard</a>
+                    <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700">Logout</button>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.reload();
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    </script>
+</body>
+
+</html>

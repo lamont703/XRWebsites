@@ -1,0 +1,11 @@
+.container {
+  @apply min-h-screen flex flex-col lg:flex-row;
+}
+
+.main {
+  @apply flex-1 lg:ml-64 transition-all duration-300 ease-in-out;
+}
+
+.content {
+  @apply p-4;
+} 

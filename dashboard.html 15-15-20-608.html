@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRWebsites.io - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            color: #00d4ff;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .activity-item {
+            border-left: 3px solid #00d4ff;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-overlay {
+            background: rgba(30, 30, 47, 0.9);
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #00d4ff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .activity-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .recent-activity-item {
+            border-left: 2px solid #00d4ff;
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(46, 46, 68, 0.9), rgba(30, 30, 47, 0.9));
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Dashboard Layout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar section - update the nav section -->
+        <div class="w-64 bg-gray-800 p-4">
+            <div class="text-2xl font-bold text-blue-400 mb-8">XRWebsites.io</div>
+            <!-- Add user info at top of sidebar -->
+            <div id="sidebarUserInfo" class="mb-6 p-4 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span id="userInitials" class="text-white font-bold"></span>
+                    </div>
+                    <div>
+                        <div id="userName" class="text-white font-medium"></div>
+                        <div id="userEmail" class="text-sm text-gray-400"></div>
+                    </div>
+                </div>
+            </div>
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="block p-2 rounded bg-gray-700">Overview</a>
+                <a href="wallet.html" class="block p-2 rounded hover:bg-gray-700">Wallet</a>
+                <a href="nftAsset.html" class="block p-2 rounded hover:bg-gray-700">Assets</a>
+                <a href="job.html" class="block p-2 rounded hover:bg-gray-700">Jobs</a>
+                <a href="tokenCreator.html" class="block p-2 rounded hover:bg-gray-700">Create Token</a>
+                <a href="settings.html" class="block p-2 rounded hover:bg-gray-700">Settings</a>
+                <a href="jobMarketplace.html" class="block p-2 rounded hover:bg-gray-700">Job Marketplace</a>
+                <button id="logoutBtn"
+                    class="w-full mt-4 p-2 rounded bg-red-600 hover:bg-red-700 text-white">Logout</button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- User Profile Section -->
+            <div id="userInfo" class="mb-8 p-6 rounded-xl bg-gray-800">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Dashboard Stats Grid -->
+            <div id="statsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="dashboard-card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Recent Assets</h3>
+                    <div id="recentAssets"></div>
+                </div>
+                <div class="dashboard-card p-6">
+                    <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+                    <div id="recentActivity"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await loadDashboard();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                showError('Failed to load dashboard');
+            }
+        });
+
+        // Load dashboard data
+        async function loadDashboard() {
+            if (!checkAuth()) return;
+
+            showLoading();
+            try {
+                console.log('Token being sent:', localStorage.getItem('token')); // Debug log
+
+                const response = await fetch(`${API_BASE_URL}/users/dashboard`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                console.log('Dashboard Response Status:', response.status); // Debug log
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        document.getElementById('loginForm').style.display = 'flex';
+                        throw new Error('Session expired. Please login again.');
+                    }
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch dashboard data');
+                }
+
+                const { data } = await response.json();
+                console.log('Dashboard Data:', data); // Debug log
+
+                if (!data) {
+                    throw new Error('No dashboard data received');
+                }
+
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Dashboard error details:', error);
+                showError(error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Update dashboard UI
+        function updateDashboard(data) {
+            // Update user info section
+            document.getElementById('userInfo').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center">
+                            <span class="text-2xl text-white font-bold">${data.user.fullName?.split(' ').map(n => n[0]).join('') || 'U'}</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold">${data.user.fullName || 'User'}</h1>
+                            <p class="text-gray-400">${data.user.email}</p>
+                            <p class="text-sm text-blue-400">Member since ${new Date(data.user.createdAt).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-lg font-semibold">Wallet Balance</p>
+                        <p class="text-2xl text-blue-400">$${data.wallet?.balance || '0.00'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Update stats grid
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card p-6">
+                    <h3 class="text-gray-400 text-sm">Total Assets</h3>
+                    <p class="text-3xl font-bold text-blue-400">${data.stats.totalAssets}</p>
+                </div>
+                <div class="stat-card p-6">
+                    <h3 class="text-gray-400 text-sm">Job Postings</h3>
+                    <p class="text-3xl font-bold text-blue-400">${data.stats.totalJobPostings}</p>
+                </div>
+                <div class="stat-card p-6">
+                    <h3 class="text-gray-400 text-sm">Applications</h3>
+                    <p class="text-3xl font-bold text-blue-400">${data.stats.totalApplications}</p>
+                </div>
+                <div class="stat-card p-6">
+                    <h3 class="text-gray-400 text-sm">Forum Posts</h3>
+                    <p class="text-3xl font-bold text-blue-400">${data.stats.totalForumPosts}</p>
+                </div>
+            `;
+
+            // Update recent assets
+            const recentAssetsHtml = data.recentActivity.assets.length ?
+                data.recentActivity.assets.map(asset => `
+                    <div class="recent-activity-item">
+                        <h4 class="font-semibold">${asset.name || 'Untitled Asset'}</h4>
+                        <p class="text-sm text-gray-400">${asset.description || 'No description'}</p>
+                    </div>
+                `).join('') :
+                '<p class="text-gray-400">No recent assets</p>';
+
+            document.getElementById('recentAssets').innerHTML = recentAssetsHtml;
+
+            // Update recent activity
+            const recentActivityHtml = data.recentActivity.jobPostings.map(job => `
+                <div class="recent-activity-item">
+                    <h4 class="font-semibold">${job.title || 'Untitled Job'}</h4>
+                    <p class="text-sm text-gray-400">Posted: ${new Date(job.createdAt).toLocaleDateString()}</p>
+                </div>
+            `).join('') || '<p class="text-gray-400">No recent activity</p>';
+
+            document.getElementById('recentActivity').innerHTML = recentActivityHtml;
+
+            // Update sidebar user info
+            updateUserInfo(data.user);
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-500 text-white p-4 rounded mb-4';
+            errorDiv.textContent = message;
+
+            const form = document.getElementById('authForm');
+            form.parentNode.insertBefore(errorDiv, form);
+
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Authentication functions
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Add this function to update sidebar user info
+        function updateUserInfo(userData) {
+            if (userData) {
+                const initials = (userData.fullName || userData.username || 'U')
+                    .split(' ')
+                    .map(name => name.charAt(0))
+                    .join('')
+                    .toUpperCase();
+
+                document.getElementById('userInitials').textContent = initials;
+                document.getElementById('userName').textContent = userData.fullName || userData.username;
+                document.getElementById('userEmail').textContent = userData.email;
+            }
+        }
+    </script>
+</body>
+
+</html>

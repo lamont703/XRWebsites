@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRWebsites.io - Token Creator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .token-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .token-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .loading-overlay {
+            background: rgba(30, 30, 47, 0.9);
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .input-field {
+            background: rgba(30, 30, 47, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .step-indicator {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid #00d4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step-active {
+            background: #00d4ff;
+            color: #1a1b23;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 p-4">
+            <div class="text-2xl font-bold text-blue-400 mb-8">XRWebsites.io</div>
+            <div id="sidebarUserInfo" class="mb-6 p-4 border-b border-gray-700"></div>
+            <nav class="space-y-2">
+                <a href="./dashboard.html" class="block p-2 rounded hover:bg-gray-700">Dashboard</a>
+                <a href="./wallet.html" class="block p-2 rounded hover:bg-gray-700">Wallet</a>
+                <a href="./nftAsset.html" class="block p-2 rounded hover:bg-gray-700">NFTs</a>
+                <a href="./job.html" class="block p-2 rounded hover:bg-gray-700">Jobs</a>
+                <a href="./tokenCreator.html" class="block p-2 rounded bg-blue-600">Create Token</a>
+                <a href="./settings.html" class="block p-2 rounded hover:bg-gray-700">Settings</a>
+                <a href="./jobMarketplace.html" class="block p-2 rounded hover:bg-gray-700">Job Marketplace</a>
+                <button id="logoutBtn"
+                    class="w-full mt-4 p-2 rounded bg-red-600 hover:bg-red-700 text-white">Logout</button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Token Creator</h1>
+                    <p class="text-gray-400">Create your own custom token in minutes</p>
+                </div>
+
+                <!-- Steps Progress -->
+                <div class="flex justify-between mb-8">
+                    <div class="flex items-center">
+                        <div class="step-indicator step-active">1</div>
+                        <div class="h-1 w-24 bg-blue-400 mx-2"></div>
+                        <div class="step-indicator">2</div>
+                        <div class="h-1 w-24 bg-gray-600 mx-2"></div>
+                        <div class="step-indicator">3</div>
+                    </div>
+                </div>
+
+                <!-- Token Creation Form -->
+                <div class="token-card p-6">
+                    <form id="tokenForm" class="space-y-6">
+                        <!-- Step 1: Basic Information -->
+                        <div id="step1" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Token Name</label>
+                                <input type="text" name="tokenName" class="w-full p-3 rounded-lg input-field"
+                                    placeholder="e.g., My Custom Token">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Token Symbol</label>
+                                <input type="text" name="tokenSymbol" class="w-full p-3 rounded-lg input-field"
+                                    placeholder="e.g., MCT">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Initial Supply</label>
+                                <input type="number" name="initialSupply" class="w-full p-3 rounded-lg input-field"
+                                    placeholder="e.g., 1000000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Decimals</label>
+                                <input type="number" name="decimals" class="w-full p-3 rounded-lg input-field"
+                                    value="18" max="18">
+                            </div>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between pt-4">
+                            <button type="button" id="prevBtn"
+                                class="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600" style="display: none;">
+                                Previous
+                            </button>
+                            <button type="button" id="nextBtn"
+                                class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700">
+                                Next
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Recent Tokens -->
+                <div class="token-card p-6 mt-8">
+                    <h2 class="text-xl font-bold mb-4">Your Recent Tokens</h2>
+                    <div id="recentTokens" class="space-y-4">
+                        <!-- Tokens will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            setupEventListeners();
+            await loadUserData();
+            await loadRecentTokens();
+        });
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/current`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch user data');
+
+                const data = await response.json();
+                updateUserInfo(data.data);
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError(error.message);
+            }
+        }
+
+        function updateUserInfo(userData) {
+            const initials = userData.fullName
+                .split(' ')
+                .map(name => name.charAt(0))
+                .join('')
+                .toUpperCase();
+
+            const userInfoHtml = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="text-white font-bold">${initials}</span>
+                    </div>
+                    <div>
+                        <div class="text-white font-medium">${userData.fullName}</div>
+                        <div class="text-sm text-gray-400">${userData.email}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('sidebarUserInfo').innerHTML = userInfoHtml;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    </script>
+</body>
+
+</html>

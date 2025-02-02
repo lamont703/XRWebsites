@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XRWebsites.io - Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .settings-card {
+            background: rgba(46, 46, 68, 0.9);
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .input-field {
+            background: rgba(30, 30, 47, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        .loading-overlay {
+            background: rgba(30, 30, 47, 0.9);
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .tab-active {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 p-4">
+            <div class="text-2xl font-bold text-blue-400 mb-8">XRWebsites.io</div>
+            <div id="sidebarUserInfo" class="mb-6 p-4 border-b border-gray-700"></div>
+            <nav class="space-y-2">
+                <a href="./dashboard.html" class="block p-2 rounded hover:bg-gray-700">Dashboard</a>
+                <a href="./wallet.html" class="block p-2 rounded hover:bg-gray-700">Wallet</a>
+                <a href="./nftAsset.html" class="block p-2 rounded hover:bg-gray-700">NFTs</a>
+                <a href="./job.html" class="block p-2 rounded hover:bg-gray-700">Jobs</a>
+                <a href="./tokenCreator.html" class="block p-2 rounded hover:bg-gray-700">Create Token</a>
+                <a href="./settings.html" class="block p-2 rounded bg-blue-600">Settings</a>
+                <a href="./jobMarketplace.html" class="block p-2 rounded hover:bg-gray-700">Job Marketplace</a>
+                <button id="logoutBtn"
+                    class="w-full mt-4 p-2 rounded bg-red-600 hover:bg-red-700 text-white">Logout</button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                    <p class="text-gray-400">Manage your account preferences and settings</p>
+                </div>
+
+                <!-- Settings Tabs -->
+                <div class="flex space-x-4 mb-8">
+                    <button onclick="switchTab('profile')"
+                        class="tab-button tab-active px-4 py-2 rounded-lg border-2 border-transparent">
+                        Profile
+                    </button>
+                    <button onclick="switchTab('security')"
+                        class="tab-button px-4 py-2 rounded-lg border-2 border-transparent">
+                        Security
+                    </button>
+                    <button onclick="switchTab('notifications')"
+                        class="tab-button px-4 py-2 rounded-lg border-2 border-transparent">
+                        Notifications
+                    </button>
+                    <button onclick="switchTab('preferences')"
+                        class="tab-button px-4 py-2 rounded-lg border-2 border-transparent">
+                        Preferences
+                    </button>
+                </div>
+
+                <!-- Settings Content -->
+                <div id="settingsContent">
+                    <!-- Profile Settings -->
+                    <div id="profileSettings" class="settings-card p-6">
+                        <form id="profileForm" class="space-y-6">
+                            <div class="flex items-center space-x-6 mb-6">
+                                <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center">
+                                    <span id="profileInitials" class="text-3xl font-bold text-white"></span>
+                                </div>
+                                <button type="button" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">
+                                    Change Avatar
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">First Name</label>
+                                    <input type="text" name="firstName" class="w-full p-3 rounded-lg input-field">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Last Name</label>
+                                    <input type="text" name="lastName" class="w-full p-3 rounded-lg input-field">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Email</label>
+                                <input type="email" name="email" class="w-full p-3 rounded-lg input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Bio</label>
+                                <textarea name="bio" rows="4" class="w-full p-3 rounded-lg input-field"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-3 bg-blue-600 rounded-lg hover:bg-blue-700">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1';
+        let currentTab = 'profile';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            setupEventListeners();
+            await loadUserData();
+        });
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/current`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch user data');
+
+                const data = await response.json();
+                updateUserInfo(data.data);
+                populateProfileForm(data.data);
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError(error.message);
+            }
+        }
+
+        function updateUserInfo(userData) {
+            const initials = userData.fullName
+                .split(' ')
+                .map(name => name.charAt(0))
+                .join('')
+                .toUpperCase();
+
+            const userInfoHtml = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="text-white font-bold">${initials}</span>
+                    </div>
+                    <div>
+                        <div class="text-white font-medium">${userData.fullName}</div>
+                        <div class="text-sm text-gray-400">${userData.email}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('sidebarUserInfo').innerHTML = userInfoHtml;
+            document.getElementById('profileInitials').textContent = initials;
+        }
+
+        function populateProfileForm(userData) {
+            const form = document.getElementById('profileForm');
+            form.firstName.value = userData.firstName || '';
+            form.lastName.value = userData.lastName || '';
+            form.email.value = userData.email || '';
+            form.bio.value = userData.bio || '';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('tab-active');
+            });
+            event.target.classList.add('tab-active');
+            loadTabContent(tab);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            });
+
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveProfileChanges();
+            });
+        }
+
+        async function saveProfileChanges() {
+            // Implementation for saving profile changes
+            showError('Profile update feature coming soon');
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    </script>
+</body>
+
+</html>

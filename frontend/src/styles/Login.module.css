@@ -1,0 +1,195 @@
+.pageContainer {
+  background: linear-gradient(135deg, #1a1c2e 0%, #0f172a 100%);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageContainer::before {
+  content: '';
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  top: -50%;
+  left: -50%;
+  animation: rotate 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.authCard {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  position: relative;
+  z-index: 1;
+  min-width: 320px;
+  max-width: 400px;
+  width: 90%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.toggleContainer {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.toggleButton {
+  flex: 1;
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 0.5rem;
+  min-width: 120px;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 320px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+  transition: border-color 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(to right, #3b82f6, #60a5fa);
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.submitButton:hover {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.toggleButtonActive {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.toggleButtonInactive {
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid transparent;
+}
+
+.toggleButtonInactive:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #93c5fd;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.formInput::placeholder {
+  color: #6b7280;
+}
+
+.gradientButton {
+  background: linear-gradient(to right, #3b82f6, #60a5fa);
+  transition: all 0.2s ease;
+}
+
+.gradientButton:hover {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  transform: translateY(-1px);
+}
+
+.gradientButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .authCard {
+    width: 95%;
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .formContainer {
+    max-width: 100%;
+  }
+  
+  .toggleContainer {
+    gap: 0.5rem;
+  }
+  
+  .toggleButton {
+    min-width: unset;
+    padding: 0.625rem;
+  }
+  
+  .formInput {
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+.loginContainer {
+  @apply min-h-screen flex items-center justify-center bg-gray-900;
+}
+
+.formWrapper {
+  @apply bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md;
+}
+
+.input {
+  @apply w-full p-2 rounded bg-gray-700 text-white border border-gray-600 
+  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none;
+}
+
+.button {
+  @apply w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 
+  transition-colors duration-200 flex items-center justify-center;
+} 

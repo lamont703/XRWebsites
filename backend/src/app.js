@@ -8,6 +8,8 @@ import walletRouter from "./routes/wallet.routes.js";
 import jobRouter from "./routes/job.routes.js";
 import tokenomicsRouter from "./routes/tokenomicsRouter.js";
 import paymentRouter from "./routes/payment.routes.js";
+
+
 //create express app
 const app = express();
 
@@ -43,6 +45,7 @@ app.use("/api/v1/wallet", walletRouter);
 app.use("/api/v1/jobs", jobRouter);
 app.use("/api/v1/tokenomics", tokenomicsRouter);
 app.use("/api/v1/payments", paymentRouter);
+
 
 // Add this before other middleware for webhook
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));

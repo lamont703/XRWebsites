@@ -93,6 +93,22 @@ const Job = {
         }
     },
 
+    async findApplicationsByUserId(userId) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.type = 'job_application' AND c.applicant.userId = @userId",
+                parameters: [{ name: "@userId", value: userId }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            return resources;
+        } catch (error) {
+            console.error("Error in findApplicationsByUserId:", error);
+            throw error;
+        }
+    },
+
     // Job Review Methods
     async createReview(reviewData) {
         try {
@@ -204,6 +220,47 @@ const Job = {
                 throw error;
             }
             throw new ApiError(500, "Failed to delete job");
+        }
+    },
+
+    async findActiveJobsByUserId(userId) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.type = 'job_posting' AND c.userId = @userId AND c.status = 'active'",
+                parameters: [{ name: "@userId", value: userId }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            return resources;
+        } catch (error) {
+            console.error("Error in findActiveJobsByUserId:", error);
+            throw error;
+        }
+    },
+
+    async deleteJob(jobId) {
+        try {
+            const container = await getContainer();
+            const job = await this.findJobById(jobId);
+            
+            if (!job) {
+                throw new ApiError(404, "Job not found");
+            }
+
+            // Soft delete by updating status
+            const updatedJob = {
+                ...job,
+                status: 'cancelled',
+                updated_at: new Date()
+            };
+            
+            // Use upsert with the correct partition key
+            const { resource } = await container.items.upsert(updatedJob);
+            return resource;
+        } catch (error) {
+            console.error("Error in deleteJob:", error);
+            throw error;
         }
     }
 };

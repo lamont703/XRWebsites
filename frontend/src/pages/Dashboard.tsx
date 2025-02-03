@@ -15,14 +15,28 @@ interface Transaction {
 interface WalletData {
   id: string;
   balance: string;
+  totalTokens: number;
   transactions: Transaction[];
+}
+
+interface DashboardStats {
+  totalNFTs: number;
+  activeJobs: number;
 }
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const [walletData, setWalletData] = useState<WalletData>({ id: '', balance: '0.00', transactions: [] });
+  const [stats, setStats] = useState<DashboardStats>({
+    totalNFTs: 0,
+    activeJobs: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [walletData, setWalletData] = useState<WalletData>({ 
+    id: '', 
+    balance: '0.00',
+    totalTokens: 0,
+    transactions: [] 
+  });
 
   const loadWalletData = async () => {
     try {
@@ -39,60 +53,73 @@ export const Dashboard = () => {
       }
 
       const { data } = await response.json();
-      setWalletData(prev => ({ 
-        ...prev, 
-        id: data.id, 
-        balance: data.balance.toString(),
-        transactions: []
-      }));
+      setWalletData({ 
+        id: data.id,
+        balance: data.balance || '0.00',
+        totalTokens: data.linked_accounts?.length || 0,
+        transactions: data.transactions || []
+      });
       return data.id;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load wallet data');
+      console.error('Error loading wallet:', err);
       return null;
     }
   };
 
-  const loadTransactions = async (walletId: string) => {
+  const loadDashboardStats = async () => {
+    if (!user?.id) return;
+
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletId}/transactions`,
+      // Get active jobs count
+      const jobsResponse = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/jobs/user/${user.id}/active`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
             'Accept': 'application/json'
-          },
-          credentials: 'include'
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to load transactions');
+      // Get NFTs through wallet
+      const walletId = await loadWalletData();
+      let nftsCount = 0;
+
+      if (walletId) {
+        const nftsResponse = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletId}/nfts`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+              'Accept': 'application/json'
+            },
+            credentials: 'include'
+          }
+        );
+
+        if (nftsResponse.ok) {
+          const nftsData = await nftsResponse.json();
+          const nfts = nftsData.data?.nfts || nftsData.data || [];
+          nftsCount = Array.isArray(nfts) ? nfts.length : 0;
+        }
       }
 
-      const { data } = await response.json();
-      setWalletData(prev => ({ 
-        ...prev, 
-        transactions: Array.isArray(data) ? data : [] 
-      }));
-    } catch (err) {
-      console.error('Transaction loading error:', err);
-      setWalletData(prev => ({ ...prev, transactions: [] }));
+      const jobsData = await jobsResponse.json();
+
+      setStats({
+        activeJobs: jobsData.data.jobs?.length || 0,
+        totalNFTs: nftsCount
+      });
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    const initializeDashboard = async () => {
-      const walletId = await loadWalletData();
-      if (walletId) {
-        await loadTransactions(walletId);
-      } else {
-        setIsLoading(false);
-      }
-    };
-    initializeDashboard();
-  }, []);
+    loadDashboardStats();
+  }, [user?.id]);
 
   return (
     <MainLayout>
@@ -111,19 +138,27 @@ export const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 rounded-lg p-6">
             <div className="text-sm font-medium text-gray-400 mb-2">Total NFTs</div>
-            <div className="text-2xl font-bold text-white">0</div>
+            <div className="text-2xl font-bold text-white">
+              {isLoading ? '...' : stats.totalNFTs}
+            </div>
           </div>
           <div className="bg-gray-800 rounded-lg p-6">
             <div className="text-sm font-medium text-gray-400 mb-2">Active Jobs</div>
-            <div className="text-2xl font-bold text-white">0</div>
+            <div className="text-2xl font-bold text-white">
+              {isLoading ? '...' : stats.activeJobs}
+            </div>
           </div>
           <div className="bg-gray-800 rounded-lg p-6">
-            <div className="text-sm font-medium text-gray-400 mb-2">Wallet Balance</div>
-            <div className="text-2xl font-bold text-white">${walletData.balance}</div>
+            <div className="text-sm font-medium text-gray-400 mb-2">Wallet Balance (USD)</div>
+            <div className="text-2xl font-bold text-white">
+              ${isLoading ? '...' : walletData.balance}
+            </div>
           </div>
           <div className="bg-gray-800 rounded-lg p-6">
-            <div className="text-sm font-medium text-gray-400 mb-2">Total Earnings</div>
-            <div className="text-2xl font-bold text-white">$0.00</div>
+            <div className="text-sm font-medium text-gray-400 mb-2">Visorcoin Balance (XRV)</div>
+            <div className="text-2xl font-bold text-white">
+              {isLoading ? '...' : walletData.totalTokens} XRV
+            </div>
           </div>
         </div>
 
@@ -134,43 +169,9 @@ export const Dashboard = () => {
             <div className="text-center py-8">
               <span className="text-gray-400">Loading transactions...</span>
             </div>
-          ) : walletData.transactions.length === 0 ? (
+          ) : (
             <div className="text-gray-400 text-center py-8">
               No recent transactions to show.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {walletData.transactions.slice(0, 5).map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-2 rounded ${
-                      transaction.type === 'receive' ? 'bg-green-500' : 'bg-red-500'
-                    }`}>
-                      {transaction.type === 'receive' ? '+' : '-'}
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">
-                        {transaction.type === 'receive' ? 'Received' : 'Sent'}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {new Date(transaction.timestamp).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">${transaction.amount}</div>
-                    <div className={`text-sm ${
-                      transaction.status === 'completed' ? 'text-green-400' :
-                      transaction.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                    }`}>
-                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           )}
         </div>

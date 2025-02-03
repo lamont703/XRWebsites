@@ -11,7 +11,8 @@ import {
     transferNFT,
     getNFTs,
     createNFT,
-    updateWalletBalance
+    updateWalletBalance,
+    getRecentTransactions
 } from "../controllers/wallet.controller.js";
 
 const router = Router();
@@ -33,5 +34,7 @@ router.route("/wallet/:id/nfts/create").post(verifyJWT, createNFT);
 
 router.get("/:id", verifyJWT, getWallet);
 router.put("/:id/balance", verifyJWT, updateWalletBalance);
+
+router.route("/wallet/:id/recent-transactions").get(verifyJWT, getRecentTransactions);
 
 export default router; 

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface User {
+export interface User {
   id: string;
+  name: string;
   email: string;
-  fullName: string;
-  username: string;
-  avatar?: string;
+  walletId?: string;
+  rating?: number;
+  jobsPosted?: number;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -34,43 +36,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      fetchUserData(token);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const fetchUserData = async (token: string) => {
+  const loadUserData = async () => {
+    console.log('🔄 Starting loadUserData...');
     try {
+      const token = localStorage.getItem('accessToken');
+      console.log('📝 Current token:', token);
+
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/me`, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Accept': 'application/json'
-        },
-        credentials: 'include'
+          'Authorization': `Bearer ${token}`,
+        }
       });
       
-      if (response.ok) {
-        const { data } = await response.json();
-        setUser(data.user);
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('accessToken');
-        setIsAuthenticated(false);
-        setUser(null);
+      console.log('📡 Dashboard API response status:', response.status);
+      
+      if (!response.ok) {
+        console.error('❌ Dashboard API error:', response.status);
+        throw new Error('Failed to load user data');
       }
+
+      const { data } = await response.json();
+      console.log('👤 Received user data:', data.user.id);
+
+      // Load wallet data
+      const walletResponse = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      console.log('💰 Wallet API response status:', walletResponse.status);
+      
+      let walletId;
+      if (walletResponse.ok) {
+        const walletData = await walletResponse.json();
+        console.log('💳 Received wallet data:', walletData);
+        walletId = walletData.data?.id;
+      }
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.fullName,
+        email: data.user.email,
+        walletId: walletId,
+        createdAt: data.user.createdAt
+      };
+
+      console.log('✅ Setting user data:', userData);
+      setUser(userData);
+      setIsAuthenticated(true);
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      localStorage.removeItem('accessToken');
-      setIsAuthenticated(false);
+      console.error('❌ Error in loadUserData:', error);
       setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Debug effect to monitor user state changes
+  useEffect(() => {
+    console.log('🔄 User state updated:', user);
+  }, [user]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    console.log('🔑 Initial token check:', token ? 'Token exists' : 'No token');
+    if (token) {
+      loadUserData();
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {

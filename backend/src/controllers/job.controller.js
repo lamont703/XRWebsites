@@ -2,6 +2,8 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import Job from "../models/job.models.js";
+import User from "../models/user.models.js";
+import Wallet from "../models/wallet.models.js";
 
 const getAllJobs = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, category, budget_min, budget_max, skills } = req.query;
@@ -65,32 +67,79 @@ const updateJob = asyncHandler(async (req, res) => {
 
 const deleteJob = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // First find the job
     const job = await Job.findJobById(id);
     
-    if (!job) throw new ApiError(404, "Job not found");
-    if (job.business_id !== req.user.id && !req.user.isAdmin) {
+    if (!job) {
+        throw new ApiError(404, "Job not found");
+    }
+
+    // Check if the user owns the job
+    if (job.userId !== req.user?.id) {
         throw new ApiError(403, "Unauthorized to delete this job");
     }
 
-    await Job.delete(id);
-    return res.status(200).json(new ApiResponse(200, "Job deleted successfully", {}));
+    // Proceed with deletion
+    await Job.deleteJob(id);
+    
+    return res.status(200).json(
+        new ApiResponse(200, "Job cancelled successfully", null)
+    );
 });
 
 const applyForJob = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { cover_letter, bid_amount } = req.body;
-    
-    const job = await Job.findJobById(id);
-    if (!job) throw new ApiError(404, "Job not found");
+  try {
+    const { jobId } = req.params;
+    const { applicant, application } = req.body;
 
-    const application = await Job.createApplication({
-        job_id: id,
-        developer_id: req.user.id,
-        cover_letter,
-        bid_amount: Number(bid_amount)
+    // Validate job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      throw new ApiError(404, "Job not found");
+    }
+
+    // Validate applicant exists
+    const user = await User.findById(applicant.userId);
+    if (!user) {
+      throw new ApiError(404, "Applicant not found");
+    }
+
+    // Validate wallet exists
+    const wallet = await Wallet.findById(applicant.walletId);
+    if (!wallet) {
+      throw new ApiError(404, "Wallet not found");
+    }
+
+    // Create application
+    const newApplication = {
+      applicant: {
+        userId: applicant.userId,
+        walletId: applicant.walletId,
+        name: applicant.name
+      },
+      coverLetter: application.coverLetter,
+      proposedRate: application.proposedRate,
+      estimatedDuration: application.estimatedDuration,
+      portfolioLinks: application.portfolioLinks,
+      submittedAt: application.submittedAt,
+      status: 'pending'
+    };
+
+    // Add application to job
+    job.applications = job.applications || [];
+    job.applications.push(newApplication);
+    await job.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Application submitted successfully",
+      data: newApplication
     });
-
-    return res.status(201).json(new ApiResponse(201, "Application submitted successfully", application));
+  } catch (error) {
+    console.error("Job application error:", error);
+    throw new ApiError(500, "Error applying to job");
+  }
 });
 
 const getJobApplications = asyncHandler(async (req, res) => {
@@ -134,6 +183,20 @@ const getJobReviews = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, "Reviews retrieved successfully", reviews));
 });
 
+const getUserActiveJobs = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    
+    // Optional: Add authorization check
+    if (req.user.id !== userId && !req.user.isAdmin) {
+        throw new ApiError(403, "Unauthorized to view these jobs");
+    }
+
+    const jobs = await Job.findActiveJobsByUserId(userId);
+    return res.status(200).json(
+        new ApiResponse(200, "Active jobs retrieved successfully", { jobs })
+    );
+});
+
 export {
     getAllJobs,
     createJob,
@@ -143,5 +206,6 @@ export {
     applyForJob,
     getJobApplications,
     createJobReview,
-    getJobReviews
+    getJobReviews,
+    getUserActiveJobs
 }; 

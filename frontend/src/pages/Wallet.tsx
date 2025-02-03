@@ -6,6 +6,7 @@ import styles from '../styles/Dashboard.module.css';
 import { FundWallet } from '@/components/features/wallet/FundWallet';
 import { BuyVisorcoin } from '@/components/features/wallet/BuyVisorcoin';
 import { SendReceiveVisorcoin } from '@/components/features/wallet/SendReceiveVisorcoin';
+import { RecentTransactions } from '@/components/features/wallet/RecentTransactions';
 
 
 
@@ -16,6 +17,8 @@ interface WalletData {
   totalValueLocked: string;
   transactions: Transaction[];
   id: string;
+  recentTransactions: Transaction[];
+  transactionStats?: TransactionStats;
 }
 
 interface Transaction {
@@ -24,6 +27,13 @@ interface Transaction {
   amount: string;
   timestamp: string;
   status: 'pending' | 'completed' | 'failed';
+}
+
+interface TransactionStats {
+  total: number;
+  purchases: number;
+  sales: number;
+  transfers: number;
 }
 
 
@@ -35,7 +45,14 @@ export const Wallet = () => {
     pendingTransactions: 0,
     totalValueLocked: '0.00',
     transactions: [],
-    id: ''
+    recentTransactions: [],
+    id: '',
+    transactionStats: {
+      total: 0,
+      purchases: 0,
+      sales: 0,
+      transfers: 0
+    }
   });
   const [nfts, setNfts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +90,9 @@ export const Wallet = () => {
         pendingTransactions: 0,
         totalValueLocked: data.balance.toString(),
         transactions: [],
-        id: data.id
+        id: data.id,
+        recentTransactions: [],
+        transactionStats: data.stats
       });
       console.log('✅ Wallet data updated in state');
     } catch (err) {
@@ -232,12 +251,44 @@ export const Wallet = () => {
     }
   };
 
+  const loadRecentTransactions = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletData.id}/recent-transactions`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Accept': 'application/json'
+          },
+          credentials: 'include'
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to load recent transactions');
+      }
+
+      const { data } = await response.json();
+      setWalletData(prev => ({
+        ...prev,
+        recentTransactions: data.transactions,
+        transactionStats: data.stats
+      }));
+    } catch (err) {
+      console.error('Error loading recent transactions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load recent transactions');
+    }
+  };
+
   useEffect(() => {
     const initializeWallet = async () => {
       try {
         await loadWalletData();
         if (walletData.id) {
-          await loadNFTs(walletData.id);
+          await Promise.all([
+            loadNFTs(walletData.id),
+            loadRecentTransactions()
+          ]);
         }
       } catch (error) {
         setError('Failed to initialize wallet');
@@ -310,54 +361,11 @@ export const Wallet = () => {
         </div>
 
         {/* Recent Transactions */}
-        <div className="bg-gray-800 rounded-lg p-4 md:p-6">
-          <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Recent Transactions</h3>
-          {isLoading ? (
-            <div className="text-center py-6 md:py-8">
-              <span className="text-gray-400">Loading transactions...</span>
-            </div>
-          ) : walletData.transactions.length === 0 ? (
-            <div className="text-gray-400 text-center py-6 md:py-8">
-              No recent transactions to show.
-            </div>
-          ) : (
-            <div className="space-y-3 md:space-y-4">
-              {walletData.transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 md:p-4 bg-gray-700 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className={`p-2 rounded ${
-                      transaction.type === 'receive' ? 'bg-green-500' : 'bg-red-500'
-                    }`}>
-                      {transaction.type === 'receive' ? '+' : '-'}
-                    </div>
-                    <div>
-                      <div className="text-sm md:text-base text-white font-medium">
-                        {transaction.type === 'receive' ? 'Received' : 'Sent'}
-                      </div>
-                      <div className="text-xs md:text-sm text-gray-400">
-                        {new Date(transaction.timestamp).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm md:text-base text-white font-medium">
-                      ${transaction.amount}
-                    </div>
-                    <div className={`text-xs md:text-sm ${
-                      transaction.status === 'completed' ? 'text-green-400' :
-                      transaction.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                    }`}>
-                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <RecentTransactions 
+          transactions={walletData.recentTransactions || []}
+          isLoading={isLoading}
+          className="bg-gray-800 rounded-lg"
+        />
       </div>
     </MainLayout>
   );

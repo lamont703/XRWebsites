@@ -18,6 +18,7 @@ export interface JobPostData {
 export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState({ name: '', yearsRequired: 1 });
   
   const [formData, setFormData] = useState<JobPostData>({
@@ -55,6 +56,7 @@ export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
 
     try {
       await onSubmit(formData);
+      setSuccess('Job posted successfully!');
       // Reset form after successful submission
       setFormData({
         title: '',
@@ -66,6 +68,11 @@ export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
         projectDuration: '',
         projectType: 'AR'
       });
+      
+      // Clear success message after 10 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 10000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to post job');
     } finally {
@@ -223,6 +230,12 @@ export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
             ))}
           </div>
         </div>
+
+        {success && (
+          <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mt-4">
+            <p className="text-green-500 text-sm">{success}</p>
+          </div>
+        )}
 
         {error && (
           <div className="text-red-500 text-sm mt-4">

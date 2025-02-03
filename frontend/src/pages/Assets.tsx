@@ -161,12 +161,12 @@ export const Assets = () => {
               />
             </div>
           </div>
-          <div className="h-[400px] overflow-y-auto">
+          <div className="min-h-[400px] max-h-[800px] overflow-y-auto">
             <NFTGallery 
               nfts={nfts} 
               isLoading={isLoading} 
               onViewDetails={handleNFTSelect}
-              compact={true}
+              compact={false}
             />
           </div>
         </div>

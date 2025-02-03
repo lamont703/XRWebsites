@@ -489,6 +489,50 @@ const updateWalletBalance = asyncHandler(async (req, res) => {
     }
 });
 
+const getRecentTransactions = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { days = 30 } = req.query;
+
+    try {
+        const wallet = await Wallet.findById(id);
+        if (!wallet) {
+            throw new ApiError(404, "Wallet not found");
+        }
+
+        // Verify ownership
+        if (wallet.user_id !== req.user.id && !req.user.isAdmin) {
+            throw new ApiError(403, "Unauthorized to access this wallet");
+        }
+
+        // Get recent transactions
+        const transactions = await Transaction.findRecentByWalletId(id, parseInt(days));
+        const stats = await Transaction.getTransactionStats(id, parseInt(days));
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "Recent transactions retrieved successfully",
+                    {
+                        transactions,
+                        stats,
+                        period: {
+                            days: parseInt(days),
+                            start: new Date(Date.now() - (parseInt(days) * 24 * 60 * 60 * 1000)),
+                            end: new Date()
+                        }
+                    }
+                )
+            );
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to retrieve recent transactions"
+        );
+    }
+});
+
 export {
     getWallet,
     createWallet,
@@ -500,5 +544,6 @@ export {
     transferNFT,
     getNFTs,
     createNFT,
-    updateWalletBalance
+    updateWalletBalance,
+    getRecentTransactions
 }; 

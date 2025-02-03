@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/store/auth/AuthContext';
+import { JobApplication, JobApplicationData } from './JobApplication';
 
 interface Skill {
   name: string;
@@ -24,7 +26,7 @@ interface JobDetailsProps {
   experienceLevel: 'beginner' | 'intermediate' | 'expert';
   poster: JobPoster;
   isSaved?: boolean;
-  onApply: (jobId: string) => Promise<void>;
+  onApply: (jobId: string, applicationData: JobApplicationData) => Promise<void>;
   onSave: (jobId: string) => Promise<void>;
 }
 
@@ -32,7 +34,7 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
   id,
   title,
   description,
-  skills,
+  skills = [],
   postedDate,
   location,
   price,
@@ -42,16 +44,84 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
   onApply,
   onSave,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
 
-  const handleApply = async () => {
+  const handleApplyClick = async () => {
+    console.log('Auth state:', { 
+      isLoggedIn: !!user, 
+      userId: user?.id, 
+      walletId: user?.walletId,
+      token: localStorage.getItem('accessToken')
+    });
+    
+    if (!user?.id) {
+      setError('Please login to apply for jobs');
+      return;
+    }
+
+    if (!user?.walletId) {
+      setError('Please set up your wallet before applying');
+      try {
+        // First try to get existing wallet
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (response.ok) {
+          const { data } = await response.json();
+          // Update auth context with wallet ID
+          window.location.href = '/wallet';
+          return;
+        } else if (response.status === 404) {
+          // Only create new wallet if one doesn't exist
+          const createResponse = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (!createResponse.ok) {
+            throw new Error('Failed to create wallet');
+          }
+          window.location.href = '/wallet';
+          return;
+        }
+      } catch (err) {
+        setError('Failed to setup wallet. Please try again.');
+        return;
+      }
+    }
+
+    setShowApplicationForm(true);
+  };
+
+  const handleApplicationSubmit = async (applicationData: JobApplicationData) => {
     setIsLoading(true);
     setError(null);
+    setSuccess(null);
+    
     try {
-      await onApply(id);
+      console.log('Submitting application from JobDetails:', { id, applicationData });
+      await onApply(id, applicationData);
+      setShowApplicationForm(false);
+      setSuccess('Application submitted successfully!');
+      
+      // Clear success message after 10 seconds
+      setTimeout(() => {
+        setSuccess(null);
+      }, 10000);
     } catch (err) {
-      setError('Failed to apply for job');
+      console.error('Application submission error in JobDetails:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit application');
     } finally {
       setIsLoading(false);
     }
@@ -67,33 +137,63 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
 
   return (
     <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-          <div className="flex items-center space-x-4 text-gray-400">
-            <span>Posted {postedDate}</span>
-            <span>•</span>
-            <span>{location}</span>
-          </div>
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
+          <p className="text-red-500 text-sm">{error}</p>
+          {!user?.walletId && (
+            <a 
+              href="/profile" 
+              className="text-blue-400 hover:text-blue-300 text-sm block mt-2"
+            >
+              Complete Profile →
+            </a>
+          )}
         </div>
-        <button
-          onClick={handleSave}
-          className="text-gray-400 hover:text-blue-400"
-        >
-          <svg
-            className={`w-6 h-6 ${isSaved ? 'fill-current text-blue-400' : 'stroke-current'}`}
-            fill="none"
-            viewBox="0 0 24 24"
+      )}
+      
+      {success && (
+        <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mb-4">
+          <p className="text-green-500 text-sm">{success}</p>
+        </div>
+      )}
+
+      {showApplicationForm ? (
+        <JobApplication
+          jobId={id}
+          jobTitle={title}
+          onSubmit={handleApplicationSubmit}
+          onCancel={() => setShowApplicationForm(false)}
+          isLoading={isLoading}
+        />
+      ) : (
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
+            <div className="flex items-center space-x-4 text-gray-400">
+              <span>Posted {postedDate}</span>
+              <span>•</span>
+              <span>{location}</span>
+            </div>
+          </div>
+          <button
+            onClick={handleSave}
+            className="text-gray-400 hover:text-blue-400"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-            />
-          </svg>
-        </button>
-      </div>
+            <svg
+              className={`w-6 h-6 ${isSaved ? 'fill-current text-blue-400' : 'stroke-current'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="space-y-6">
         {/* Price and Experience Level */}
@@ -140,19 +240,15 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
           </div>
         </div>
 
-        {error && (
-          <div className="text-red-400 text-sm">{error}</div>
-        )}
-
         {/* Apply Button */}
-        <button
-          onClick={handleApply}
-          disabled={isLoading}
-          className={`w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 font-medium
-            transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isLoading ? 'Applying...' : 'Apply Now'}
-        </button>
+        <div className="mt-6">
+          <button
+            onClick={handleApplyClick}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 font-medium transition-colors"
+          >
+            Apply Now
+          </button>
+        </div>
       </div>
     </div>
   );

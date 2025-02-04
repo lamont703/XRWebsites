@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import { JobApplication, JobApplicationData } from './JobApplication';
 
 interface Skill {

@@ -3,7 +3,7 @@ import { authMiddleware } from '../middleware/auth.middleware.js';
 import Job from '../models/job.models.js';
 import { getUserActiveJobs, deleteJob } from '../controllers/job.controller.js';
 import { verifyJWT } from '../middleware/auth.middleware.js';
-import { getContainer } from '../db/index.js';
+import { getContainer } from '../database.js';
 
 
 const router = express.Router();

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import styles from '../styles/Dashboard.module.css';
 import { useLocation } from 'react-router-dom';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
 import { FeaturedNFT } from '@/components/features/assets/FeaturedNFT';
 import type { NFT } from '@/types/nft';
+import { CreateNFT, NFTData } from '@/components/features/assets/CreateNFT';
 
 export const Assets = () => {
   const { user } = useAuth();
@@ -15,6 +16,8 @@ export const Assets = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [walletData, setWalletData] = useState({ id: '' });
+  const [showCreateNFT, setShowCreateNFT] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const loadWalletData = async () => {
     try {
@@ -94,6 +97,57 @@ export const Assets = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleCreateNFT = async (nftData: NFTData) => {
+    try {
+      if (!walletData.id) {
+        throw new Error('No wallet connected');
+      }
+
+      // First, upload image to IPFS (mock for now)
+      const imageUrl = '/placeholder-nft.png'; // TODO: Implement IPFS upload
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletData.id}/nfts/create`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: nftData.name,
+            description: nftData.description,
+            image_url: imageUrl,
+            owner_wallet_id: walletData.id,
+            metadata: {
+              name: nftData.name,
+              description: nftData.description,
+              imageUrl: imageUrl,
+              attributes: nftData.attributes,
+              royalties: nftData.royalties,
+              supply: nftData.supply
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create NFT');
+      }
+
+      setSuccess('NFT created successfully!');
+      setShowCreateNFT(false);
+      loadNFTs(); // Refresh the NFT list
+
+      setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create NFT');
+    }
+  };
+
   return (
     <MainLayout>
       <div className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 lg:px-8">
@@ -140,6 +194,25 @@ export const Assets = () => {
           </div>
         )}
 
+        {/* Create NFT Section */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Create New NFT</h2>
+            <button
+              onClick={() => setShowCreateNFT(!showCreateNFT)}
+              className="text-sm text-blue-400 hover:text-blue-300"
+            >
+              {showCreateNFT ? 'Cancel' : '+ Create NFT'}
+            </button>
+          </div>
+          {showCreateNFT && (
+            <CreateNFT
+              onSubmit={handleCreateNFT}
+              onCancel={() => setShowCreateNFT(false)}
+            />
+          )}
+        </div>
+
         {/* NFT Gallery Section */}
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -170,6 +243,18 @@ export const Assets = () => {
             />
           </div>
         </div>
+
+        {success && (
+          <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mb-6">
+            <p className="text-green-500">{success}</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-6">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

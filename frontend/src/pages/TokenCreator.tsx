@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import styles from '../styles/Dashboard.module.css';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';

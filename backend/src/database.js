@@ -1,8 +1,10 @@
 import { CosmosClient } from "@azure/cosmos";
 import dotenv from "dotenv";
 
+// Load environment variables from .env file for local development.
 dotenv.config();
 
+// Connect to the database and create a container if it doesn't exist.
 const connectDB = async () => {
     try {
         const client = new CosmosClient({
@@ -16,7 +18,7 @@ const connectDB = async () => {
 
         // Define container configuration
         const containerConfig = {
-            id: "XRWContainer",
+            id: process.env.COSMOS_DB_CONTAINER,
             partitionKey: { paths: ["/type"] },
             indexingPolicy: {
                 indexingMode: "consistent",
@@ -42,7 +44,7 @@ const connectDB = async () => {
         // Create container if it doesn't exist
         const { container } = await database.containers.createIfNotExists(containerConfig);
         
-        console.log(`Connected to ${process.env.COSMOS_DB_NAME} database and XRWContainer`);
+        console.log(`Connected to ${process.env.COSMOS_DB_NAME} and ${containerConfig.id}`);
         return client;
     } catch (error) {
         console.error("Database connection error:", error);
@@ -50,7 +52,7 @@ const connectDB = async () => {
     }
 };
 
-// Export the container for use in models
+// Export the container for use in models and other modules.
 export const getContainer = async () => {
     const client = new CosmosClient({
         endpoint: process.env.COSMOS_DB_ENDPOINT,
@@ -58,7 +60,7 @@ export const getContainer = async () => {
     });
     
     const database = client.database(process.env.COSMOS_DB_NAME);
-    return database.container("XRWContainer");
+    return database.container(process.env.COSMOS_DB_CONTAINER);
 };
 
 export default connectDB;

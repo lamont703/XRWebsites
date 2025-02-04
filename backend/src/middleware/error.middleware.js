@@ -3,6 +3,7 @@ import ApiError from '../utils/ApiError.js';
 const errorHandler = (err, req, res, next) => {
   console.error('Error:', err);
 
+  // Handle API errors
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
       success: false,

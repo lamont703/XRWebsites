@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 
 interface JobApplicationProps {
   jobId: string;

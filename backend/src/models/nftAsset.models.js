@@ -1,4 +1,4 @@
-import { getContainer } from "../db/index.js";
+import { getContainer } from "../database.js";
 import ApiError from "../utils/ApiError.js";
 import Wallet from "./wallet.models.js";
 
@@ -73,35 +73,42 @@ const NFTAsset = {
         try {
             const container = await getContainer();
             
-            // Set required fields
-            nftData.id = nftData.id || `nft-${Date.now()}`;
-            nftData.type = 'nft';
-            nftData.created_at = new Date();
-            nftData.updated_at = new Date();
-            nftData.status = nftData.status || 'active';
-            
+            // Set required fields with type for partition key
+            const nftDocument = {
+                id: `nft-${Date.now()}`,
+                type: 'nft', // This is our partition key
+                name: nftData.name,
+                description: nftData.description,
+                image_url: nftData.image_url,
+                owner_wallet_id: nftData.owner_wallet_id,
+                creator_id: nftData.creator_id,
+                status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                transfer_history: [{
+                    from: null,
+                    to: nftData.owner_wallet_id,
+                    timestamp: new Date().toISOString(),
+                    transaction_type: "mint"
+                }],
+                metadata: {
+                    name: nftData.name,
+                    description: nftData.description,
+                    imageUrl: nftData.image_url,
+                    attributes: nftData.metadata?.attributes || [],
+                    royalties: nftData.metadata?.royalties || 0,
+                    supply: nftData.metadata?.supply || 1,
+                    value: nftData.value || 0
+                }
+            };
+
             // Ensure wallet connection
-            if (!nftData.owner_wallet_id) {
+            if (!nftDocument.owner_wallet_id) {
                 throw new ApiError(400, "owner_wallet_id is required");
             }
 
-            // Initialize transfer history with mint record
-            nftData.transfer_history = [{
-                from: null,
-                to: nftData.owner_wallet_id,
-                timestamp: new Date(),
-                transaction_type: "mint"
-            }];
-
-            // Add metadata if not present
-            nftData.metadata = nftData.metadata || {
-                name: nftData.name,
-                description: nftData.description,
-                imageUrl: nftData.image_url,
-                value: nftData.value || 0
-            };
-
-            const { resource } = await container.items.create(nftData);
+            // Create with partition key
+            const { resource } = await container.items.create(nftDocument);
             return resource;
         } catch (error) {
             console.error("Error in create:", error);
@@ -396,6 +403,61 @@ const NFTAsset = {
             return resource;
         } catch (error) {
             console.error("Error in tokenize:", error);
+            throw error;
+        }
+    },
+
+    async createListing(nftId, listingData) {
+        try {
+            const container = await getContainer();
+            
+            // First verify NFT exists and is owned by seller
+            const nft = await this.findById(nftId);
+            if (!nft) {
+                throw new ApiError(404, "NFT not found");
+            }
+            
+            if (nft.owner_wallet_id !== listingData.seller_wallet_id) {
+                throw new ApiError(403, "Not authorized to list this NFT");
+            }
+
+            // Create listing document
+            const listingDocument = {
+                id: `listing-${Date.now()}`,
+                type: 'nft_listing', // Partition key
+                nft_id: nftId,
+                seller_wallet_id: listingData.seller_wallet_id,
+                price: listingData.price,
+                duration: listingData.duration,
+                expires_at: new Date(Date.now() + listingData.duration * 24 * 60 * 60 * 1000).toISOString(),
+                status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                created_by: listingData.created_by
+            };
+
+            // Update NFT status
+            const updatedNFT = {
+                ...nft,
+                status: 'listed',
+                current_listing: listingDocument.id,
+                updated_at: new Date().toISOString()
+            };
+
+            // Create listing and update NFT in transaction
+            const batch = [
+                { operationType: 'Create', resourceBody: listingDocument },
+                { 
+                    operationType: 'Replace', 
+                    resourceBody: updatedNFT,
+                    partitionKey: 'nft'
+                }
+            ];
+
+            await container.items.bulk(batch);
+            return listingDocument;
+        } catch (error) {
+            console.error("Error in createListing:", error);
             throw error;
         }
     }

@@ -1,4 +1,4 @@
-import { getContainer } from "../db/index.js";
+import { getContainer } from "../database.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 

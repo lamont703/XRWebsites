@@ -403,7 +403,13 @@ const getNFTs = asyncHandler(async (req, res) => {
 
 const createNFT = asyncHandler(async (req, res) => {
     const { id } = req.params; // wallet id
-    const { name, description, image_url, value } = req.body;
+    const { 
+        name, 
+        description, 
+        image_url, 
+        value,
+        metadata 
+    } = req.body;
 
     try {
         // Verify wallet ownership
@@ -416,7 +422,7 @@ const createNFT = asyncHandler(async (req, res) => {
             throw new ApiError(403, "Unauthorized to access this wallet");
         }
 
-        // Create NFT with proper wallet connection
+        // Create NFT with proper wallet connection and metadata
         const nft = await NFTAsset.create({
             name,
             description,
@@ -425,6 +431,7 @@ const createNFT = asyncHandler(async (req, res) => {
             owner_wallet_id: id,
             creator_id: req.user.id,
             metadata: {
+                ...metadata,
                 name,
                 description,
                 imageUrl: image_url,
@@ -533,6 +540,49 @@ const getRecentTransactions = asyncHandler(async (req, res) => {
     }
 });
 
+const listNFTForSale = asyncHandler(async (req, res) => {
+    const { walletId, nftId } = req.params;
+    const { price, duration } = req.body;
+
+    try {
+        // Verify wallet ownership
+        const wallet = await Wallet.findById(walletId);
+        if (!wallet) {
+            throw new ApiError(404, "Wallet not found");
+        }
+
+        if (wallet.user_id !== req.user.id && !req.user.isAdmin) {
+            throw new ApiError(403, "Unauthorized to access this wallet");
+        }
+
+        // Create listing using NFTAsset model
+        const listing = await NFTAsset.createListing(nftId, {
+            seller_wallet_id: walletId,
+            price: parseFloat(price),
+            duration: parseInt(duration),
+            status: 'active',
+            created_by: req.user.id
+        });
+
+        // Record transaction in wallet
+        await Wallet.recordTransaction(walletId, "nft_list", 0, {
+            nft_id: nftId,
+            listing_id: listing.id,
+            price: price,
+            status: "listed"
+        });
+
+        return res
+            .status(201)
+            .json(new ApiResponse(201, "NFT listed successfully", listing));
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Failed to list NFT"
+        );
+    }
+});
+
 export {
     getWallet,
     createWallet,
@@ -545,5 +595,6 @@ export {
     getNFTs,
     createNFT,
     updateWalletBalance,
-    getRecentTransactions
+    getRecentTransactions,
+    listNFTForSale
 }; 

@@ -1,3 +1,4 @@
+// ApiResponse class to handle API responses.
 class ApiResponse {
     constructor(statusCode, message = "Success", data) {
         this.statusCode = statusCode;

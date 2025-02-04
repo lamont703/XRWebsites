@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import { JobPosting, JobPostData } from '@/components/features/jobs/JobPosting';
 import styles from '../styles/Dashboard.module.css';
 import { ActiveJobs } from '@/components/features/jobs/ActiveJobs';

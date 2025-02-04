@@ -1,4 +1,4 @@
-import { getContainer } from "../db/index.js";
+import { getContainer } from "../database.js";
 import ApiError from "../utils/ApiError.js";
 
 const Job = {

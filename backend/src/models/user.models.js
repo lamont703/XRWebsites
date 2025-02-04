@@ -2,7 +2,7 @@ import { CosmosClient } from "@azure/cosmos";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
-import { getContainer } from "../db/index.js";
+import { getContainer } from "../database.js";
 
 dotenv.config();
 
@@ -18,21 +18,24 @@ const container = database.container(process.env.COSMOS_DB_CONTAINER);
 const User = {
     async findOne(query) {
         try {
-            console.log('Finding user with query:', query); // Debug log
+            console.log('Finding user with query:', query);
             
-            const querySpec = {
-                query: "SELECT * FROM c WHERE c.type = 'user' AND c.email = @email",
-                parameters: [
-                    {
-                        name: "@email",
-                        value: query.email
-                    }
-                ]
-            };
+            let querySpec;
+            if (query.email) {
+                querySpec = {
+                    query: "SELECT * FROM c WHERE c.type = 'user' AND c.email = @email",
+                    parameters: [{ name: "@email", value: query.email }]
+                };
+            } else if (query.username) {
+                querySpec = {
+                    query: "SELECT * FROM c WHERE c.type = 'user' AND c.username = @username",
+                    parameters: [{ name: "@username", value: query.username }]
+                };
+            }
             
             const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
-            console.log('Found user:', resources[0]); // Debug log
+            console.log('Found user:', resources[0]);
 
             return resources[0] || null;
         } catch (error) {
@@ -242,12 +245,34 @@ const User = {
             
             if (!user) return null;
 
-            // Apply updates
-            const updatedUser = { ...user, ...updateData.$set };
-            
+            // Transform frontend field names to match database schema
+            const transformedData = {
+                ...updateData.$set,
+                fullName: `${updateData.$set.firstName} ${updateData.$set.lastName}`.trim(),
+                // Add all profile fields
+                username: updateData.$set.username,
+                email: updateData.$set.email,
+                phone: updateData.$set.phone,
+                bio: updateData.$set.bio,
+                location: updateData.$set.location,
+                website: updateData.$set.website,
+                updated_at: new Date()
+            };
+
+            // Remove firstName and lastName as they're combined into fullName
+            delete transformedData.firstName;
+            delete transformedData.lastName;
+
             // Update the document
+            const updatedUser = { ...user, ...transformedData };
             const { resource } = await container.items.upsert(updatedUser);
-            return resource;
+            
+            return {
+                ...resource,
+                // Transform back for frontend
+                firstName: resource.fullName?.split(' ')[0] || '',
+                lastName: resource.fullName?.split(' ')[1] || ''
+            };
         } catch (error) {
             console.error("Error in update:", error);
             throw error;

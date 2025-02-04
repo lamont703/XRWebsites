@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 
 interface ActiveJobsProps {
   onJobCancel?: (jobId: string) => Promise<void>;

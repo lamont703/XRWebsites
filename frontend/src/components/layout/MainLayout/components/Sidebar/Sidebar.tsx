@@ -5,7 +5,7 @@
  */ 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import styles from '../../../../../styles/Sidebar.module.css';
 
 interface SidebarProps {

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { JobDetails } from '@/components/features/jobs/JobDetails';
-import { useAuth } from '../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import JobApplication from '@/components/features/jobs/JobApplication';
+import { JobApplication } from '@/components/features/jobs/JobApplication';
 import styles from '../styles/Dashboard.module.css'
+import { NFTListings } from '@/components/features/marketplace/NFTListings';
+import { ActiveJobs } from '@/components/features/jobs/ActiveJobs';
+import { JobCard } from '@/components/features/jobs/JobCard';
+import { NFTListingCard } from '@/components/features/marketplace/NFTListingCard';
 
 interface Job {
   id: string;
@@ -26,13 +30,26 @@ interface Job {
   status: string;
 }
 
+interface MarketplaceItem {
+    id: string;
+    type: 'job' | 'nft_listing';
+    title?: string;
+    description?: string;
+    price?: number;
+    nft_name?: string;
+    nft_description?: string;
+    image_url?: string;
+    // ... other job/listing specific fields
+}
+
 export const JobMarketplace = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
 
   const loadJobs = async () => {
     try {
@@ -58,9 +75,65 @@ export const JobMarketplace = () => {
     }
   };
 
+  const loadMarketplaceItems = async () => {
+    if (!isAuthenticated) {
+      setError("Please login to view marketplace items");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
+      const [jobsResponse, listingsResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/public`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        }),
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/marketplace/listings`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        })
+      ]);
+
+      if (!jobsResponse.ok || !listingsResponse.ok) {
+        throw new Error('Failed to load marketplace items');
+      }
+
+      const jobsData = await jobsResponse.json();
+      const listingsData = await listingsResponse.json();
+
+      const items = [
+        ...jobsData.jobs.map((job: any) => ({
+          ...job,
+          type: 'job' as const
+        })),
+        ...listingsData.data.map((listing: any) => ({
+          ...listing,
+          type: 'nft_listing' as const
+        }))
+      ];
+
+      setMarketplaceItems(items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load marketplace items');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadJobs();
-  }, []);
+    if (isAuthenticated) {
+      loadMarketplaceItems();
+    }
+  }, [isAuthenticated]);
 
   const handleApplyJob = async (jobId: string, applicationData: JobApplication) => {
     try {
@@ -151,64 +224,51 @@ export const JobMarketplace = () => {
     }
   };
 
+  // Render function based on item type
+  const renderMarketplaceItem = (item: MarketplaceItem) => {
+    if (item.type === 'nft_listing') {
+      return (
+        <NFTListingCard 
+          key={item.id}
+          listing={item}
+        />
+      );
+    }
+    return (
+      <JobCard 
+        key={item.id}
+        job={item}
+      />
+    );
+  };
+
   return (
     <MainLayout>
       <div className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Job Marketplace</h1>
-          <p className="text-gray-400">Browse and apply for available jobs</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Marketplace</h1>
+          <p className="text-gray-400">Browse available jobs and NFT listings</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Job Listings */}
-          <div className="lg:col-span-2 space-y-4">
-            {isLoading ? (
-              <div className="text-center py-8">
-                <span className="text-gray-400">Loading jobs...</span>
-              </div>
-            ) : jobs.length === 0 ? (
-              <div className="text-gray-400 text-center py-8">
-                No jobs available at the moment.
-              </div>
-            ) : (
-              jobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="bg-gray-800 rounded-lg p-6 cursor-pointer hover:bg-gray-700"
-                  onClick={() => handleJobClick(job)}
-                >
-                  <h3 className="text-xl font-bold text-white mb-2">{job.title}</h3>
-                  <div className="flex items-center space-x-4 text-gray-400 mb-4">
-                    <span>{job.location}</span>
-                    <span>•</span>
-                    <span>{job.price} XRV</span>
-                  </div>
-                  <p className="text-gray-400 mb-4 line-clamp-2">{job.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {job.skills?.slice(0, 3).map((skill) => (
-                      <span
-                        key={skill.name}
-                        className="bg-gray-700 text-white text-sm rounded-full px-3 py-1"
-                      >
-                        {skill.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
+        {isLoading ? (
+          <div>Loading marketplace items...</div>
+        ) : error ? (
+          <div className="text-red-400">{error}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {marketplaceItems.map(renderMarketplaceItem)}
           </div>
+        )}
 
-          {/* Desktop Job Details Sidebar */}
-          <div className="hidden lg:block lg:col-span-1">
-            {selectedJob && (
-              <JobDetails
-                {...selectedJob}
-                onApply={handleApplyJob}
-                onSave={handleSaveJob}
-              />
-            )}
-          </div>
+        {/* Desktop Job Details Sidebar */}
+        <div className="hidden lg:block lg:col-span-1">
+          {selectedJob && (
+            <JobDetails
+              {...selectedJob}
+              onApply={handleApplyJob}
+              onSave={handleSaveJob}
+            />
+          )}
         </div>
 
         {/* Mobile Job Details Modal */}

@@ -9,8 +9,12 @@ import jwt from "jsonwebtoken";
 import Wallet from "../models/wallet.models.js";
 import NFTAsset from "../models/nftAsset.models.js";
 import Job from "../models/job.models.js";
-import { getContainer } from "../db/index.js";
+import JobApplication from "../models/jobApplication.models.js";
+import ForumPost from "../models/forumPost.models.js";
+import Review from "../models/review.models.js";
+//import getContainer from "../database.js";
 
+// Generate access and refresh tokens for user authentication.
 const generateTokens = (userId) => {
     try {
         const accessToken = jwt.sign(
@@ -32,6 +36,7 @@ const generateTokens = (userId) => {
     }
 };
 
+// Register a new user.
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, password, username } = req.body;
     let avatarLocalPath;
@@ -207,7 +212,10 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
+// Login a user.
 const loginUser = asyncHandler(async (req, res) => {
+
+    // Get the email and password from the request body. 
     const { email, password } = req.body;
         console.log('Login attempt for email:', email); // Debug log
 
@@ -216,6 +224,7 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and password are required");
     }
 
+    // Find the user by email.
     const user = await User.findOne({ email });
         console.log('Found user:', user); // Debug log
 
@@ -224,6 +233,7 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User does not exist");
     }
 
+    // Check if the password is valid using bcrypt. 
     const isPasswordValid = await bcrypt.compare(password, user.password);
         console.log('Password valid:', isPasswordValid); // Debug log
 
@@ -232,17 +242,22 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid credentials");
     }
 
+    // Generate access and refresh tokens for the user.
     const { accessToken, refreshToken } = generateTokens(user.id);
 
+    // Update the user's refresh token in the database.
     await User.updateRefreshToken(user.id, refreshToken);
 
+    // Set the options for the cookies.
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production"
     };
 
+    // Remove sensitive information from the user object.
     const { password: _, refreshToken: __, ...userWithoutSensitiveInfo } = user;
 
+    // Return the response with the user, access token, and refresh token.
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
@@ -255,14 +270,18 @@ const loginUser = asyncHandler(async (req, res) => {
         );
 });
 
+// Logout a user.
 const logoutUser = asyncHandler(async (req, res) => {
+    // Update the user's refresh token in the database to an empty string.
     await User.updateRefreshToken(req.user?.id, "");
 
+    // Set the options for the cookies.
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production"
     };
 
+    // Return the response with a message indicating the user has been logged out.
     return res
         .status(200)
         .clearCookie("accessToken", options)
@@ -270,14 +289,16 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, "User logged out successfully"));
 });
 
+// Get user dashboard.
 const getUserDashboard = asyncHandler(async (req, res) => {
     try {
+        // Get user from database using Cosmos DB compatible queries 
         const user = await User.findById(req.user.id);
         if (!user) {
             throw new ApiError(404, "User not found");
         }
 
-        // Ensure fullName exists or create it from firstName/lastName
+        // Get user information from database 
         const userInfo = {
             _id: user._id,
             fullName: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
@@ -286,22 +307,46 @@ const getUserDashboard = asyncHandler(async (req, res) => {
             username: user.username
         };
 
+        // Get recent activities using Cosmos DB compatible queries
+        const [assetsResult, jobs, applications, forumPosts, reviews] = await Promise.all([
+            // Get recent NFT assets with count
+            NFTAsset.find({ owner: user._id }, { limit: 5 }),
+
+            // Get recent job postings
+            Job.findAll({ 
+                userId: user._id,
+                status: 'active'
+            }, { limit: 5 }),
+
+            // Get recent job applications
+            JobApplication.find({ applicantId: user._id }),
+
+            // Get recent forum activity
+            ForumPost.find({ userId: user._id }),
+
+            // Get recent reviews
+            Review.find({ userId: user._id })
+        ]);
+
+        // Get all jobs for count
+        const allJobs = await Job.findAll({ userId: user._id });
+
         const dashboardData = {
             user: userInfo,
             wallet: null,
             stats: {
-                totalAssets: 0,
-                totalJobPostings: 0,
-                totalApplications: 0,
-                totalForumPosts: 0,
-                totalReviews: 0
+                totalAssets: assetsResult.pagination.total,
+                totalJobPostings: allJobs.length,
+                totalApplications: applications.length,
+                totalForumPosts: forumPosts.length,
+                totalReviews: reviews.length
             },
             recentActivity: {
-                assets: [],
-                jobPostings: [],
-                jobApplications: [],
-                forumActivity: [],
-                reviews: []
+                assets: assetsResult.nfts || [],
+                jobPostings: jobs || [],
+                jobApplications: applications || [],
+                forumActivity: forumPosts || [],
+                reviews: reviews || []
             }
         };
 
@@ -327,6 +372,7 @@ const getUserDashboard = asyncHandler(async (req, res) => {
     }
 });
 
+// Refresh access token.
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
@@ -376,6 +422,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 });
 
+// Get current user.
 const getCurrentUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
     
@@ -391,16 +438,19 @@ const getCurrentUser = asyncHandler(async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 username: user.username,
+                phone: user.phone,
+                bio: user.bio,
+                location: user.location,
+                website: user.website,
                 createdAt: user.createdAt
             }
         }));
 });
 
+// Update user profile.
 const updateUserProfile = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { fullName, email, username } = req.body;
-    let avatarLocalPath;
-    let coverImageLocalPath;
+    const { fullName, email, username, phone, bio, location, website } = req.body;
 
     try {
         // Check if user exists
@@ -414,39 +464,24 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             throw new ApiError(403, "Unauthorized to update this profile");
         }
 
-        // Handle file uploads
-        if (req.files) {
-            if (req.files.avatar) {
-                avatarLocalPath = req.files.avatar[0]?.path;
-            }
-            if (req.files.coverImage) {
-                coverImageLocalPath = req.files.coverImage[0]?.path;
+        // Check if email is being changed and if it's already in use
+        if (email && email !== user.email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                throw new ApiError(400, "Email already in use");
             }
         }
 
-        // Upload new files to Azure if provided
         let updateData = {
             fullName,
             email,
             username,
+            phone,
+            bio,
+            location,
+            website,
             updated_at: new Date()
         };
-
-        if (avatarLocalPath) {
-            const newAvatar = await uploadToAzureBlob(avatarLocalPath);
-            if (user.avatar) {
-                await deleteFromAzureBlob(user.avatar);
-            }
-            updateData.avatar = newAvatar;
-        }
-
-        if (coverImageLocalPath) {
-            const newCoverImage = await uploadToAzureBlob(coverImageLocalPath);
-            if (user.coverImage) {
-                await deleteFromAzureBlob(user.coverImage);
-            }
-            updateData.coverImage = newCoverImage;
-        }
 
         // Update user using the new model method
         const updatedUser = await User.findByIdAndUpdate(
@@ -455,22 +490,21 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             { new: true }
         );
 
-        // Clean up local files
-        if (avatarLocalPath) fs.unlinkSync(avatarLocalPath);
-        if (coverImageLocalPath) fs.unlinkSync(coverImageLocalPath);
+        // If email was changed, force logout on next request
+        if (email && email !== user.email) {
+            // Invalidate all existing tokens
+            await User.updateRefreshToken(id, null);
+        }
 
         return res
             .status(200)
             .json(new ApiResponse(200, "Profile updated successfully", updatedUser));
     } catch (error) {
-        // Clean up local files in case of error
-        if (avatarLocalPath) fs.unlinkSync(avatarLocalPath);
-        if (coverImageLocalPath) fs.unlinkSync(coverImageLocalPath);
-        
         throw error;
     }
 });
 
+// Get user profile.
 const getUserProfile = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -507,6 +541,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
+// Delete user.
 const deleteUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -549,9 +584,8 @@ const deleteUser = asyncHandler(async (req, res) => {
                 NFTAsset.deleteMany({ creator_id: id }),
                 Job.deleteMany({ business_id: id }),
                 Job.deleteMany({ developer_id: id }),
-                ForumThread.deleteMany({ user_id: id }),
-                ForumComment.deleteMany({ user_id: id }),
-                JobReview.deleteMany({ reviewer_id: id }),
+                ForumPost.deleteMany({ user_id: id }),
+                Review.deleteMany({ userId: id }),
             ]);
         } catch (error) {
             console.error("Error deleting associated data:", error);

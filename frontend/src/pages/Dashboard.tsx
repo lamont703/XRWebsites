@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/useAuth';
 import styles from '../styles/Dashboard.module.css';
 
 
@@ -24,6 +24,38 @@ interface DashboardStats {
   activeJobs: number;
 }
 
+interface RecentActivity {
+  assets: Array<{
+    id: string;
+    name: string;
+    type: string;
+    createdAt: string;
+  }>;
+  jobPostings: Array<{
+    id: string;
+    title: string;
+    status: string;
+    createdAt: string;
+  }>;
+  jobApplications: Array<{
+    id: string;
+    jobTitle: string;
+    status: string;
+    appliedAt: string;
+  }>;
+  forumActivity: Array<{
+    id: string;
+    title: string;
+    type: 'post' | 'comment';
+    createdAt: string;
+  }>;
+  reviews: Array<{
+    id: string;
+    rating: number;
+    createdAt: string;
+  }>;
+}
+
 export const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
@@ -36,6 +68,13 @@ export const Dashboard = () => {
     balance: '0.00',
     totalTokens: 0,
     transactions: [] 
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentActivity>({
+    assets: [],
+    jobPostings: [],
+    jobApplications: [],
+    forumActivity: [],
+    reviews: []
   });
 
   const loadWalletData = async () => {
@@ -70,6 +109,23 @@ export const Dashboard = () => {
     if (!user?.id) return;
 
     try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/users/dashboard`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to load dashboard data');
+      }
+
+      const data = await response.json();
+      setRecentActivity(data.data.recentActivity);
+
       // Get active jobs count
       const jobsResponse = await fetch(
         `${import.meta.env.VITE_BACKEND_API_URL}/jobs/user/${user.id}/active`,
@@ -167,11 +223,50 @@ export const Dashboard = () => {
           <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
           {isLoading ? (
             <div className="text-center py-8">
-              <span className="text-gray-400">Loading transactions...</span>
+              <span className="text-gray-400">Loading activity...</span>
             </div>
           ) : (
-            <div className="text-gray-400 text-center py-8">
-              No recent transactions to show.
+            <div className="space-y-6">
+              {Object.entries(recentActivity).map(([category, items]) => (
+                items.length > 0 && (
+                  <div key={category} className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white capitalize">
+                      {category.replace(/([A-Z])/g, ' $1').trim()}
+                    </h3>
+                    <div className="space-y-2">
+                      {items.map((item: any) => (
+                        <div 
+                          key={item.id} 
+                          className="bg-gray-700 rounded-lg p-4 flex justify-between items-center"
+                        >
+                          <div>
+                            <div className="text-white">
+                              {item.title || item.name || `${category} Activity`}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              {new Date(item.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          {item.status && (
+                            <span className={`px-3 py-1 rounded-full text-sm ${
+                              item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                              item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-blue-500/20 text-blue-400'
+                            }`}>
+                              {item.status}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+              {Object.values(recentActivity).every(items => items.length === 0) && (
+                <div className="text-gray-400 text-center py-8">
+                  No recent activity to show.
+                </div>
+              )}
             </div>
           )}
         </div>

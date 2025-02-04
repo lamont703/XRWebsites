@@ -1,90 +1,183 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../store/auth/AuthContext';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import styles from '../styles/Login.module.css';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../store/auth/useAuth';
+import { useNavigate } from 'react-router-dom';
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface RegisterData extends LoginData {
+  name: string;
+  confirmPassword: string;
+}
 
 export const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
-  const from = location.state?.from?.pathname || '/dashboard';
-
-  const [formData, setFormData] = useState({
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState<RegisterData>({
+    name: '',
     email: '',
     password: '',
+    confirmPassword: ''
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(from, { replace: true });
+      navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(null);
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      // Navigation is handled in the AuthContext after successful login
+      if (isLogin) {
+        await login(formData.email, formData.password);
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password
+          })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || 'Registration failed');
+        }
+
+        await login(formData.email, formData.password);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className={styles.loginContainer}>
-      <div className={styles.formWrapper}>
-        <h1 className="text-2xl font-bold text-white mb-6">Welcome Back</h1>
-        
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-400">
+            Or{' '}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="font-medium text-blue-500 hover:text-blue-400"
+            >
+              {isLogin ? 'create a new account' : 'sign in to existing account'}
+            </button>
+          </p>
+        </div>
+
         {error && (
-          <div className="bg-red-500 text-white p-3 rounded mb-4">
-            {error}
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
+            <p className="text-red-500 text-sm">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {!isLogin && (
+            <div>
+              <label htmlFor="name" className="sr-only">
+                Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-2 border
+                  border-gray-700 bg-gray-800 text-white placeholder-gray-400
+                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+          )}
+
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-              Email
+            <label htmlFor="email" className="sr-only">
+              Email address
             </label>
             <input
               id="email"
+              name="email"
               type="email"
+              required
+              className="appearance-none rounded-lg relative block w-full px-3 py-2 border
+                border-gray-700 bg-gray-800 text-white placeholder-gray-400
+                focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Email address"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className={styles.input}
-              required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="password" className="sr-only">
               Password
             </label>
             <input
               id="password"
+              name="password"
               type="password"
+              required
+              className="appearance-none rounded-lg relative block w-full px-3 py-2 border
+                border-gray-700 bg-gray-800 text-white placeholder-gray-400
+                focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className={styles.input}
-              required
             />
           </div>
 
+          {!isLogin && (
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                className="appearance-none rounded-lg relative block w-full px-3 py-2 border
+                  border-gray-700 bg-gray-800 text-white placeholder-gray-400
+                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              />
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={isLoading}
-            className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent
+              text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            {isLoading ? <LoadingSpinner /> : 'Sign In'}
+            {isLogin ? 'Sign in' : 'Create account'}
           </button>
         </form>
       </div>

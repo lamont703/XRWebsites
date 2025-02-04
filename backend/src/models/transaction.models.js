@@ -1,4 +1,4 @@
-import { getContainer } from "../db/index.js";
+import { getContainer } from "../database.js";
 
 const Transaction = {
     async findByWalletId(walletId, options = {}) {

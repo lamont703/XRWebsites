@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 import styles from '../styles/Dashboard.module.css';
 import { useLocation } from 'react-router-dom';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';

@@ -4,7 +4,7 @@
  * This component provides the header for the application, including user profile and logout functionality.
  */ 
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../../../../store/auth/AuthContext';
+import { useAuth } from '@/store/auth/Auth';
 import { useNavigate } from 'react-router-dom';
 import styles from '../../../../../styles/Header.module.css'; 
 

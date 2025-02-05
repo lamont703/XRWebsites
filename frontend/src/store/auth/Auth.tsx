@@ -1,9 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
-import { User, AuthContextType } from './types';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  username?: string;
+  phone?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  walletId?: string;
+  rating?: number;
+  jobsPosted?: number;
+  createdAt?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshToken: () => Promise<void>;
+  updateUser: (userData: User) => void;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  fullName: string;
+  username: string;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +128,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const logout = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+
+      // Clear local storage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userEmail');
+
+      // Reset auth state
+      setUser(null);
+      setIsAuthenticated(false);
+
+      // Navigate to login
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if the server request fails, we should still clear local state
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userEmail');
+      setUser(null);
+      setIsAuthenticated(false);
+      navigate('/login');
+    }
+  };
+
   useEffect(() => {
     loadUserData();
   }, []);
@@ -106,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     updateUser,
     register: async () => {},
-    logout: async () => {},
+    logout,
     refreshToken: async () => {}
   };
 
@@ -115,4 +183,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const AuthGuard: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }; 

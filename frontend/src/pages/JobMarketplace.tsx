@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { JobDetails } from '@/components/features/jobs/JobDetails';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { JobApplication } from '@/components/features/jobs/JobApplication';
@@ -135,15 +135,14 @@ export const JobMarketplace = () => {
     }
   }, [isAuthenticated]);
 
-  const handleApplyJob = async (jobId: string, applicationData: JobApplication) => {
+  const handleApplyJob = async (jobId: string, applicationData: JobApplicationData) => {
     try {
-      if (!user?.id || !user?.walletId) {
-        throw new Error('Please complete your profile and add a wallet address before applying for jobs');
+      if (!user?.id) {
+        throw new Error('Please login to apply for jobs');
       }
 
       console.log('Submitting application with data:', {
         userId: user.id,
-        walletId: user.walletId,
         jobId,
         applicationData
       });
@@ -158,7 +157,6 @@ export const JobMarketplace = () => {
         body: JSON.stringify({
           applicant: {
             userId: user.id,
-            walletId: user.walletId,
             name: user.name || 'Anonymous',
           },
           application: {
@@ -175,16 +173,12 @@ export const JobMarketplace = () => {
       const data = await response.json();
       
       if (!response.ok) {
-        console.error('Application submission failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          data
-        });
         throw new Error(data.message || 'Failed to apply for job');
       }
 
-      console.log('Application submitted successfully:', data);
-      await loadJobs();
+      // Navigate to jobs dashboard after successful application
+      window.location.href = '/jobs';
+      
       return data;
     } catch (err) {
       console.error('Application error:', err);
@@ -237,7 +231,8 @@ export const JobMarketplace = () => {
     return (
       <JobCard 
         key={item.id}
-        job={item}
+        job={item as Job}
+        onClick={handleJobClick}
       />
     );
   };

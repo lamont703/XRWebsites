@@ -7,8 +7,8 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './store/auth/AuthProvider';
-import { AuthGuard } from './store/auth/AuthGuard';
+import { AuthProvider } from './store/auth/Auth';
+import { AuthGuard } from './store/auth/Auth';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
   ConnectionProvider,
@@ -32,6 +32,7 @@ import { TokenCreator } from './pages/TokenCreator';
 import { Settings } from './pages/Settings';
 import { JobMarketplace } from './pages/JobMarketplace';
 import { Tokenomics } from './pages/Tokenomics';
+import { Forum } from './pages/Forum';
 
 const queryClient = new QueryClient();
 
@@ -117,6 +118,14 @@ function App() {
                     element={
                       <AuthGuard>
                         <Tokenomics />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/forum"
+                    element={
+                      <AuthGuard>
+                        <Forum />
                       </AuthGuard>
                     }
                   />

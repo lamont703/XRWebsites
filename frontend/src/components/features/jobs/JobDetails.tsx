@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 import { JobApplication, JobApplicationData } from './JobApplication';
 
 interface Skill {
@@ -51,66 +51,22 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
   const handleApplyClick = async () => {
-    console.log('Auth state:', { 
-      isLoggedIn: !!user, 
-      userId: user?.id, 
-      walletId: user?.walletId,
-      token: localStorage.getItem('accessToken')
-    });
-    
     if (!user?.id) {
       setError('Please login to apply for jobs');
+      // Redirect to login page
+      window.location.href = '/login';
       return;
     }
 
-    if (!user?.walletId) {
-      setError('Please set up your wallet before applying');
-      try {
-        // First try to get existing wallet
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            'Content-Type': 'application/json',
-          }
-        });
-
-        if (response.ok) {
-          const { data } = await response.json();
-          // Update auth context with wallet ID
-          window.location.href = '/wallet';
-          return;
-        } else if (response.status === 404) {
-          // Only create new wallet if one doesn't exist
-          const createResponse = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-              'Content-Type': 'application/json',
-            }
-          });
-
-          if (!createResponse.ok) {
-            throw new Error('Failed to create wallet');
-          }
-          window.location.href = '/wallet';
-          return;
-        }
-      } catch (err) {
-        setError('Failed to setup wallet. Please try again.');
-        return;
-      }
-    }
-
+    // Show application form if user is logged in
     setShowApplicationForm(true);
   };
 
   const handleApplicationSubmit = async (applicationData: JobApplicationData) => {
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
     
     try {
-      console.log('Submitting application from JobDetails:', { id, applicationData });
       await onApply(id, applicationData);
       setShowApplicationForm(false);
       setSuccess('Application submitted successfully!');
@@ -119,8 +75,9 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
       setTimeout(() => {
         setSuccess(null);
       }, 10000);
+      
     } catch (err) {
-      console.error('Application submission error in JobDetails:', err);
+      console.error('Application submission error:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit application');
     } finally {
       setIsLoading(false);
@@ -163,7 +120,6 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
           jobTitle={title}
           onSubmit={handleApplicationSubmit}
           onCancel={() => setShowApplicationForm(false)}
-          isLoading={isLoading}
         />
       ) : (
         <div className="flex justify-between items-start mb-6">
@@ -244,7 +200,8 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
         <div className="mt-6">
           <button
             onClick={handleApplyClick}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 font-medium transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mt-4"
+            disabled={isLoading}
           >
             Apply Now
           </button>

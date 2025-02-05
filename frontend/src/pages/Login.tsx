@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../store/auth/useAuth';
+import { useAuth } from '../store/auth/Auth';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginData {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 
 interface ActiveJobsProps {
   onJobCancel?: (jobId: string) => Promise<void>;
@@ -28,6 +28,9 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
   const [applications, setApplications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedJob, setSelectedJob] = useState<string | null>(null);
+  const [jobApplications, setJobApplications] = useState<any[]>([]);
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +77,63 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
     }
   };
 
+  const loadJobApplications = async (jobId: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/jobs/${jobId}/applications`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Accept': 'application/json'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to load applications');
+      }
+      
+      const data = await response.json();
+      console.log('Loaded applications:', data); // Debug log
+      setJobApplications(data.data || []);
+    } catch (error) {
+      console.error('Error loading job applications:', error);
+      setError('Failed to load applications');
+    }
+  };
+
+  const handleJobClick = async (jobId: string) => {
+    setSelectedJob(jobId);
+    await loadJobApplications(jobId);
+    setShowApplicationsModal(true);
+  };
+
+  const handleApplicationResponse = async (applicationId: string, status: 'accepted' | 'rejected') => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API_URL}/jobs/applications/${applicationId}/status`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status })
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to update application status');
+
+      // Refresh applications list
+      if (selectedJob) {
+        await loadJobApplications(selectedJob);
+      }
+    } catch (error) {
+      console.error('Error updating application:', error);
+      setError('Failed to update application status');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="text-gray-400 text-center py-8">
@@ -108,7 +168,11 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
         ) : (
           <div className="space-y-4">
             {activeJobs.map((job) => (
-              <div key={job.id} className="bg-gray-700 rounded-lg p-4">
+              <div 
+                key={job.id} 
+                className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors"
+                onClick={() => handleJobClick(job.id)}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-lg font-semibold text-white">{job.title}</h3>
@@ -117,7 +181,10 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
                     </p>
                   </div>
                   <button
-                    onClick={() => handleCancelJob(job.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelJob(job.id);
+                    }}
                     className="text-red-400 hover:text-red-300 text-sm"
                   >
                     Cancel Job
@@ -168,6 +235,77 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
           </div>
         )}
       </div>
+
+      {/* Applications Modal */}
+      {showApplicationsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">Submitted Applications</h2>
+              <button
+                onClick={() => setShowApplicationsModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {jobApplications.length === 0 ? (
+              <p className="text-gray-400 text-center py-4">No applications yet</p>
+            ) : (
+              <div className="space-y-4">
+                {jobApplications.map((app) => (
+                  <div key={app.id} className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">
+                            {app.applicant.name || 'Anonymous'}
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            Submitted: {new Date(app.submittedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-sm ${
+                          app.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
+                          app.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
+                          'bg-red-500/20 text-red-500'
+                        }`}>
+                          {app.status}
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <p><span className="text-gray-400">Proposed Rate:</span> ${app.proposedRate}</p>
+                        <p><span className="text-gray-400">Estimated Duration:</span> {app.estimatedDuration} days</p>
+                        {app.coverLetter && (
+                          <p className="mt-2">{app.coverLetter}</p>
+                        )}
+                      </div>
+
+                      {app.status === 'pending' && (
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => handleApplicationResponse(app.id, 'accepted')}
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleApplicationResponse(app.id, 'rejected')}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="text-red-500 text-sm mt-4">

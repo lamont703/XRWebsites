@@ -1,7 +1,7 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import Job from '../models/job.models.js';
-import { getUserActiveJobs, deleteJob } from '../controllers/job.controller.js';
+import { getUserActiveJobs, deleteJob, updateApplicationStatus } from '../controllers/job.controller.js';
 import { verifyJWT } from '../middleware/auth.middleware.js';
 import { getContainer } from '../database.js';
 
@@ -113,6 +113,7 @@ router.get("/user/:userId/active", verifyJWT, getUserActiveJobs);
 
 router.delete('/:id', verifyJWT, deleteJob);
 
+// Get all applications for a user
 router.get('/applications/user', verifyJWT, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -128,6 +129,7 @@ router.get('/applications/user', verifyJWT, async (req, res) => {
     }
 });
 
+// Get all applications for a user
 router.get('/applications/user/:userId', verifyJWT, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -150,6 +152,7 @@ router.get('/applications/user/:userId', verifyJWT, async (req, res) => {
   }
 });
 
+// Cancel an application
 router.put('/applications/:applicationId/cancel', verifyJWT, async (req, res) => {
   try {
     const { applicationId } = req.params;
@@ -196,5 +199,48 @@ router.put('/applications/:applicationId/cancel', verifyJWT, async (req, res) =>
     res.status(500).json({ message: 'Error cancelling application' });
   }
 });
+
+// Get applications for a specific job
+router.get('/:jobId/applications', verifyJWT, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    
+    // First verify the job exists and user has permission to view applications
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+
+    // Check if user is the job poster
+    if (job.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view applications for this job'
+      });
+    }
+
+    // Get applications using our model method
+    const applications = await Job.findApplicationsByJobId(jobId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Applications retrieved successfully',
+      data: applications
+    });
+
+  } catch (error) {
+    console.error('Error fetching job applications:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching applications'
+    });
+  }
+});
+
+// Update application status (Accept/Decline)
+router.put('/applications/:applicationId/status', verifyJWT, updateApplicationStatus);
 
 export default router;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
 import styles from '../styles/Dashboard.module.css';
 import { FundWallet } from '@/components/features/wallet/FundWallet';

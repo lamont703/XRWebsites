@@ -26,66 +26,89 @@ const Job = {
         }
     },
 
-    async findJobById(id) {
+    async findById(id) {
         try {
             const container = await getContainer();
             const jobId = id.startsWith('job-') ? id : `job-${id}`;
-            // Trim any whitespace or newlines from the ID
             const cleanJobId = jobId.trim();
-            console.log("Normalized job ID:", cleanJobId);
             
             const querySpec = {
                 query: "SELECT * FROM c WHERE c.type = 'job_posting' AND c.id = @id",
                 parameters: [{ name: "@id", value: cleanJobId }]
             };
-            console.log("Query spec:", JSON.stringify(querySpec, null, 2));
-            
-            const { resources } = await container.items.query(querySpec).fetchAll();
-            console.log("Query results:", JSON.stringify(resources, null, 2));
-            
-            if (!resources || resources.length === 0) {
-                console.log("No job found with ID:", cleanJobId);
-                return null;
-            }
-            
-            console.log("Found job:", JSON.stringify(resources[0], null, 2));
+
+            const { resources } = await container.items
+                .query(querySpec, { partitionKey: 'job_posting' })
+                .fetchAll();
+
             return resources[0];
         } catch (error) {
-            console.error("Error in findJobById:", error);
+            console.error("Error in findById:", error);
             throw error;
         }
     },
 
     // Job Application Methods
-    async createApplication(applicationData) {
+    async createApplication(jobId, applicationData) {
         try {
             const container = await getContainer();
-            if (!applicationData.id) {
-                applicationData.id = `application-${Date.now()}`;
-            }
-            
-            applicationData.type = 'job_application';
-            applicationData.created_at = new Date();
-            applicationData.updated_at = new Date();
-            applicationData.status = applicationData.status || "pending";
+            const job = await this.findById(jobId);
 
-            const { resource } = await container.items.create(applicationData);
-            return resource;
+            if (!job) {
+                throw new Error('Job not found');
+            }
+
+            const application = {
+                id: `application-${Date.now()}`,
+                type: 'job_application',
+                job_id: jobId,
+                created_at: new Date(),
+                updated_at: new Date(),
+                status: 'pending',
+                ...applicationData,
+                applicant: {
+                    id: applicationData.userId,
+                    name: applicationData.name || 'Anonymous',
+                },
+                application: {
+                    coverLetter: applicationData.coverLetter,
+                    proposedRate: applicationData.proposedRate,
+                    estimatedDuration: applicationData.estimatedDuration,
+                    portfolioLinks: applicationData.portfolioLinks || [],
+                    submittedAt: new Date(),
+                }
+            };
+
+            // Create the application document
+            const { resource: createdApplication } = await container.items.create(application);
+
+            // Update the job's applications array
+            job.applications = job.applications || [];
+            job.applications.push(createdApplication.id);
+            job.updated_at = new Date();
+
+            // Update the job document
+            await container.item(jobId).replace(job);
+
+            return createdApplication;
         } catch (error) {
             console.error("Error in createApplication:", error);
             throw error;
         }
     },
 
-    async findApplicationsByJobId(jobId, options = {}) {
+    async findApplicationsByJobId(jobId) {
         try {
             const container = await getContainer();
             const querySpec = {
-                query: "SELECT * FROM c WHERE c.type = 'job_application' AND c.job_id = @jobId",
+                query: "SELECT * FROM c WHERE c.type = 'job_application' AND c.jobId = @jobId",
                 parameters: [{ name: "@jobId", value: jobId }]
             };
             
-            const { resources } = await container.items.query(querySpec).fetchAll();
+            const { resources } = await container.items
+                .query(querySpec, { partitionKey: 'job_application' })
+                .fetchAll();
+
             return resources;
         } catch (error) {
             console.error("Error in findApplicationsByJobId:", error);
@@ -171,7 +194,7 @@ const Job = {
     async update(id, updateData) {
         try {
             const container = await getContainer();
-            const job = await this.findJobById(id);
+            const job = await this.findById(id);
             
             if (!job) {
                 throw new ApiError(404, "Job not found");
@@ -194,7 +217,7 @@ const Job = {
     async delete(id) {
         try {
             const container = await getContainer();
-            const job = await this.findJobById(id);
+            const job = await this.findById(id);
             
             if (!job) {
                 throw new ApiError(404, "Job not found");
@@ -242,7 +265,7 @@ const Job = {
     async deleteJob(jobId) {
         try {
             const container = await getContainer();
-            const job = await this.findJobById(jobId);
+            const job = await this.findById(jobId);
             
             if (!job) {
                 throw new ApiError(404, "Job not found");
@@ -260,6 +283,36 @@ const Job = {
             return resource;
         } catch (error) {
             console.error("Error in deleteJob:", error);
+            throw error;
+        }
+    },
+
+    async updateApplicationStatus(applicationId, status) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.id = @applicationId AND c.type = 'job_application'",
+                parameters: [{ name: "@applicationId", value: applicationId }]
+            };
+            
+            const { resources } = await container.items
+                .query(querySpec, { partitionKey: 'job_application' })
+                .fetchAll();
+
+            const application = resources[0];
+            if (!application) {
+                throw new Error('Application not found');
+            }
+
+            application.status = status;
+            application.updated_at = new Date().toISOString();
+
+            const { resource: updatedApplication } = await container.item(applicationId, 'job_application')
+                .replace(application);
+            
+            return updatedApplication;
+        } catch (error) {
+            console.error("Error in updateApplicationStatus:", error);
             throw error;
         }
     }

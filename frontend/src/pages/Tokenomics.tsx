@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LineChart } from '@/components/charts/LineChart';
 import { BarChart } from '@/components/charts/BarChart';
+import { useAuth } from '@/store/auth/Auth';
 import styles from '../styles/Dashboard.module.css';
 
 interface TokenMetrics {

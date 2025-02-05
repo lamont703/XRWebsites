@@ -143,16 +143,48 @@ const applyForJob = asyncHandler(async (req, res) => {
 });
 
 const getJobApplications = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const job = await Job.findJobById(id);
+    const { jobId } = req.params;
     
-    if (!job) throw new ApiError(404, "Job not found");
-    if (job.business_id !== req.user.id && !req.user.isAdmin) {
-        throw new ApiError(403, "Unauthorized to view applications");
-    }
+    try {
+        const job = await Job.findById(jobId);
+        if (!job) {
+            throw new ApiError(404, "Job not found");
+        }
 
-    const applications = await Job.findApplicationsByJobId(id);
-    return res.status(200).json(new ApiResponse(200, "Applications retrieved successfully", applications));
+        if (job.userId !== req.user.id && !req.user.isAdmin) {
+            throw new ApiError(403, "Unauthorized to view applications");
+        }
+
+        const applications = await Job.findApplicationsByJobId(jobId);
+        const formattedApplications = applications.map(app => ({
+            id: app.id,
+            jobId: app.jobId,
+            applicant: {
+                userId: app.applicant.userId,
+                name: app.applicant.name
+            },
+            application: {
+                coverLetter: app.coverLetter,
+                proposedRate: app.proposedRate,
+                estimatedDuration: app.estimatedDuration,
+                portfolioLinks: app.portfolioLinks,
+                submittedAt: app.submittedAt,
+                status: app.status
+            },
+            createdAt: app.created_at,
+            updatedAt: app.updated_at
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: "Applications retrieved successfully",
+            data: formattedApplications
+        });
+
+    } catch (error) {
+        console.error("Error in getJobApplications:", error);
+        throw new ApiError(error.statusCode || 500, error.message || "Error fetching applications");
+    }
 });
 
 const createJobReview = asyncHandler(async (req, res) => {
@@ -197,6 +229,19 @@ const getUserActiveJobs = asyncHandler(async (req, res) => {
     );
 });
 
+const updateApplicationStatus = asyncHandler(async (req, res) => {
+    const { applicationId } = req.params;
+    const { status } = req.body;
+
+    // Validate status value
+    if (!['accepted', 'rejected', 'pending'].includes(status)) {
+        throw new ApiError(400, "Invalid status value");
+    }
+
+    const updatedApplication = await Job.updateApplicationStatus(applicationId, status);
+    return res.status(200).json(new ApiResponse(200, "Application status updated successfully", updatedApplication));
+});
+
 export {
     getAllJobs,
     createJob,
@@ -207,5 +252,6 @@ export {
     getJobApplications,
     createJobReview,
     getJobReviews,
-    getUserActiveJobs
+    getUserActiveJobs,
+    updateApplicationStatus
 }; 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 
 interface FeaturedNFTProps {
   nft: NFT;

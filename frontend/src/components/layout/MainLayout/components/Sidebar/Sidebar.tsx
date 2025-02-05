@@ -5,7 +5,7 @@
  */ 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/store/auth/useAuth';
+import { useAuth } from '@/store/auth/Auth';
 import styles from '../../../../../styles/Sidebar.module.css';
 
 interface SidebarProps {
@@ -33,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
     { name: 'My Jobs', path: '/jobs', icon: 'briefcase' },
     { name: 'Marketplace', path: '/marketplace', icon: 'shopping-cart' },
     { name: 'Settings', path: '/settings', icon: 'cog' },
+    { name: 'Forum', path: '/forum', icon: 'chat' },
   ];
 
   const sidebarClasses = `

@@ -5,7 +5,7 @@
  * It also handles user authentication and provides a logout function.
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/store/auth/AuthContext';
+import { useAuth } from '@/store/auth/Auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from '../Sidebar/Sidebar';
 

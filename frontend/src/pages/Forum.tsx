@@ -16,6 +16,7 @@ interface ForumPost {
   author: {
     id: string;
     name: string;
+    username: string;
     avatar?: string;
   };
   category: 'development' | 'business' | 'networking' | 'tutorials' | 'general';
@@ -29,6 +30,7 @@ interface ForumPost {
 
 export const Forum = () => {
   const { user } = useAuth();
+  console.log('Auth context user data:', user);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState<'latest' | 'popular' | 'unanswered'>('latest');
@@ -96,7 +98,19 @@ export const Forum = () => {
 
   const handleCreatePost = async (postData) => {
     try {
-      await createPostMutation.mutateAsync(postData);
+      console.log('Creating post with user data:', user);
+      console.log('Post data before sending:', postData);
+      const postWithAuthor = {
+        ...postData,
+        author: {
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          avatar: user.avatar
+        }
+      };
+      console.log('Final post data:', postWithAuthor);
+      await createPostMutation.mutateAsync(postWithAuthor);
     } catch (error) {
       console.error('Failed to create post:', error);
     }

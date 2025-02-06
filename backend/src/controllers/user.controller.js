@@ -15,16 +15,21 @@ import Review from "../models/review.models.js";
 //import getContainer from "../database.js";
 
 // Generate access and refresh tokens for user authentication.
-const generateTokens = (userId) => {
+const generateTokens = (user) => {
     try {
         const accessToken = jwt.sign(
-            { id: userId },
+            {
+                id: user.id,
+                name: user.fullName,
+                username: user.username,
+                avatar: user.avatar
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY }
         );
 
         const refreshToken = jwt.sign(
-            { id: userId },
+            { id: user.id },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRY }
         );
@@ -138,7 +143,7 @@ const registerUser = asyncHandler(async (req, res) => {
             }
 
             // Generate tokens
-            const { accessToken, refreshToken } = generateTokens(createdUser.id);
+            const { accessToken, refreshToken } = generateTokens(createdUser);
 
             // Update user with refresh token
             await User.updateRefreshToken(createdUser.id, refreshToken);
@@ -243,7 +248,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Generate access and refresh tokens for the user.
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    const { accessToken, refreshToken } = generateTokens(user);
 
     // Update the user's refresh token in the database.
     await User.updateRefreshToken(user.id, refreshToken);
@@ -306,6 +311,8 @@ const getUserDashboard = asyncHandler(async (req, res) => {
             createdAt: user.createdAt,
             username: user.username
         };
+
+        console.log('User info being sent:', userInfo);
 
         // Get recent activities using Cosmos DB compatible queries
         const [assetsResult, jobs, applications, forumPosts, reviews] = await Promise.all([

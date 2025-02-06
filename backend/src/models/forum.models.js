@@ -5,6 +5,7 @@ const Forum = {
     // Post Methods
     async createPost(postData) {
         try {
+            console.log('Creating post with data:', postData);
             const container = await getContainer();
             const post = {
                 id: `post_${Date.now()}`,
@@ -13,7 +14,12 @@ const Forum = {
                 content: postData.content,
                 category: postData.category,
                 tags: postData.tags || [],
-                author: postData.author,
+                author: {
+                    id: postData.author.id,
+                    name: postData.author.name,
+                    username: postData.author.username,
+                    avatar: postData.author.avatar
+                },
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 likes: 0,
@@ -21,8 +27,10 @@ const Forum = {
                 likedBy: [],
                 isStickied: false
             };
+            console.log('Formatted post data:', post);
 
             const { resource } = await container.items.create(post);
+            console.log('Created resource:', resource);
             return resource;
         } catch (error) {
             console.error("Error in createPost:", error);

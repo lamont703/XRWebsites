@@ -33,6 +33,7 @@ import { Settings } from './pages/Settings';
 import { JobMarketplace } from './pages/JobMarketplace';
 import { Tokenomics } from './pages/Tokenomics';
 import { Forum } from './pages/Forum';
+import { PostDetail } from './pages/PostDetail';
 
 const queryClient = new QueryClient();
 
@@ -121,14 +122,24 @@ function App() {
                       </AuthGuard>
                     }
                   />
-                  <Route
-                    path="/forum"
-                    element={
-                      <AuthGuard>
-                        <Forum />
-                      </AuthGuard>
-                    }
-                  />
+                  <Route path="/forum">
+                    <Route
+                      index
+                      element={
+                        <AuthGuard>
+                          <Forum />
+                        </AuthGuard>
+                      }
+                    />
+                    <Route
+                      path="posts/:id"
+                      element={
+                        <AuthGuard>
+                          <PostDetail />
+                        </AuthGuard>
+                      }
+                    />
+                  </Route>
 
                   {/* Redirect root to dashboard */}
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />

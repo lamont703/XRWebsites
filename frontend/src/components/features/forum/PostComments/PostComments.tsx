@@ -7,10 +7,12 @@ interface Comment {
   author: {
     id: string;
     name: string;
+    username: string;
     avatar?: string;
   };
   createdAt: string;
   likes: number;
+  likedBy: string[];
   replies: Comment[];
 }
 
@@ -18,12 +20,14 @@ interface PostCommentsProps {
   comments: Comment[];
   onAddComment: (content: string, parentId?: string) => Promise<void>;
   onLikeComment: (commentId: string) => Promise<void>;
+  isLiking?: { [key: string]: boolean }; // Add this
 }
 
 export const PostComments: React.FC<PostCommentsProps> = ({
-  comments,
+  comments = [],
   onAddComment,
   onLikeComment,
+  isLiking = {}
 }) => {
   const { user } = useAuth();
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -38,72 +42,93 @@ export const PostComments: React.FC<PostCommentsProps> = ({
     }
   };
 
-  const renderComment = (comment: Comment, depth = 0) => (
-    <div
-      key={comment.id}
-      className={`${depth > 0 ? 'ml-8 border-l border-gray-700' : ''} py-4`}
-    >
-      <div className="flex gap-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-          {comment.author.avatar ? (
-            <img src={comment.author.avatar} alt={comment.author.name} className="w-full h-full rounded-full" />
-          ) : (
-            <span className="text-white font-bold">{comment.author.name.charAt(0)}</span>
-          )}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-white">{comment.author.name}</span>
-            <span className="text-sm text-gray-400">
-              {new Date(comment.createdAt).toLocaleDateString()}
-            </span>
-          </div>
-          <p className="text-gray-300 mb-2">{comment.content}</p>
-          <div className="flex items-center gap-4 text-sm">
-            <button
-              onClick={() => onLikeComment(comment.id)}
-              className="text-gray-400 hover:text-blue-400"
-            >
-              👍 {comment.likes}
-            </button>
-            <button
-              onClick={() => setReplyTo(comment.id)}
-              className="text-gray-400 hover:text-blue-400"
-            >
-              Reply
-            </button>
-          </div>
-          {replyTo === comment.id && (
-            <form onSubmit={(e) => handleSubmit(e, comment.id)} className="mt-4">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Write a reply..."
-                rows={3}
+  const renderComment = (comment: Comment, depth = 0) => {
+    if (!comment) return null;
+
+    return (
+      <div
+        key={comment.id}
+        className={`${depth > 0 ? 'ml-8 border-l border-gray-700' : ''} py-4`}
+      >
+        <div className="flex gap-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            {comment.author?.avatar ? (
+              <img 
+                src={comment.author.avatar} 
+                alt={comment.author?.name || 'User'} 
+                className="w-full h-full rounded-full" 
               />
-              <div className="flex justify-end gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setReplyTo(null)}
-                  className="px-3 py-1 text-gray-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Reply
-                </button>
-              </div>
-            </form>
-          )}
-          {comment.replies?.map((reply) => renderComment(reply, depth + 1))}
+            ) : (
+              <span className="text-white font-bold">
+                {comment.author?.name ? comment.author.name.charAt(0) : '?'}
+              </span>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium text-white">
+                {comment.author?.name || comment.author?.username || 'Anonymous'}
+              </span>
+              {comment.author?.username && (
+                <span className="text-sm text-gray-400">
+                  @{comment.author.username}
+                </span>
+              )}
+            </div>
+            <p className="text-gray-300 mb-2">{comment.content}</p>
+            <div className="flex items-center gap-4 text-sm">
+              <button
+                onClick={() => onLikeComment(comment.id)}
+                disabled={isLiking?.[comment.id]}
+                className={`flex items-center gap-1 ${
+                  isLiking?.[comment.id]
+                    ? 'opacity-50 cursor-not-allowed'
+                    : comment.likedBy?.includes(user?.id)
+                    ? 'text-blue-400'
+                    : 'text-gray-400 hover:text-blue-400'
+                }`}
+              >
+                {isLiking?.[comment.id] ? '⏳' : '👍'} {comment.likes || 0}
+              </button>
+              <button
+                onClick={() => setReplyTo(comment.id)}
+                className="text-gray-400 hover:text-blue-400"
+              >
+                Reply
+              </button>
+            </div>
+            {replyTo === comment.id && (
+              <form onSubmit={(e) => handleSubmit(e, comment.id)} className="mt-4">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Write a reply..."
+                  rows={3}
+                />
+                <div className="flex justify-end gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setReplyTo(null)}
+                    className="px-3 py-1 text-gray-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Reply
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
+        {comment.replies?.map((reply) => renderComment(reply, depth + 1))}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4">

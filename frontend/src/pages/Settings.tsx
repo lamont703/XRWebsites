@@ -46,6 +46,8 @@ export const Settings = () => {
       }
 
       const data = await response.json();
+
+      console.log('Profile data from API:', data);
       
       // Create profile with all user data
       const fullProfile = {

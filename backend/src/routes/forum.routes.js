@@ -6,7 +6,8 @@ import {
     getPostById,
     togglePostLike,
     createComment,
-    getCategories
+    getCategories,
+    toggleCommentLike
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -17,5 +18,6 @@ router.get('/posts/:id', verifyJWT, getPostById);
 router.post('/posts/:id/like', verifyJWT, togglePostLike);
 router.post('/posts/:id/comments', verifyJWT, createComment);
 router.get('/categories', verifyJWT, getCategories);
+router.post('/comments/:id/like', verifyJWT, toggleCommentLike);
 
 export default router; 

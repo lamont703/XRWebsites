@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import ApiError from '../utils/ApiError.js';
+import { getContainer } from '../database.js';
 
 export const verifyJWT = async (req, res, next) => {
     try {
@@ -10,7 +11,29 @@ export const verifyJWT = async (req, res, next) => {
         }
     
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decodedToken;
+        
+        // Get full user data from database
+        const container = await getContainer();
+        const querySpec = {
+            query: "SELECT * FROM c WHERE c.type = 'user' AND c.id = @id",
+            parameters: [{ name: '@id', value: decodedToken.id }]
+        };
+        
+        const { resources } = await container.items.query(querySpec).fetchAll();
+        const userData = resources[0];
+
+        if (!userData) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Combine token data with database user data
+        req.user = {
+            ...decodedToken,
+            name: userData.fullName,
+            username: userData.username,
+            avatar: userData.avatar
+        };
+
         next();
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid access token");

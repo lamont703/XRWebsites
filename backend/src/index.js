@@ -8,8 +8,8 @@ import connectDB from './database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load env variables with explicit path for local development.
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load env variables
+dotenv.config();
 
 // Add this check before starting the server to ensure all required environment variables are set.
 const requiredEnvVars = [
@@ -41,13 +41,14 @@ app.use((req, res, next) => {
 const startServer = async () => {
     try {
         await connectDB();
-        // Azure App Service sets process.env.PORT to 8080
-        const port = process.env.PORT || 3000;
-        app.listen(port, () => {
+        // Azure App Service expects port 8080
+        const port = process.env.PORT || 8080;
+        
+        app.listen(port, '0.0.0.0', () => {
             console.log(`Server is running on port ${port}`);
-            // Log all environment variables for debugging (excluding sensitive values)
-            console.log('Environment variables available:', 
-                Object.keys(process.env).filter(key => !key.includes('KEY') && !key.includes('SECRET')));
+            console.log('Environment:', process.env.NODE_ENV);
+            console.log('Available env vars:', Object.keys(process.env)
+                .filter(key => !key.includes('KEY') && !key.includes('SECRET')));
         });
     } catch (error) {
         console.error('Error starting server:', error);

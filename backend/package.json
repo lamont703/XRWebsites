@@ -6,10 +6,11 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js",
+    "start": "node src/startup.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "create-admin": "node src/scripts/createSuperAdmin.js",
-    "build": "npm install"
+    "build": "npm install",
+    "test-connections": "node src/startup.js"
   },
   "keywords": [
     "nodejs",

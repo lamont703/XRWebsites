@@ -47,7 +47,11 @@ const connectDB = async () => {
         console.log(`Connected to ${process.env.COSMOS_DB_NAME} and ${containerConfig.id}`);
         return client;
     } catch (error) {
-        console.error("Database connection error:", error);
+        console.error("Database connection error details:", {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
         process.exit(1);
     }
 };

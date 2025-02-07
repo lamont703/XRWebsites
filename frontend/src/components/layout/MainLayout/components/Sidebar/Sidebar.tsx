@@ -32,8 +32,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
     { name: 'Tokenomics', path: '/tokenomics', icon: 'plus-circle' },
     { name: 'My Jobs', path: '/jobs', icon: 'briefcase' },
     { name: 'Marketplace', path: '/marketplace', icon: 'shopping-cart' },
-    { name: 'Settings', path: '/settings', icon: 'cog' },
     { name: 'Forum', path: '/forum', icon: 'chat' },
+    { name: 'Settings', path: '/settings', icon: 'cog' },
+    
   ];
 
   const sidebarClasses = `

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PostComments } from '@/components/features/forum/PostComments/PostComments';
 import { useAuth } from '@/store/auth/Auth';
+import { toast } from 'react-hot-toast';
 
 interface Author {
   id: string;
@@ -33,9 +34,11 @@ interface Comment {
   likes: number;
   likedBy: string[];
   replies: Comment[];
+  status?: string;
 }
 
 export const PostDetail = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -45,6 +48,7 @@ export const PostDetail = () => {
   const { data: postData, isLoading, error } = useQuery({
     queryKey: ['forum-post', id],
     queryFn: async () => {
+      console.log('Fetching post data...');
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/posts/${id}`, {
           headers: {
@@ -58,7 +62,10 @@ export const PostDetail = () => {
           throw new Error(errorData.message || 'Failed to fetch post');
         }
         
-        return response.json();
+        const data = await response.json();
+        console.log('Raw post response:', data);
+        console.log('Comments in response:', data?.data?.comments);
+        return data;
       } catch (error) {
         console.error('Error fetching post:', error);
         throw error;
@@ -93,21 +100,78 @@ export const PostDetail = () => {
   // Like comment mutation
   const likeCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
+      try {
+        console.log('Starting like mutation for comment:', commentId);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/forum/comments/${commentId}/like`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        if (response.status === 401) {
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+          throw new Error('Session expired. Please login again.');
+        }
+
+        const data = await response.json();
+        console.log('Like comment response:', data);
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to like comment');
+        }
+        return data;
+      } catch (error) {
+        console.error('Like comment error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log('Like comment mutation succeeded:', data);
+      queryClient.invalidateQueries({ queryKey: ['forum-post', id] });
+    },
+    onError: (error) => {
+      console.error('Like comment mutation error:', error);
+      toast.error(error.message || 'Failed to like comment');
+    }
+  });
+
+  // Add delete comment mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      console.log('Starting delete mutation for comment:', commentId);
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_API_URL}/forum/comments/${commentId}/like`,
+        `${import.meta.env.VITE_BACKEND_API_URL}/forum/comments/${commentId}`,
         {
-          method: 'POST',
+          method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            'Accept': 'application/json'
           }
         }
       );
-      if (!response.ok) throw new Error('Failed to like comment');
-      return response.json();
+
+      if (!response.ok) {
+        console.error('Delete response not OK:', await response.text());
+        throw new Error('Failed to delete comment');
+      }
+      const data = await response.json();
+      console.log('Delete response:', data);
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Delete mutation success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['forum-post', id] });
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
+      toast.success('Comment deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Delete comment error:', error);
+      toast.error('Failed to delete comment');
     }
   });
 
@@ -129,6 +193,29 @@ export const PostDetail = () => {
       setLikingStates(prev => ({ ...prev, [commentId]: false }));
     }
   };
+
+  // Add handleDeleteComment function
+  const handleDeleteComment = async (commentId: string) => {
+    console.log('HandleDeleteComment called with:', commentId);
+    try {
+      await deleteCommentMutation.mutateAsync(commentId);
+      console.log('Delete mutation completed successfully');
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+    }
+  };
+
+  useEffect(() => {
+    console.log('Post data updated:', {
+      comments: postData?.data?.comments?.map(c => ({
+        id: c.id,
+        status: c.status,
+        content: c.content
+      })),
+      commentCount: postData?.data?.comments?.length,
+      rawData: postData?.data
+    });
+  }, [postData]);
 
   if (isLoading) {
     return (
@@ -155,6 +242,25 @@ export const PostDetail = () => {
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
+        <button
+          onClick={() => navigate('/forum')}
+          className="mb-6 flex items-center gap-2 text-blue-400 hover:text-blue-500"
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-5 w-5" 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          Back to Forum
+        </button>
+
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -188,6 +294,7 @@ export const PostDetail = () => {
               comments={post.comments || []}
               onAddComment={handleAddComment}
               onLikeComment={handleLikeComment}
+              onDeleteComment={handleDeleteComment}
               isLiking={likingStates}
             />
           </div>

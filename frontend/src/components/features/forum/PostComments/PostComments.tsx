@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/auth/Auth';
+import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
 
 interface Comment {
   id: string;
@@ -14,12 +15,14 @@ interface Comment {
   likes: number;
   likedBy: string[];
   replies: Comment[];
+  status?: string;
 }
 
 interface PostCommentsProps {
   comments: Comment[];
   onAddComment: (content: string, parentId?: string) => Promise<void>;
   onLikeComment: (commentId: string) => Promise<void>;
+  onDeleteComment: (commentId: string) => Promise<void>;
   isLiking?: { [key: string]: boolean }; // Add this
 }
 
@@ -27,11 +30,16 @@ export const PostComments: React.FC<PostCommentsProps> = ({
   comments = [],
   onAddComment,
   onLikeComment,
+  onDeleteComment,
   isLiking = {}
 }) => {
   const { user } = useAuth();
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<string | null>(null);
+
+  // Filter out deleted comments
+  const activeComments = comments.filter(comment => comment.status !== 'deleted');
 
   const handleSubmit = async (e: React.FormEvent, parentId?: string) => {
     e.preventDefault();
@@ -43,7 +51,8 @@ export const PostComments: React.FC<PostCommentsProps> = ({
   };
 
   const renderComment = (comment: Comment, depth = 0) => {
-    if (!comment) return null;
+    if (!comment || comment.status === 'deleted') return null;
+    const isAuthor = user?.id === comment.author.id;
 
     return (
       <div
@@ -123,9 +132,30 @@ export const PostComments: React.FC<PostCommentsProps> = ({
                 </div>
               </form>
             )}
+            {isAuthor && (
+              <button
+                onClick={() => setIsDeleteModalOpen(comment.id)}
+                className="text-red-400 hover:text-red-500"
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
-        {comment.replies?.map((reply) => renderComment(reply, depth + 1))}
+        {comment.replies
+          ?.filter(reply => reply.status !== 'deleted')
+          ?.map((reply) => renderComment(reply, depth + 1))}
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen === comment.id}
+          onClose={() => setIsDeleteModalOpen(null)}
+          onConfirm={() => {
+            console.log('Delete triggered for comment:', comment.id);
+            onDeleteComment(comment.id);
+            setIsDeleteModalOpen(null);
+          }}
+          title="Delete Comment"
+          message="Are you sure you want to delete this comment? This action cannot be undone."
+        />
       </div>
     );
   };
@@ -150,7 +180,7 @@ export const PostComments: React.FC<PostCommentsProps> = ({
         </div>
       </form>
       <div className="divide-y divide-gray-700">
-        {comments.map((comment) => renderComment(comment))}
+        {activeComments.map((comment) => renderComment(comment))}
       </div>
     </div>
   );

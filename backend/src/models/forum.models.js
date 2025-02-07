@@ -5,36 +5,26 @@ const Forum = {
     // Post Methods
     async createPost(postData) {
         try {
-            console.log('Creating post with data:', postData);
             const container = await getContainer();
             const post = {
                 id: `post_${Date.now()}`,
                 type: 'forum_post',
                 title: postData.title,
                 content: postData.content,
+                author: postData.author,
                 category: postData.category,
-                tags: postData.tags || [],
-                author: {
-                    id: postData.author.id,
-                    name: postData.author.name,
-                    username: postData.author.username,
-                    avatar: postData.author.avatar
-                },
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 likes: 0,
-                replies: 0,
                 likedBy: [],
-                isStickied: false
+                replies: 0
             };
-            console.log('Formatted post data:', post);
 
             const { resource } = await container.items.create(post);
-            console.log('Created resource:', resource);
             return resource;
         } catch (error) {
             console.error("Error in createPost:", error);
-            throw new ApiError(500, "Failed to create forum post");
+            throw new ApiError(500, "Failed to create post");
         }
     },
 
@@ -42,7 +32,7 @@ const Forum = {
         try {
             const container = await getContainer();
             let querySpec = {
-                query: "SELECT * FROM c WHERE c.type = 'forum_post'",
+                query: "SELECT * FROM c WHERE c.type = 'forum_post' AND (NOT IS_DEFINED(c.status) OR c.status != 'deleted')",
                 parameters: []
             };
 
@@ -84,6 +74,7 @@ const Forum = {
                 content: commentData.content,
                 author: commentData.author,
                 createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
                 likes: 0,
                 likedBy: []
             };
@@ -93,6 +84,65 @@ const Forum = {
         } catch (error) {
             console.error("Error in createComment:", error);
             throw new ApiError(500, "Failed to create comment");
+        }
+    },
+
+    async toggleLike(itemId, userId) {
+        try {
+            console.log('Starting toggleLike for:', { itemId, userId });
+            const container = await getContainer();
+            
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.id = @id",
+                parameters: [{ name: '@id', value: itemId }]
+            };
+            
+            console.log('Executing query:', querySpec);
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            console.log('Query results:', resources);
+            
+            const item = resources[0];
+            if (!item) {
+                console.error('Item not found:', itemId);
+                throw new ApiError(404, "Item not found");
+            }
+
+            console.log('Current item state:', {
+                likes: item.likes,
+                likedBy: item.likedBy,
+                type: item.type
+            });
+
+            if (!item.likedBy) item.likedBy = [];
+            if (!item.likes) item.likes = 0;
+
+            const userLikeIndex = item.likedBy.indexOf(userId);
+            const isLiking = userLikeIndex === -1;
+            
+            if (isLiking) {
+                item.likedBy.push(userId);
+                item.likes += 1;
+            } else {
+                item.likedBy.splice(userLikeIndex, 1);
+                item.likes -= 1;
+            }
+
+            console.log('Updated item state:', {
+                likes: item.likes,
+                likedBy: item.likedBy
+            });
+
+            item.updatedAt = new Date().toISOString();
+            const { resource: updatedItem } = await container.items.upsert(item);
+            console.log('Upsert result:', updatedItem);
+            
+            return {
+                likes: updatedItem.likes,
+                liked: isLiking
+            };
+        } catch (error) {
+            console.error("Error in toggleLike:", error);
+            throw new ApiError(500, "Failed to update like status");
         }
     },
 
@@ -135,6 +185,73 @@ const Forum = {
         } catch (error) {
             console.error("Error in updateCategoryStats:", error);
             throw new ApiError(500, "Failed to update category stats");
+        }
+    },
+
+    async softDeletePost(postId, userId) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.type = 'forum_post' AND c.id = @id",
+                parameters: [{ name: '@id', value: postId }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            const post = resources[0];
+
+            if (!post) {
+                throw new ApiError(404, "Post not found");
+            }
+
+            if (post.author.id !== userId) {
+                throw new ApiError(403, "Unauthorized to delete this post");
+            }
+
+            const updatedPost = {
+                ...post,
+                status: 'deleted',
+                deletedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            const { resource } = await container.items.upsert(updatedPost);
+            return resource;
+        } catch (error) {
+            console.error("Error in softDeletePost:", error);
+            throw new ApiError(500, "Failed to delete post");
+        }
+    },
+
+    async softDeleteComment(commentId, userId) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.type = 'forum_comment' AND c.id = @id",
+                parameters: [{ name: '@id', value: commentId }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            const comment = resources[0];
+
+            if (!comment) {
+                throw new ApiError(404, "Comment not found");
+            }
+
+            if (comment.author.id !== userId) {
+                throw new ApiError(403, "Unauthorized to delete this comment");
+            }
+
+            const updatedComment = {
+                ...comment,
+                status: 'deleted',
+                deletedAt: new Date().toISOString()
+            };
+
+            const { resource } = await container.items.upsert(updatedComment);
+            return resource;
+        } catch (error) {
+            console.error("Error in softDeleteComment:", error);
+            throw new ApiError(500, "Failed to delete comment");
         }
     }
 };

@@ -88,19 +88,23 @@ const getPostById = asyncHandler(async (req, res) => {
 
         // First pass: create map of all comments
         allComments.forEach(comment => {
-            comment.replies = [];
-            commentMap.set(comment.id, comment);
+            if (comment.status !== 'deleted') {  // Only add non-deleted comments
+                comment.replies = [];
+                commentMap.set(comment.id, comment);
+            }
         });
 
         // Second pass: organize into tree structure
         allComments.forEach(comment => {
-            if (comment.parentId && commentMap.has(comment.parentId)) {
-                // This is a reply - add it to parent's replies
-                const parentComment = commentMap.get(comment.parentId);
-                parentComment.replies.push(comment);
-            } else {
-                // This is a top-level comment
-                topLevelComments.push(comment);
+            if (comment.status !== 'deleted') {  // Only process non-deleted comments
+                if (comment.parentId && commentMap.has(comment.parentId)) {
+                    // This is a reply - add it to parent's replies
+                    const parentComment = commentMap.get(comment.parentId);
+                    parentComment.replies.push(comment);
+                } else {
+                    // This is a top-level comment
+                    topLevelComments.push(comment);
+                }
             }
         });
 
@@ -120,30 +124,10 @@ const getPostById = asyncHandler(async (req, res) => {
 
 const togglePostLike = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const container = await getContainer();
-    const { resource: post } = await container.item(id).read();
-
-    if (!post) {
-        throw new ApiError(404, "Post not found");
-    }
-
-    const userLikeIndex = post.likedBy?.indexOf(req.user.id) ?? -1;
-    if (userLikeIndex === -1) {
-        post.likedBy = [...(post.likedBy || []), req.user.id];
-        post.likes += 1;
-    } else {
-        post.likedBy.splice(userLikeIndex, 1);
-        post.likes -= 1;
-    }
-
-    post.updatedAt = new Date().toISOString();
-    await container.item(id).replace(post);
-
+    const result = await Forum.toggleLike(id, req.user.id);
+    
     return res.status(200).json(
-        new ApiResponse(200, "Post like updated successfully", {
-            likes: post.likes,
-            liked: userLikeIndex === -1
-        })
+        new ApiResponse(200, "Post like updated successfully", result)
     );
 });
 
@@ -197,29 +181,10 @@ const createComment = asyncHandler(async (req, res) => {
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const container = await getContainer();
-    const { resource: comment } = await container.item(id).read();
-
-    if (!comment || comment.type !== 'forum_comment') {
-        throw new ApiError(404, "Comment not found");
-    }
-
-    const userLikeIndex = comment.likedBy?.indexOf(req.user.id) ?? -1;
-    if (userLikeIndex === -1) {
-        comment.likedBy = [...(comment.likedBy || []), req.user.id];
-        comment.likes += 1;
-    } else {
-        comment.likedBy.splice(userLikeIndex, 1);
-        comment.likes -= 1;
-    }
-
-    await container.item(id).replace(comment);
-
+    const result = await Forum.toggleLike(id, req.user.id);
+    
     return res.status(200).json(
-        new ApiResponse(200, "Comment like updated successfully", {
-            likes: comment.likes,
-            liked: userLikeIndex === -1
-        })
+        new ApiResponse(200, "Comment like updated successfully", result)
     );
 });
 
@@ -230,6 +195,33 @@ const getCategories = asyncHandler(async (req, res) => {
     );
 });
 
+const deletePost = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await Forum.softDeletePost(id, req.user.id);
+    
+    return res.status(200).json(
+        new ApiResponse(200, "Post deleted successfully")
+    );
+});
+
+const deleteComment = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await Forum.softDeleteComment(id, req.user.id);
+    
+    return res.status(200).json(
+        new ApiResponse(200, "Comment deleted successfully")
+    );
+});
+
+const toggleLike = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const result = await Forum.toggleLike(id, req.user.id);
+    
+    return res.status(200).json(
+        new ApiResponse(200, "Like status updated successfully", result)
+    );
+});
+
 export {
     getPosts,
     createPost,
@@ -237,5 +229,8 @@ export {
     togglePostLike,
     createComment,
     toggleCommentLike,
-    getCategories
+    getCategories,
+    deletePost,
+    deleteComment,
+    toggleLike
 };

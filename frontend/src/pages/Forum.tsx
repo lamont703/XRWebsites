@@ -8,6 +8,7 @@ import { ForumSidebar } from '@/components/features/forum/ForumSidebar/ForumSide
 import { CreatePostForm } from '@/components/features/forum/CreatePostForm/CreatePostForm';
 import { Dialog } from '@headlessui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 interface ForumPost {
   id: string;
@@ -96,6 +97,81 @@ export const Forum = () => {
     }
   });
 
+  const deletePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete post');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
+    }
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to delete comment');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
+    }
+  });
+
+  // Add like post mutation
+  const likePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API_URL}/forum/posts/${postId}/like`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        if (response.status === 401) {
+          // Token expired, redirect to login
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+          throw new Error('Session expired. Please login again.');
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to like post');
+        }
+        return data;
+      } catch (error) {
+        console.error('Like error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
+    },
+    onError: (error) => {
+      console.error('Like mutation error:', error);
+      toast.error(error.message || 'Failed to like post');
+    }
+  });
+
   const handleCreatePost = async (postData) => {
     try {
       console.log('Creating post with user data:', user);
@@ -143,14 +219,32 @@ export const Forum = () => {
             <div className="lg:col-span-2">
               <div className="space-y-4">
                 {postsData?.data?.posts?.map((post: ForumPost) => (
-                <ForumPost key={post.id} {...post} onLike={() => {}} />
+                  <ForumPost 
+                    key={post.id} 
+                    {...post} 
+                    onLike={async (postId) => {
+                      try {
+                        await likePostMutation.mutateAsync(postId);
+                      } catch (error) {
+                        // Error handling is now in the mutation
+                      }
+                    }}
+                    isLiking={likePostMutation.isPending}
+                    onDelete={async (postId) => {
+                      try {
+                        await deletePostMutation.mutateAsync(postId);
+                        toast.success('Post deleted successfully');
+                      } catch (error) {
+                        console.error('Failed to delete post:', error);
+                        toast.error('Failed to delete post');
+                      }
+                    }}
+                  />
                 ))}
               </div>
             </div>
             <ForumSidebar
-            popularTopics={postsData?.data?.posts?.slice(0, 5) || []}
-            activeUsers={[]}
-            recentActivity={[]}
+              popularTopics={postsData?.data?.posts?.slice(0, 5) || []}
             />
           </div>
         )}

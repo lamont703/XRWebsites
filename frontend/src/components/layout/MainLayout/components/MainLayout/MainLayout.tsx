@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/store/auth/Auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from '../Sidebar/Sidebar';
+import { Toaster } from 'react-hot-toast';
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 1024);
@@ -34,6 +35,31 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
 
   return (
     <div className="min-h-screen flex bg-gray-900">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          className: '',
+          style: {
+            background: '#374151',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+
       {/* Mobile Header with Hamburger */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-800 z-40 px-4 flex items-center justify-between">
         <div className="text-xl font-bold text-blue-400">XRWebsites.io</div>

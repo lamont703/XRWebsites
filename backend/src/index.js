@@ -37,28 +37,24 @@ app.use((req, res, next) => {
     next();
 });
 
-// Start the server and connect to the database.
-const startServer = async () => {
-    try {
-        await connectDB();
-        // Azure App Service expects port 8080
-        const port = process.env.PORT || 8080;
-        
-        app.listen(port, '0.0.0.0', () => {
-            console.log(`Server is running on port ${port}`);
-            console.log('Environment:', process.env.NODE_ENV);
-            console.log('Available env vars:', Object.keys(process.env)
-                .filter(key => !key.includes('KEY') && !key.includes('SECRET')));
-        });
-    } catch (error) {
-        console.error('Error starting server:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack
-        });
-        process.exit(1);
-    }
-};
+// Basic health check for Azure warmup
+app.get('/', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// Start the server first, then connect to services
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server listening on port ${port}`);
+    
+    // Connect to services after server is listening
+    connectDB().then(() => {
+        console.log('Database connected successfully');
+    }).catch((error) => {
+        console.error('Database connection error:', error);
+        // Don't exit process, just log the error
+    });
+});
 
 // Add this after your route handlers
 app.use('*', (req, res) => {
@@ -68,5 +64,3 @@ app.use('*', (req, res) => {
         message: 'Route not found'
     });
 });
-
-startServer();

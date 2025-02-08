@@ -56,7 +56,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Azure App Service specific settings
 const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-const port = process.env.WEBSITES_PORT || process.env.PORT || 8080;
+const port = process.env.WEBSITES_PORT || process.env.PORT || 8081;
 
 // Production CORS settings
 const corsOrigins = process.env.NODE_ENV === 'production' 

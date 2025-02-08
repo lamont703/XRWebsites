@@ -60,3 +60,16 @@ Thumbs.db
 .env.production
 .env.test
 .gitignore
+.prettierignore
+.prettierrc
+.eslintignore
+.eslintrc   
+
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test.local
+.env.production.local
+
+ 

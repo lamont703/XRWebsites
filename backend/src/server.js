@@ -16,9 +16,19 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN === '*' 
-        ? '*' 
-        : process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+    origin: (origin, callback) => {
+        // Get allowed origins from environment or use defaults
+        const allowedOrigins = process.env.WEBSITE_CORS_ALLOWED_ORIGINS
+            ? process.env.WEBSITE_CORS_ALLOWED_ORIGINS.split(',')
+            : (process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']);
+        
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -26,20 +36,17 @@ const corsOptions = {
         'Authorization',
         'X-Requested-With',
         'Accept',
-        'Origin',
-        'Access-Control-Allow-Headers',
-        'Access-Control-Allow-Origin'
-    ],
-    exposedHeaders: ['Set-Cookie']
+        'Origin'
+    ]
 };
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
-// Log CORS configuration
+// Log CORS configuration for debugging
 console.log('CORS configuration:', {
-    origin: corsOptions.origin,
-    credentials: corsOptions.credentials
+    allowedOrigins: process.env.WEBSITE_CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGIN || 'default: http://localhost:3000',
+    credentials: true
 });
 
 // Regular body parser for JSON requests to handle webhook requests from Stripe.
@@ -75,6 +82,21 @@ app.use('/api/v1/forum', forumRoutes);
 
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));
+
+// Add after the CORS configuration and before other routes
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: "XR Websites API",
+        version: "1.0.0",
+        endpoints: {
+            health: "/health",
+            services: "/health/services",
+            docs: "/api-docs"  // if you add API documentation later
+        },
+        environment: process.env.NODE_ENV
+    });
+});
 
 // Error handling middleware to handle errors in the app.
 app.use(errorHandler);

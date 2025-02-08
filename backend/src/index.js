@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import app from './server.js';
 import connectDB from './database.js';
+import cors from 'cors';
 
 // Get the current file path and directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -42,7 +43,12 @@ app.get('/health', (req, res) => {
 // Add this before starting the server
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
-// Environment setup
+// Force production mode in Azure
+if (process.env.WEBSITE_SITE_NAME) {
+    process.env.NODE_ENV = 'production';
+}
+
+// Only load .env in development
 if (process.env.NODE_ENV !== 'production') {
     const dotenv = await import('dotenv');
     dotenv.config();
@@ -52,14 +58,23 @@ if (process.env.NODE_ENV !== 'production') {
 const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
 const port = process.env.PORT || process.env.WEBSITE_PORT || 8080;
 
+// Production CORS settings
+const corsOrigins = process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
+    : ['http://localhost:3000', 'http://127.0.0.1:5500'];
+
+app.use(cors({
+    origin: corsOrigins,
+    credentials: true
+}));
+
 // Start the server
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
-    console.log(`Running on Azure: ${isAzure}`);
+    console.log('CORS origins:', corsOrigins);
     
-    // Log persistence warning if on Azure
-    if (isAzure) {
-        console.log('⚠️  Warning: Only data in /home directory is persisted');
+    if (process.env.WEBSITE_SITE_NAME) {
+        console.log('⚠️  Azure App Service detected');
         console.log(`Working directory: ${process.cwd()}`);
     }
 

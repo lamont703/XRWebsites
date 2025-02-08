@@ -88,13 +88,14 @@ app.get('/', (req, res) => {
     res.json({
         success: true,
         message: "XR Websites API",
-        version: "1.0.0",
+        version: process.env.npm_package_version || "1.0.0",
+        status: "operational",
+        environment: process.env.NODE_ENV || "production",
+        timestamp: new Date().toISOString(),
         endpoints: {
             health: "/health",
-            services: "/health/services",
-            docs: "/api-docs"  // if you add API documentation later
-        },
-        environment: process.env.NODE_ENV
+            services: "/health/services"
+        }
     });
 });
 

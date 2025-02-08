@@ -8,9 +8,6 @@ import connectDB from './database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load env variables
-dotenv.config();
-
 // Add this before the environment variable check
 console.log('Starting application...');
 console.log('Environment:', process.env.NODE_ENV);
@@ -42,27 +39,37 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Start the server first
-const port = process.env.PORT || 8080;
+// Add this before starting the server
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+
+// Environment setup
+if (process.env.NODE_ENV !== 'production') {
+    const dotenv = await import('dotenv');
+    dotenv.config();
+}
+
+// Azure App Service specific settings
+const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
+const port = process.env.PORT || process.env.WEBSITE_PORT || 8080;
+
+// Start the server
 app.listen(port, '0.0.0.0', () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`);
+    console.log(`Running on Azure: ${isAzure}`);
     
-    // Then check environment variables
+    // Log persistence warning if on Azure
+    if (isAzure) {
+        console.log('⚠️  Warning: Only data in /home directory is persisted');
+        console.log(`Working directory: ${process.cwd()}`);
+    }
+
+    // Check environment variables
     const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
     if (missingVars.length > 0) {
-        console.error('Missing required environment variables:', missingVars);
-        console.error('Available variables:', Object.keys(process.env)
-            .filter(key => !key.includes('KEY') && !key.includes('SECRET')));
-        // Don't exit - let the health check endpoint still work
+        console.error('❌ Missing required environment variables:', missingVars);
+    } else {
+        console.log('✅ All required environment variables present');
     }
-    
-    // Finally try to connect to services
-    connectDB().then(() => {
-        console.log('Database connected successfully');
-    }).catch((error) => {
-        console.error('Database connection failed:', error.message);
-        // Don't exit - let the health check endpoint still work
-    });
 });
 
 // Add this after your route handlers

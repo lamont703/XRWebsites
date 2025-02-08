@@ -14,13 +14,33 @@ import forumRoutes from './routes/forum.routes.js';
 //create express app and use middlewares to handle cors and webhook requests from Stripe.
 const app = express();
 
-// Middlewares to handle cors and webhook requests from Stripe.
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+// CORS configuration
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN === '*' 
+        ? '*' 
+        : process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+        'Access-Control-Allow-Headers',
+        'Access-Control-Allow-Origin'
+    ],
+    exposedHeaders: ['Set-Cookie']
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Log CORS configuration
+console.log('CORS configuration:', {
+    origin: corsOptions.origin,
+    credentials: corsOptions.credentials
+});
 
 // Regular body parser for JSON requests to handle webhook requests from Stripe.
 app.use(express.json({

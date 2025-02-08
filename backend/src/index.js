@@ -15,7 +15,7 @@ dotenv.config();
 const requiredEnvVars = [
     'COSMOS_DB_ENDPOINT',
     'COSMOS_DB_KEY',
-    'COSMOS_DB_NAME',
+    'COSMOS_DB_DATABASE',
     'COSMOS_DB_CONTAINER',
     'AZURE_STORAGE_ACCOUNT_NAME',
     'AZURE_STORAGE_ACCOUNT_KEY',

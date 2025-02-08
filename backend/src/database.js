@@ -13,7 +13,7 @@ const connectDB = async () => {
         });
 
         const { database } = await client.databases.createIfNotExists({
-            id: process.env.COSMOS_DB_NAME
+            id: process.env.COSMOS_DB_DATABASE
         });
 
         // Define container configuration
@@ -44,7 +44,7 @@ const connectDB = async () => {
         // Create container if it doesn't exist
         const { container } = await database.containers.createIfNotExists(containerConfig);
         
-        console.log(`Connected to ${process.env.COSMOS_DB_NAME} and ${containerConfig.id}`);
+        console.log(`Connected to ${process.env.COSMOS_DB_DATABASE} and ${containerConfig.id}`);
         return client;
     } catch (error) {
         console.error("Database connection error details:", {
@@ -63,7 +63,7 @@ export const getContainer = async () => {
         key: process.env.COSMOS_DB_KEY,
     });
     
-    const database = client.database(process.env.COSMOS_DB_NAME);
+    const database = client.database(process.env.COSMOS_DB_DATABASE);
     return database.container(process.env.COSMOS_DB_CONTAINER);
 };
 

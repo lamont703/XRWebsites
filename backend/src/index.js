@@ -36,24 +36,33 @@ const startServer = async () => {
     const startupTimeout = setTimeout(() => {
         console.error('❌ Server startup timed out after 180s');
         process.exit(1);
-    }, 180000); // 180 second timeout
+    }, 180000);
 
     try {
-        // Connect to database first
+        console.log('Attempting database connection...');
+        // Connect to database first with increased timeout
         await Promise.race([
-            connectDB(),
+            connectDB().catch(err => {
+                console.error('Database connection error details:', {
+                    message: err.message,
+                    code: err.code,
+                    stack: err.stack
+                });
+                throw err;
+            }),
             new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Database connection timeout')), 30000)
+                setTimeout(() => reject(new Error('Database connection timeout after 60s')), 60000)
             )
         ]);
         console.log('✅ Database connected successfully');
 
         // Then start the server
         const server = app.listen(port, '0.0.0.0', () => {
-            clearTimeout(startupTimeout); // Clear the timeout once server starts
+            clearTimeout(startupTimeout);
             console.log(`Server listening on port ${port}`);
             console.log('Environment:', process.env.NODE_ENV);
             console.log('Port:', process.env.PORT);
+            console.log('Database endpoint:', process.env.COSMOS_DB_ENDPOINT);
 
             // Check environment variables
             const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -72,7 +81,11 @@ const startServer = async () => {
         });
 
     } catch (error) {
-        console.error('❌ Server startup failed:', error);
+        console.error('❌ Server startup failed:', {
+            error: error.message,
+            stack: error.stack,
+            type: error.constructor.name
+        });
         process.exit(1);
     }
 };

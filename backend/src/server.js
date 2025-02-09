@@ -19,8 +19,8 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production'  // Use NODE_ENV instead
-        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
+    origin: process.env.SITE_NAME  // Check for Azure first
+        ? process.env. ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
         : ['http://localhost:3000', 'http://127.0.0.1:5500'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -32,13 +32,6 @@ const corsOptions = {
         'Origin'
     ]
 };
-
-// Add logging to debug CORS configuration
-console.log('Environment:', process.env.NODE_ENV);
-console.log('CORS configuration:', {
-    allowedOrigins: corsOptions.origin,
-    credentials: corsOptions.credentials
-});
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
@@ -102,6 +95,8 @@ app.use('/api/v1/forum', forumRoutes);
 
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));
+
+
 
 // Error handling middleware to handle errors in the app.
 app.use(errorHandler);

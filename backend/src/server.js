@@ -14,13 +14,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-//create express app and use middlewares to handle cors and webhook requests from Stripe.
+// Create express app
 const app = express();
+
+// Essential middleware (should come first)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.SITE_NAME  // Check for Azure first
-        ? process.env. ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
+    origin: process.env.SITE_NAME  
+        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
         : ['http://localhost:3000', 'http://127.0.0.1:5500'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -58,15 +63,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Regular body parser for JSON requests to handle webhook requests from Stripe.
-app.use(express.json({
-    verify: (req, res, buf) => {
-        if (req.originalUrl.startsWith('/api/v1/payments/webhook')) {
-            req.rawBody = buf;
-        }
-    }
-}));
-
 // Regular body parser for URL encoded requests to handle webhook requests from Stripe.
 app.use(express.urlencoded({
     extended: true,
@@ -76,8 +72,10 @@ app.use(express.urlencoded({
 // Serve static files from the public directory for frontend build.
 app.use(express.static("public"));
 
-// Use cookie parser to handle cookies for authentication.
-app.use(cookieParser());
+// Add this near your other middleware
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy' });
+});
 
 // Mount the healthcheck routes
 app.use('/health', healthcheckRouter);
@@ -94,11 +92,6 @@ app.use('/api/v1/forum', forumRoutes);
 
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));
-
-// Add this near your other middleware
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
-});
 
 // Error handling middleware to handle errors in the app.
 app.use(errorHandler);

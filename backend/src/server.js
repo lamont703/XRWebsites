@@ -95,7 +95,10 @@ app.use('/api/v1/forum', forumRoutes);
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));
 
-
+// Add this near your other middleware
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
 
 // Error handling middleware to handle errors in the app.
 app.use(errorHandler);

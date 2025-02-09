@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import app from './server.js';
 import { connectDB } from './database.js';
 
-// Environment setup
+// Environment setup for Azure App Service
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 if (process.env.SITE_NAME) {

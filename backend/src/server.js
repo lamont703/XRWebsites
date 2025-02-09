@@ -81,7 +81,6 @@ app.use(cookieParser());
 
 // Mount the healthcheck routes
 app.use('/health', healthcheckRouter);
-app.use('/health/services', healthcheckRouter); 
 
 // Use api routes for  authentication, healthcheck, wallet, jobs, tokenomics, payments, and marketplace.
 app.use("/api/v1/healthcheck", healthcheckRouter);

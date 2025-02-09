@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Azure App Service specific settings
 const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 
 // Initialize server with database connection
 const startServer = async () => {

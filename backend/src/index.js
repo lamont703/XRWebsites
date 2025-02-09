@@ -16,7 +16,7 @@ const requiredEnvVars = [
 // Environment setup (keep your existing environment setup code)
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
-if (process.env.WEBSITE_SITE_NAME) {
+if (process.env.SITE_NAME) {
     process.env.NODE_ENV = 'production';
 }
 

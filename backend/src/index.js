@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import app from './server.js';
 import { connectDB } from './database.js';
 
+console.log('Starting application...');
+
 // Define required environment variables
 const requiredEnvVars = [
     'COSMOS_DB_ENDPOINT',

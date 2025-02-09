@@ -19,7 +19,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production'
+    origin: process.env.NODE_ENV === 'production'  // Use NODE_ENV instead
         ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
         : ['http://localhost:3000', 'http://127.0.0.1:5500'],
     credentials: true,
@@ -32,6 +32,13 @@ const corsOptions = {
         'Origin'
     ]
 };
+
+// Add logging to debug CORS configuration
+console.log('Environment:', process.env.NODE_ENV);
+console.log('CORS configuration:', {
+    allowedOrigins: corsOptions.origin,
+    credentials: corsOptions.credentials
+});
 
 // Apply CORS middleware
 app.use(cors(corsOptions));

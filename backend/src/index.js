@@ -5,6 +5,8 @@ import app from './server.js';
 import connectDB from './database.js';
 import cors from 'cors';
 
+dotenv.config();
+
 // Get the current file path and directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,17 +58,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Azure App Service specific settings
 const isAzure = process.env.WEBSITE_SITE_NAME !== undefined;
-const port = process.env.PORT || 8081;
-
-// Production CORS settings
-const corsOrigins = process.env.NODE_ENV === 'production' 
-    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
-    : ['http://localhost:3000', 'http://127.0.0.1:5500'];
-
-app.use(cors({
-    origin: corsOrigins,
-    credentials: true
-}));
+const port = process.env.PORT || 8080;
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
@@ -77,6 +69,7 @@ app.listen(port, '0.0.0.0', () => {
 
     // Check environment variables
     const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    
     if (missingVars.length > 0) {
         console.error('❌ Missing required environment variables:', missingVars);
     } else {

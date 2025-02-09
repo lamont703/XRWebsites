@@ -10,25 +10,18 @@ import tokenomicsRouter from "./routes/tokenomicsRouter.js";
 import paymentRouter from "./routes/payment.routes.js";
 import marketplaceRouter from "./routes/marketplace.routes.js";
 import forumRoutes from './routes/forum.routes.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 //create express app and use middlewares to handle cors and webhook requests from Stripe.
 const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: (origin, callback) => {
-        // Get allowed origins from environment or use defaults
-        const allowedOrigins = process.env.WEBSITE_CORS_ALLOWED_ORIGINS
-            ? process.env.WEBSITE_CORS_ALLOWED_ORIGINS.split(',')
-            : (process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']);
-        
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: process.env.NODE_ENV === 'production'
+        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
+        : ['http://localhost:3000', 'http://127.0.0.1:5500'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -45,8 +38,8 @@ app.use(cors(corsOptions));
 
 // Log CORS configuration for debugging
 console.log('CORS configuration:', {
-    allowedOrigins: process.env.WEBSITE_CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGIN || 'default: http://localhost:3000',
-    credentials: true
+    allowedOrigins: corsOptions.origin,
+    credentials: corsOptions.credentials
 });
 
 // Regular body parser for JSON requests to handle webhook requests from Stripe.
@@ -70,7 +63,10 @@ app.use(express.static("public"));
 // Use cookie parser to handle cookies for authentication.
 app.use(cookieParser());
 
-// Use api routes for authentication, healthcheck, wallet, jobs, tokenomics, payments, and marketplace.
+// Mount the healthcheck routes
+app.use('/health', healthcheckRouter); 
+
+// Use api routes for  authentication, healthcheck, wallet, jobs, tokenomics, payments, and marketplace.
 app.use("/api/v1/healthcheck", healthcheckRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/wallet", walletRouter);

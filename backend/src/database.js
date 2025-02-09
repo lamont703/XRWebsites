@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Connect to the database and create a container if it doesn't exist.
-const connectDB = async () => {
+export const connectDB = async () => {
     try {
         const client = new CosmosClient({
             endpoint: process.env.COSMOS_DB_ENDPOINT,
@@ -67,4 +67,3 @@ export const getContainer = async () => {
     return database.container(process.env.COSMOS_DB_CONTAINER);
 };
 
-export default connectDB;

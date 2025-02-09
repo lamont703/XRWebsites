@@ -42,6 +42,22 @@ console.log('CORS configuration:', {
     credentials: corsOptions.credentials
 });
 
+// Add after the CORS configuration and before other routes
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: "XR Websites API",
+        version: process.env.npm_package_version || "1.0.0",
+        status: "operational",
+        environment: process.env.NODE_ENV || "production",
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            health: "/health",
+            services: "/health/services"
+        }
+    });
+});
+
 // Regular body parser for JSON requests to handle webhook requests from Stripe.
 app.use(express.json({
     verify: (req, res, buf) => {
@@ -64,7 +80,8 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // Mount the healthcheck routes
-app.use('/health', healthcheckRouter); 
+app.use('/health', healthcheckRouter);
+app.use('/health/services', healthcheckRouter); 
 
 // Use api routes for  authentication, healthcheck, wallet, jobs, tokenomics, payments, and marketplace.
 app.use("/api/v1/healthcheck", healthcheckRouter);
@@ -78,22 +95,6 @@ app.use('/api/v1/forum', forumRoutes);
 
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));
-
-// Add after the CORS configuration and before other routes
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: "XR Websites API",
-        version: process.env.npm_package_version || "1.0.0",
-        status: "operational",
-        environment: process.env.NODE_ENV || "production",
-        timestamp: new Date().toISOString(),
-        endpoints: {
-            health: "/health",
-            services: "/health/services"
-        }
-    });
-});
 
 // Error handling middleware to handle errors in the app.
 app.use(errorHandler);

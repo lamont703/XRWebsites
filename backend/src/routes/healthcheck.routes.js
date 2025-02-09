@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 router.get('/services', async (req, res) => {
     try {
         let status = {
-            database: process.env.COSMOS_DB_NAME,
+            database: process.env.COSMOS_DB_DATABASE,
             blobStorage: process.env.AZURE_STORAGE_ACCOUNT_NAME
         };
 

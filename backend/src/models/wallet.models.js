@@ -1,16 +1,8 @@
-import { CosmosClient } from "@azure/cosmos";
-import dotenv from "dotenv";
-import ApiError from "../utils/ApiError.js";
 import { getContainer } from "../database.js";
+import ApiError from "../utils/ApiError.js";
+import dotenv from "dotenv";
 
 dotenv.config();
-
-const cosmosClient = new CosmosClient({
-    endpoint: process.env.COSMOS_DB_ENDPOINT,
-    key: process.env.COSMOS_DB_KEY,
-});
-
-const container = cosmosClient.database(process.env.COSMOS_DB_NAME).container("Wallets");
 
 const Wallet = {
     async findOne(query) {
@@ -48,8 +40,7 @@ const Wallet = {
                 
             return resources[0] || null;
         } catch (error) {
-            console.error("Error in findOne:", error);
-            throw error;
+            throw new ApiError(500, "Error finding wallet", error.message);
         }
     },
 
@@ -78,15 +69,18 @@ const Wallet = {
             
             // Add required fields
             walletData.type = 'wallet';
-            walletData.created_at = new Date();
-            walletData.updated_at = new Date();
+            walletData.created_at = new Date().toISOString();
+            walletData.updated_at = new Date().toISOString();
             walletData.balance = walletData.balance || 0;
             
-            const { resource } = await container.items.create(walletData);
+            const { resource } = await container.items.create({
+                ...walletData,
+                type: 'wallet',
+                created_at: new Date().toISOString()
+            });
             return resource;
         } catch (error) {
-            console.error("Error in create:", error);
-            throw error;
+            throw new ApiError(500, "Error creating wallet", error.message);
         }
     },
 
@@ -99,7 +93,7 @@ const Wallet = {
             const updatedWallet = { 
                 ...wallet, 
                 ...update,
-                updated_at: new Date()
+                updated_at: new Date().toISOString()
             };
 
             const { resource } = await container.items.upsert(updatedWallet);
@@ -146,7 +140,7 @@ const Wallet = {
                 { id: walletId },
                 { 
                     $inc: { balance: parseFloat(amount) },
-                    $set: { updated_at: new Date() }
+                    $set: { updated_at: new Date().toISOString() }
                 }
             );
 
@@ -173,7 +167,7 @@ const Wallet = {
                 transaction_type: type,
                 amount,
                 status: "completed",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 details
             };
 
@@ -182,6 +176,20 @@ const Wallet = {
         } catch (error) {
             console.error("Error in recordTransaction:", error);
             throw error;
+        }
+    },
+
+    async update(id, updateData) {
+        try {
+            const container = await getContainer();
+            const { resource } = await container.item(id, 'wallet').replace({
+                ...updateData,
+                type: 'wallet',
+                updated_at: new Date().toISOString()
+            });
+            return resource;
+        } catch (error) {
+            throw new ApiError(500, "Error updating wallet", error.message);
         }
     }
 };

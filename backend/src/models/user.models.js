@@ -1,18 +1,9 @@
-import { CosmosClient } from "@azure/cosmos";
+import { getContainer } from "../database.js";
+import ApiError from "../utils/ApiError.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import ApiError from "../utils/ApiError.js";
-import { getContainer } from "../database.js";
 
 dotenv.config();
-
-const cosmosClient = new CosmosClient({
-    endpoint: process.env.COSMOS_DB_ENDPOINT,
-    key: process.env.COSMOS_DB_KEY,
-});
-
-const database = cosmosClient.database(process.env.COSMOS_DB_NAME);
-const container = database.container(process.env.COSMOS_DB_CONTAINER);
 
 //create model
 const User = {

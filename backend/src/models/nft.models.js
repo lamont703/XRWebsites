@@ -1,5 +1,4 @@
 import { getContainer } from "../database.js";
-import ApiError from "../utils/ApiError.js";
 
 export const NFT = {
     async findByUserId(userId) {

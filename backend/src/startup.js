@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { CosmosClient } from "@azure/cosmos";
+import { connectDB } from './database.js';
 import { BlobServiceClient } from "@azure/storage-blob";
 
 dotenv.config();
@@ -15,12 +15,8 @@ const testConnections = async () => {
     });
 
     try {
-        // Test Cosmos DB
-        const client = new CosmosClient({
-            endpoint: process.env.COSMOS_DB_ENDPOINT,
-            key: process.env.COSMOS_DB_KEY,
-        });
-        await client.databases.readAll().fetchAll();
+        // Test Cosmos DB using shared connection
+        await connectDB();
         console.log('Cosmos DB connection successful');
 
         // Test Blob Storage

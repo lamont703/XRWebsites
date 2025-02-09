@@ -10,6 +10,22 @@ let container = null;
 // Connect to the database and create a container if it doesn't exist.
 export const connectDB = async () => {
     try {
+        // Validate environment variables
+        const requiredVars = {
+            COSMOS_DB_ENDPOINT: process.env.COSMOS_DB_ENDPOINT,
+            COSMOS_DB_KEY: process.env.COSMOS_DB_KEY,
+            COSMOS_DB_DATABASE: process.env.COSMOS_DB_DATABASE,
+            COSMOS_DB_CONTAINER: process.env.COSMOS_DB_CONTAINER
+        };
+
+        const missingVars = Object.entries(requiredVars)
+            .filter(([_, value]) => !value)
+            .map(([key]) => key);
+
+        if (missingVars.length > 0) {
+            throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+        }
+
         // Log connection attempt
         console.log('Attempting to connect to Cosmos DB:', {
             endpoint: process.env.COSMOS_DB_ENDPOINT ? 'Set' : 'Missing',
@@ -73,10 +89,9 @@ export const connectDB = async () => {
             message: error.message,
             code: error.code,
             name: error.name,
-            statusCode: error?.statusCode,
-            requestCharge: error?.requestCharge
+            endpoint: process.env.COSMOS_DB_ENDPOINT
         });
-        throw error; // Let the caller handle the error
+        throw error;
     }
 };
 

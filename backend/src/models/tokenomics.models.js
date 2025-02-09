@@ -1,6 +1,4 @@
-import { CosmosClient } from "@azure/cosmos";
 import dotenv from "dotenv";
-import ApiError from "../utils/ApiError.js";
 import { getContainer } from "../database.js";
 
 dotenv.config();

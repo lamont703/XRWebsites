@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { getContainer } from "../database.js";
 import { blobServiceClient } from "../utils/blobStorage.js";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Create a router for healthcheck routes.
 const router = Router();
@@ -19,8 +22,8 @@ router.get('/', (req, res) => {
 router.get('/services', async (req, res) => {
     try {
         let status = {
-            database: 'unknown',
-            blobStorage: 'unknown'
+            database: process.env.COSMOS_DB_NAME,
+            blobStorage: process.env.AZURE_STORAGE_ACCOUNT_NAME
         };
 
         // Test database connection

@@ -35,12 +35,12 @@ app.use((req, res, next) => {
 });
 
 // Basic health check endpoint that doesn't require DB connection
-app.get('/health', (req, res) => {
+/*app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'starting',
         timestamp: new Date().toISOString()
     });
-});
+});*/
 
 // Add this before starting the server
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -69,7 +69,7 @@ app.listen(port, '0.0.0.0', () => {
 
     // Check environment variables
     const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-    
+
     if (missingVars.length > 0) {
         console.error('❌ Missing required environment variables:', missingVars);
     } else {

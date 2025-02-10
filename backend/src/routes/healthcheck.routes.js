@@ -64,6 +64,7 @@ router.get('/services', async (req, res) => {
             uptime: process.uptime()
         });
     } catch (error) {
+        console.error('Health check failed:', error);
         res.status(500).json({
             status: 'unhealthy',
             error: error.message,

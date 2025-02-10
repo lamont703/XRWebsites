@@ -23,6 +23,11 @@ const startServer = async () => {
         await connectDB();
         console.log('✅ Database connected successfully');
 
+        // Test all connections
+        const { testConnections } = await import('./startup.js');
+        await testConnections();
+        console.log('✅ All connections verified');
+
         // Start the server
         app.listen(port, '0.0.0.0', () => {
             console.log(`Server listening on port ${port}`);

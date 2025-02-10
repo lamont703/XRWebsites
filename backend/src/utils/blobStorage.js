@@ -22,15 +22,17 @@ export const blobServiceClient = BlobServiceClient.fromConnectionString(
     process.env.AZURE_STORAGE_CONNECTION_STRING
 );
 
-// Verify storage connection on startup
-const verifyStorage = async () => {
+// After creating blobServiceClient
+export const verifyStorage = async () => {
     try {
         const containerClient = blobServiceClient.getContainerClient(containerName);
         const exists = await containerClient.exists();
         if (exists) {
             console.log('✅ Blob Storage connected successfully');
+            return true;
         } else {
             console.log('⚠️ Container not found, will be created when needed');
+            return false;
         }
     } catch (error) {
         console.error('❌ Error connecting to Blob Storage:', error.message);
@@ -38,7 +40,7 @@ const verifyStorage = async () => {
     }
 };
 
-// Call verification (but don't block startup)
+// Call verification on module load
 verifyStorage().catch(console.error);
 
 const uploadToAzureBlob = async (localFilePath) => {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getContainer } from "../database.js";
-import { blobServiceClient } from "../utils/blobStorage.js";
+import { blobServiceClient, verifyStorage } from "../utils/blobStorage.js";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -23,7 +23,8 @@ router.get('/services', async (req, res) => {
     try {
         let status = {
             database: process.env.COSMOS_DB_DATABASE,
-            blobStorage: 'checking...'
+            blobStorage: 'checking...',
+            connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING ? 'Set' : 'Missing'
         };
 
         // Test database connection
@@ -39,22 +40,15 @@ router.get('/services', async (req, res) => {
         // Test blob storage connection
         try {
             console.log('Testing blob storage connection...');
-            const containerClient = blobServiceClient.getContainerClient("uploads");
-            const exists = await containerClient.exists();
-            
-            if (exists) {
-                status.blobStorage = 'connected';
-                console.log('✅ Blob Storage container verified');
-            } else {
-                status.blobStorage = 'warning: container not found';
-                console.log('⚠️ Blob Storage container not found');
-            }
+            const isVerified = await verifyStorage();
+            status.blobStorage = isVerified ? 'connected' : 'warning: container not found';
         } catch (blobError) {
             console.error('Blob storage health check failed:', {
                 error: blobError.message,
                 code: blobError.code,
                 statusCode: blobError.statusCode,
-                details: blobError.details
+                details: blobError.details,
+                connectionStringPresent: !!process.env.AZURE_STORAGE_CONNECTION_STRING
             });
             status.blobStorage = 'error: ' + blobError.message;
         }

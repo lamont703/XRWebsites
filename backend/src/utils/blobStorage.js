@@ -6,10 +6,11 @@ import path from "path";
 // Force reload environment variables
 dotenv.config({ override: true });
 
-// Debug environment variables without exposing sensitive data
-console.log('Environment Variables Check:');
-console.log('Storage Account:', process.env.AZURE_STORAGE_ACCOUNT_NAME);
-console.log('Storage Key Length:', process.env.AZURE_STORAGE_ACCOUNT_KEY?.length || 0);
+// Enhanced debugging
+console.log('Blob Storage Configuration:');
+console.log('Account Name:', process.env.AZURE_STORAGE_ACCOUNT_NAME ? 'Set' : 'Missing');
+console.log('Account Key:', process.env.AZURE_STORAGE_ACCOUNT_KEY ? `Length: ${process.env.AZURE_STORAGE_ACCOUNT_KEY.length}` : 'Missing');
+console.log('Container Name:', process.env.AZURE_STORAGE_CONTAINER_NAME || 'uploads (default)');
 
 if (!process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_STORAGE_ACCOUNT_KEY) {
     throw new Error('Azure Storage credentials are missing. Please check your .env file.');
@@ -21,6 +22,7 @@ const sharedKeyCredential = new StorageSharedKeyCredential(
     process.env.AZURE_STORAGE_ACCOUNT_NAME,
     process.env.AZURE_STORAGE_ACCOUNT_KEY
 );
+
 export const blobServiceClient = new BlobServiceClient(
     `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
     sharedKeyCredential

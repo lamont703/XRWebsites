@@ -38,11 +38,19 @@ router.get('/services', async (req, res) => {
 
         // Test blob storage connection
         try {
+            console.log('Testing blob storage connection...');
             const containerClient = blobServiceClient.getContainerClient("uploads");
-            await containerClient.getProperties();
+            console.log('Container client created, attempting to get properties...');
+            const containerProps = await containerClient.getProperties();
+            console.log('Container properties:', containerProps);
             status.blobStorage = 'connected';
         } catch (blobError) {
-            console.error('Blob storage health check failed:', blobError);
+            console.error('Blob storage health check failed:', {
+                error: blobError.message,
+                code: blobError.code,
+                statusCode: blobError.statusCode,
+                details: blobError.details
+            });
             status.blobStorage = 'error: ' + blobError.message;
         }
 

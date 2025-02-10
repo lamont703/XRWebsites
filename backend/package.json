@@ -9,7 +9,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "create-admin": "node src/scripts/createSuperAdmin.js",
-    "build": "npm install",
+    "build": "node src/index.js",
     "test-connections": "node src/startup.js"
   },
   "keywords": [
@@ -44,6 +44,6 @@
     "stripe": "^17.6.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

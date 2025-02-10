@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getContainer } from "../database.js";
-import { blobServiceClient, verifyStorage } from "../utils/blobStorage.js";
+import { verifyStorage } from "../utils/blobStorage.js";
 import dotenv from 'dotenv';
 
 dotenv.config();

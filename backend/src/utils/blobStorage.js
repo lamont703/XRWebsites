@@ -22,7 +22,7 @@ export const blobServiceClient = BlobServiceClient.fromConnectionString(
     process.env.AZURE_STORAGE_CONNECTION_STRING
 );
 
-// After creating blobServiceClient
+// Verify storage connection
 export const verifyStorage = async () => {
     try {
         const containerClient = blobServiceClient.getContainerClient(containerName);

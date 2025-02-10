@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { connectDB } from './database.js';
-import { BlobServiceClient } from "@azure/storage-blob";
+import { verifyStorage } from './utils/blobStorage.js';
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ const testConnections = async () => {
     // Log environment status
     console.log('Environment variables present:', {
         cosmosDb: !!process.env.COSMOS_DB_ENDPOINT,
-        blobStorage: !!process.env.AZURE_STORAGE_ACCOUNT_NAME,
+        blobStorage: !!process.env.AZURE_STORAGE_CONNECTION_STRING,
         stripe: !!process.env.STRIPE_API_SECRET
     });
 
@@ -19,11 +19,8 @@ const testConnections = async () => {
         await connectDB();
         console.log('Cosmos DB connection successful');
 
-        // Test Blob Storage
-        const blobClient = BlobServiceClient.fromConnectionString(
-            `DefaultEndpointsProtocol=https;AccountName=${process.env.AZURE_STORAGE_ACCOUNT_NAME};AccountKey=${process.env.AZURE_STORAGE_ACCOUNT_KEY};EndpointSuffix=core.windows.net`
-        );
-        await blobClient.getProperties();
+        // Test Blob Storage using new method
+        await verifyStorage();
         console.log('Blob Storage connection successful');
 
     } catch (error) {
@@ -32,4 +29,4 @@ const testConnections = async () => {
     }
 };
 
-testConnections(); 
+export { testConnections }; 

@@ -23,7 +23,7 @@ router.get('/services', async (req, res) => {
     try {
         let status = {
             database: process.env.COSMOS_DB_DATABASE,
-            blobStorage: process.env.AZURE_STORAGE_ACCOUNT_NAME
+            blobStorage: 'checking...'
         };
 
         // Test database connection
@@ -40,10 +40,15 @@ router.get('/services', async (req, res) => {
         try {
             console.log('Testing blob storage connection...');
             const containerClient = blobServiceClient.getContainerClient("uploads");
-            console.log('Container client created, attempting to get properties...');
-            const containerProps = await containerClient.getProperties();
-            console.log('Container properties:', containerProps);
-            status.blobStorage = 'connected';
+            const exists = await containerClient.exists();
+            
+            if (exists) {
+                status.blobStorage = 'connected';
+                console.log('✅ Blob Storage container verified');
+            } else {
+                status.blobStorage = 'warning: container not found';
+                console.log('⚠️ Blob Storage container not found');
+            }
         } catch (blobError) {
             console.error('Blob storage health check failed:', {
                 error: blobError.message,
@@ -54,7 +59,8 @@ router.get('/services', async (req, res) => {
             status.blobStorage = 'error: ' + blobError.message;
         }
 
-        const isHealthy = status.database === 'connected' && status.blobStorage === 'connected';
+        const isHealthy = status.database === 'connected' && 
+                         (status.blobStorage === 'connected' || status.blobStorage === 'warning: container not found');
 
         res.status(isHealthy ? 200 : 500).json({
             status: isHealthy ? 'healthy' : 'unhealthy',
@@ -64,12 +70,10 @@ router.get('/services', async (req, res) => {
             uptime: process.uptime()
         });
     } catch (error) {
-        console.error('Health check failed:', error);
         res.status(500).json({
             status: 'unhealthy',
             error: error.message,
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime()
+            timestamp: new Date().toISOString()
         });
     }
 });

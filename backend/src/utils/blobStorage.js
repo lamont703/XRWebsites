@@ -1,4 +1,4 @@
-import { BlobServiceClient, StorageSharedKeyCredential, generateBlobSASQueryParameters, SASProtocol } from "@azure/storage-blob";
+import { BlobServiceClient } from "@azure/storage-blob";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -8,25 +8,38 @@ dotenv.config({ override: true });
 
 // Enhanced debugging
 console.log('Blob Storage Configuration:');
-console.log('Account Name:', process.env.AZURE_STORAGE_ACCOUNT_NAME ? 'Set' : 'Missing');
-console.log('Account Key:', process.env.AZURE_STORAGE_ACCOUNT_KEY ? `Length: ${process.env.AZURE_STORAGE_ACCOUNT_KEY.length}` : 'Missing');
+console.log('Connection String:', process.env.AZURE_STORAGE_CONNECTION_STRING ? 'Set' : 'Missing');
 console.log('Container Name:', process.env.AZURE_STORAGE_CONTAINER_NAME || 'uploads (default)');
 
-if (!process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_STORAGE_ACCOUNT_KEY) {
-    throw new Error('Azure Storage credentials are missing. Please check your .env file.');
+if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
+    throw new Error('Azure Storage connection string is missing. Please check your .env file.');
 }
 
 const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || "uploads";
 
-const sharedKeyCredential = new StorageSharedKeyCredential(
-    process.env.AZURE_STORAGE_ACCOUNT_NAME,
-    process.env.AZURE_STORAGE_ACCOUNT_KEY
+// Create the BlobServiceClient using the connection string
+export const blobServiceClient = BlobServiceClient.fromConnectionString(
+    process.env.AZURE_STORAGE_CONNECTION_STRING
 );
 
-export const blobServiceClient = new BlobServiceClient(
-    `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
-    sharedKeyCredential
-);
+// Verify storage connection on startup
+const verifyStorage = async () => {
+    try {
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+        const exists = await containerClient.exists();
+        if (exists) {
+            console.log('✅ Blob Storage connected successfully');
+        } else {
+            console.log('⚠️ Container not found, will be created when needed');
+        }
+    } catch (error) {
+        console.error('❌ Error connecting to Blob Storage:', error.message);
+        throw error;
+    }
+};
+
+// Call verification (but don't block startup)
+verifyStorage().catch(console.error);
 
 const uploadToAzureBlob = async (localFilePath) => {
     try {
@@ -34,20 +47,13 @@ const uploadToAzureBlob = async (localFilePath) => {
             throw new Error("File not found");
         }
 
-        // Get container client
         const containerClient = blobServiceClient.getContainerClient(containerName);
-        
-        // Ensure container exists
         await containerClient.createIfNotExists();
 
-        // Generate unique blob name
         const blobName = `${Date.now()}-${path.basename(localFilePath)}`;
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-        // Upload file
         await blockBlobClient.uploadFile(localFilePath);
-
-        // Delete local file
         fs.unlinkSync(localFilePath);
 
         return {

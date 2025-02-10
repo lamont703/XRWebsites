@@ -1,4 +1,4 @@
-import { BlobServiceClient } from "@azure/storage-blob";
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -8,18 +8,24 @@ dotenv.config({ override: true });
 
 // Enhanced debugging
 console.log('Blob Storage Configuration:');
-console.log('Connection String:', process.env.AZURE_STORAGE_CONNECTION_STRING ? 'Set' : 'Missing');
+console.log('Account Name:', process.env.AZURE_STORAGE_ACCOUNT_NAME ? 'Set' : 'Missing');
+console.log('Account Key:', process.env.AZURE_STORAGE_ACCOUNT_KEY ? `Length: ${process.env.AZURE_STORAGE_ACCOUNT_KEY.length}` : 'Missing');
 console.log('Container Name:', process.env.AZURE_STORAGE_CONTAINER_NAME || 'uploads (default)');
 
-if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
-    throw new Error('Azure Storage connection string is missing. Please check your .env file.');
+if (!process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_STORAGE_ACCOUNT_KEY) {
+    throw new Error('Azure Storage credentials are missing. Please check your .env file.');
 }
 
 const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || "uploads";
 
-// Create the BlobServiceClient using the connection string
-export const blobServiceClient = BlobServiceClient.fromConnectionString(
-    process.env.AZURE_STORAGE_CONNECTION_STRING
+const sharedKeyCredential = new StorageSharedKeyCredential(
+    process.env.AZURE_STORAGE_ACCOUNT_NAME,
+    process.env.AZURE_STORAGE_ACCOUNT_KEY
+);
+
+export const blobServiceClient = new BlobServiceClient(
+    `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
+    sharedKeyCredential
 );
 
 // Verify storage connection

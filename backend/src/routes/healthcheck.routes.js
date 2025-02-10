@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getContainer } from "../database.js";
-import { verifyStorage } from "../utils/blobStorage.js";
+import { blobServiceClient } from "../utils/blobStorage.js";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -23,8 +23,7 @@ router.get('/services', async (req, res) => {
     try {
         let status = {
             database: process.env.COSMOS_DB_DATABASE,
-            blobStorage: 'checking...',
-            connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING ? 'Set' : 'Missing'
+            blobStorage: process.env.AZURE_STORAGE_ACCOUNT_NAME
         };
 
         // Test database connection
@@ -40,21 +39,22 @@ router.get('/services', async (req, res) => {
         // Test blob storage connection
         try {
             console.log('Testing blob storage connection...');
-            const isVerified = await verifyStorage();
-            status.blobStorage = isVerified ? 'connected' : 'warning: container not found';
+            const containerClient = blobServiceClient.getContainerClient("uploads");
+            console.log('Container client created, attempting to get properties...');
+            const containerProps = await containerClient.getProperties();
+            console.log('Container properties:', containerProps);
+            status.blobStorage = 'connected';
         } catch (blobError) {
             console.error('Blob storage health check failed:', {
                 error: blobError.message,
                 code: blobError.code,
                 statusCode: blobError.statusCode,
-                details: blobError.details,
-                connectionStringPresent: !!process.env.AZURE_STORAGE_CONNECTION_STRING
+                details: blobError.details
             });
             status.blobStorage = 'error: ' + blobError.message;
         }
 
-        const isHealthy = status.database === 'connected' && 
-                         (status.blobStorage === 'connected' || status.blobStorage === 'warning: container not found');
+        const isHealthy = status.database === 'connected' && status.blobStorage === 'connected';
 
         res.status(isHealthy ? 200 : 500).json({
             status: isHealthy ? 'healthy' : 'unhealthy',

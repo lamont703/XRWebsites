@@ -4,18 +4,18 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "vite",
     "dev:host": "vite --host",
-    "build": "next build",
+    "build": "vite build",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --ext ts,tsx",
     "lint:fix": "eslint src --ext ts,tsx --fix",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "test": "vitest",
-    "start": "next start -p 8080"
+    "start": "vite preview --port 8080"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

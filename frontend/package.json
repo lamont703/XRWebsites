@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "next dev",
     "dev:host": "vite --host",
-    "build": "tsc -b && vite build",
+    "build": "next build",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -15,7 +15,7 @@
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "test": "vitest",
-    "start": "vite"
+    "start": "next start -p 8080"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

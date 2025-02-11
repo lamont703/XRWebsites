@@ -31,9 +31,10 @@ jobs:
         run: |
           cd frontend/dist
           npm install -g serve
-          echo "#!/bin/bash" > startup.sh
-          echo "serve -s . -l 8080" >> startup.sh
-          chmod +x startup.sh
+          echo '#!/bin/bash' > run.sh
+          echo 'cd /home/site/wwwroot' >> run.sh
+          echo '/usr/local/bin/serve -s . -l 8080' >> run.sh
+          chmod +x run.sh
           cp ../web.config .
 
       - name: Deploy to Azure Web App

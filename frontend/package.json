@@ -16,7 +16,7 @@
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "test": "vitest",
-    "start": "serve -s dist"
+    "start": "serve -s dist -l 8080"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

@@ -6,7 +6,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5174,
+    port: 3000, // Match the port expected in backend CORS
     host: true, // Listen on all local IPs
     open: true, // Open browser on server start
     hmr: {

@@ -32,13 +32,14 @@ jobs:
           cd frontend
           npm ci --unsafe-perm
           npm run build
+          mkdir -p dist
           cp package.json dist/
           cp package-lock.json dist/
 
       - name: Install production dependencies
         run: |
           cd frontend/dist
-          npm ci --only=production
+          npm ci --only=production --ignore-scripts
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

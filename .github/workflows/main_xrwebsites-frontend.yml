@@ -34,6 +34,9 @@ jobs:
           cp package-lock.json dist/
           cd dist
           npm ci --production --ignore-scripts
+          npm install serve
+          echo "serve -s . -l 8080" > startup.sh
+          chmod +x startup.sh
           rm -rf node_modules/.cache
           rm -rf node_modules/.package-lock.json
           rm -rf node_modules/.npm

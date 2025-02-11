@@ -21,11 +21,16 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies and build
+            - name: Prepare deployment package
         run: |
           cd frontend
-          npm ci --unsafe-perm  # Use --unsafe-perm to avoid permission issues
-          npm run build
+          cp package.json dist/
+          cp package-lock.json dist/
+
+      - name: Install production dependencies
+        run: |
+          cd frontend/dist
+          npm ci --only=production
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

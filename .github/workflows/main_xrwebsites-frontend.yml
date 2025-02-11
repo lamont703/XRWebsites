@@ -26,18 +26,17 @@ jobs:
           cd frontend
           npm ci --unsafe-perm
           npm run build
-          ls -la dist/
 
       - name: Prepare deployment package
         run: |
           cd frontend
           cp package.json dist/
           cp package-lock.json dist/
-
-      - name: Install production dependencies
-        run: |
-          cd frontend/dist
+          cd dist
           npm ci --production --ignore-scripts
+          rm -rf node_modules/.cache
+          rm -rf node_modules/.package-lock.json
+          rm -rf node_modules/.npm
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

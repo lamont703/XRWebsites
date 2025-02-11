@@ -30,10 +30,11 @@ jobs:
       - name: Setup deployment
         run: |
           cd frontend/dist
-          npm install -g serve
+          cp ../package.json .
+          npm install serve
           echo '#!/bin/bash' > run.sh
           echo 'cd /home/site/wwwroot' >> run.sh
-          echo '/usr/local/bin/serve -s . -l 8080' >> run.sh
+          echo './node_modules/.bin/serve -s . -l 8080' >> run.sh
           chmod +x run.sh
           cp ../web.config .
 

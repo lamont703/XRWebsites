@@ -2,9 +2,7 @@
 node_modules/
 
 # Build output
-/dist/*
-!/dist/   # This ensures the dist folder itself is tracked
-!/dist/**  # This ensures the contents of dist are tracked
+dist/
 
 # Testing
 /coverage
@@ -15,4 +13,8 @@ node_modules/
 # Logs
 npm-debug.log*
 
- 
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+.vite/

@@ -4,39 +4,22 @@ on:
   push:
     branches: [main]
     paths:
-      - "frontend/**"
+      - "frontend/dist/**"  # Only trigger on dist changes
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.18.0'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies and build
+      - name: Install serve
         run: |
-          cd frontend
-          npm ci --unsafe-perm
-          npm run build
-
-      - name: Prepare deployment package
-        run: |
-          cd frontend
-          cp package.json dist/
-          cp package-lock.json dist/
-          cd dist
-          npm ci --production --ignore-scripts
-          rm -rf node_modules/.cache
-          rm -rf node_modules/.package-lock.json
-          rm -rf node_modules/.npm
+          cd frontend/dist
+          npm install serve
+          echo "serve -s . -l 8080" > startup.sh
+          chmod +x startup.sh
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

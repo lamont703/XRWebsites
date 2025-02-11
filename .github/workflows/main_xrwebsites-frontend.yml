@@ -30,6 +30,7 @@ jobs:
       - name: Setup deployment
         run: |
           cd frontend/dist
+          cp ../package.json .
           npm install serve
           echo "serve -s . -l 8080" > startup.sh
           chmod +x startup.sh

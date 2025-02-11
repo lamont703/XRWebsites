@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "install": "npm install",
     "dev": "vite",
     "dev:host": "vite --host",
     "build": "vite build",
@@ -16,7 +15,7 @@
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,scss}\"",
     "test": "vitest",
-    "start": "serve -s dist -l 8080"
+    "start": "serve -s dist"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

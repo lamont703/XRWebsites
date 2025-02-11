@@ -29,9 +29,10 @@ jobs:
 
       - name: Setup deployment
         run: |
-          cd frontend/dist
-          cp ../package.json .
-          cp ../server.js .
+          cd frontend
+          cp package.json dist/
+          cp server.js dist/
+          cd dist
           echo '#!/bin/bash' > run.sh
           echo 'npm install' >> run.sh
           echo 'npm run start' >> run.sh

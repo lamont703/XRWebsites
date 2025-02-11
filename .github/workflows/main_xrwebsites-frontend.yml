@@ -4,15 +4,28 @@ on:
   push:
     branches: [main]
     paths:
-      - "frontend/dist/**"  # Only trigger on dist changes
+      - "frontend/**"
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.18.0'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies and build
+        run: |
+          cd frontend
+          npm ci
+          npm run build
 
       - name: Install serve
         run: |

@@ -7,7 +7,7 @@ trigger:
       - "frontend/**"
 
 pool:
-  name: "Azure Pipelines"
+  name: "Self_Hosted"
 
 steps:
   - task: UseNode@1

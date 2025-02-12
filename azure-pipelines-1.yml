@@ -5,28 +5,26 @@ pool:
   name: "Self_Hosted"  # Use a Microsoft-hosted agent
 
 steps:
-  - task: UseDotNet@2
+  - task: UseNode@1
     inputs:
-      packageType: 'sdk'
-      version: '6.x'  # Set to your .NET version
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      version: '20.18.0'  # Set to your Node.js version
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'restore'
-      projects: '**/*.csproj'
+  - script: npm install
+    displayName: 'Install dependencies'
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      command: 'build'
-      projects: '**/*.csproj'
-      arguments: '--configuration Release'
+  - script: npm run build
+    displayName: 'Build application'
 
-  - task: DotNetCoreCLI@2
+  - script: npm test
+    displayName: 'Run tests'
+
+  - task: ArchiveFiles@2
     inputs:
-      command: 'publish'
-      projects: '**/*.csproj'
-      arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+      rootFolderOrFile: '.'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+      replaceExistingArchive: true
 
   - task: PublishBuildArtifacts@1
     inputs:
@@ -37,5 +35,5 @@ steps:
     inputs:
       azureSubscription: 'AzureWebAppConnection'
       appName: 'YourAzureWebAppName'
-      package: '$(Build.ArtifactStagingDirectory)/*.zip'
+      package: '$(Build.ArtifactStagingDirectory)/app.zip'
       deploymentMethod: 'runFromPackage'

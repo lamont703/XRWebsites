@@ -33,7 +33,7 @@ steps:
 
   - task: DownloadSecureFile@1
     inputs:
-      secureFile: 'xrwebsites-frontend.PublishSettings'
+      secureFile: $(AZUREAPPSERVICE_PUBLISHPROFILE_FRONTEND)
     displayName: "Download Secure Publish Profile"
 
   - task: AzureWebApp@1

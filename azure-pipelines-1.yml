@@ -2,7 +2,7 @@ trigger:
   - main  # Trigger pipeline on push to 'main' branch
 
 pool:
-  vmImage: 'ubuntu-latest'  # Use a Microsoft-hosted agent
+  name: "Self_Hosted"  # Use a Microsoft-hosted agent
 
 steps:
   - task: UseDotNet@2

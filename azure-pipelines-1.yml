@@ -26,6 +26,6 @@ steps:
   - task: AzureWebApp@1
     inputs:
       azureSubscription: 'AzureWebAppConnection'
-      appName: 'XRWebsites-frontend-test'
+      appName: 'xrwebsites-frontend'
       package: '$(Build.ArtifactStagingDirectory)/app.zip'
       deploymentMethod: 'runFromPackage'

@@ -51,7 +51,7 @@ stages:
     displayName: Deploy
     environment: $(environmentName)
     pool:
-      vmImage: $(vmImageName)
+      name: "Self_Hosted"
     strategy:
       runOnce:
         deploy:

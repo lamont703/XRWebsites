@@ -5,12 +5,17 @@ pool:
   name: "Self_Hosted"  # Use a Microsoft-hosted agent
 
 steps:
+  - checkout: self
+
   - task: UseNode@1
     inputs:
       version: '20.18.0'  # Set to your Node.js version
 
+  - script: ls -la
+    displayName: 'List files in workspace'
+
   - script: npm install
-    displayName: 'Install dependencies'
+    displayName: 'Install dependencies in root directory'
 
   - script: npm run build
     displayName: 'Build application'
@@ -34,6 +39,6 @@ steps:
   - task: AzureWebApp@1
     inputs:
       azureSubscription: 'AzureWebAppConnection'
-      appName: 'YourAzureWebAppName'
+      appName: 'XRWebsites-frontend-test'
       package: '$(Build.ArtifactStagingDirectory)/app.zip'
       deploymentMethod: 'runFromPackage'

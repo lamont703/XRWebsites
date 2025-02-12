@@ -7,7 +7,7 @@ trigger:
       - "frontend/**"
 
 pool:
-  vmImage: ubuntu-latest
+  name: "Azure Pipelines"
 
 steps:
   - task: UseNode@1

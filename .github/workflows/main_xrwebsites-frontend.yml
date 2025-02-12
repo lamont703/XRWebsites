@@ -31,17 +31,13 @@ steps:
       chmod +x run.sh
     displayName: "Setup deployment files"
 
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: $(AZUREAPPSERVICE_PUBLISHPROFILE_FRONTEND)
-    displayName: "Download Secure Publish Profile"
-
   - task: AzureWebApp@1
     inputs:
-      azureSubscription: "AzureServiceConnection" # Replace with your Azure service connection
+      azureSubscription: "AzureServiceConnection"  # Replace with your Azure service connection name
       appName: "xrwebsites-frontend"
       deployToSlotOrASE: true
-      resourceGroupName: "xrwebsites-rg" # Replace with your resource group
+      resourceGroupName: "xrwebsites-rg"  # Replace with your resource group
       slotName: "Production"
       package: "frontend/dist"
+      publishProfile: "$(XRWEBSITES_FRONTEND_PUBLISH_PROFILE)"  # Use the variable instead of a secure file
     displayName: "Deploy to Azure Web App"

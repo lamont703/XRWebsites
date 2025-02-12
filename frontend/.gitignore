@@ -1,20 +1,45 @@
 # Dependencies
 node_modules/
+frontend/node_modules/
+dist/node_modules/
 
 # Build output
-app.zip
+dist/
+frontend/dist/
+frontend/app.zip
 
-# Testing
-/coverage
-
-# Local env files
-.env*.local
 
 # Logs
+*.log
 npm-debug.log*
 
-# TypeScript
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Zip files
+app.zip
+
+# TypeScript build info
 *.tsbuildinfo
 
-# Vite
+# Vite specific
 .vite/
+
+.gitignore

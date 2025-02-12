@@ -27,7 +27,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: $(vmImageName)
+      name: "Self_Hosted"
 
     steps:
     - task: ArchiveFiles@2

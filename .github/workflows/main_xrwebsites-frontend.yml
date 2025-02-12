@@ -7,12 +7,12 @@ trigger:
       - "frontend/**"
 
 pool:
-  vmImage: ubuntu-latest
+  name: "Azure Pipelines"
 
 steps:
   - task: UseNode@1
     inputs:
-      version: "20.18.0"
+      version: "20.18.0"  # Ensure Node.js version is correct for your project
 
   - script: |
       cd frontend
@@ -33,11 +33,11 @@ steps:
 
   - task: AzureWebApp@1
     inputs:
-      azureSubscription: "AzureServiceConnection"  # Replace with your Azure service connection name
-      appName: "xrwebsites-frontend"
-      deployToSlotOrASE: true
-      resourceGroupName: "xrwebsites-rg"  # Replace with your resource group
-      slotName: "Production"
-      package: "frontend/dist"
-      publishProfile: "$(XRWEBSITES_FRONTEND_PUBLISH_PROFILE)"  # Use the variable instead of a secure file
+      azureSubscription: "AzureServiceConnection"  # Ensure this matches your service connection name
+      appName: "xrwebsites-frontend"  # Ensure this matches your app name in Azure
+      deployToSlotOrASE: true  # Set this to true if you're using a slot for deployment
+      resourceGroupName: "xrwebsites-rg"  # Ensure this matches your resource group name
+      slotName: "Production"  # Set this to your slot name if using slots in Azure
+      package: "frontend/dist"  # Path to the build folder
+      publishProfile: "$(XRWEBSITES_FRONTEND_PUBLISH_PROFILE)"  # Make sure this variable is defined and contains the correct publish profile
     displayName: "Deploy to Azure Web App"

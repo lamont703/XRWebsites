@@ -45,6 +45,10 @@ stages:
               npm run build
             displayName: "Build Frontend"
 
+          - script: |
+              ls -la frontend/dist
+            displayName: "Verify Build Output"
+
           - task: ArchiveFiles@2
             displayName: "Archive Frontend Files"
             inputs:

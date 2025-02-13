@@ -2,12 +2,19 @@
 node_modules/
 frontend/node_modules/
 dist/node_modules/
+frontend/node_modules/
+
+.github/workflows/main_xrwebsites-api.yml
+.github/workflows/main_xrwebsites-frontend.yml
+ 
 
 # Build output
 dist/
 frontend/dist/
 frontend/app.zip
-
+.github/
+dist.zip
+.gitignore
 
 # Logs
 *.log

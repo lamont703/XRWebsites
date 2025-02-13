@@ -62,14 +62,9 @@ stages:
             continueOnError: false
 
           - script: |
-              echo "Listing frontend directory contents:"
-              ls -la $(frontendDir)
-            displayName: "List Frontend Directory"
-
-          - script: |
-              echo "Listing dist directory contents:"
-              ls -la $(distDir)
-            displayName: "Verify Build Output"
+              echo "Searching for dist directory from project root:"
+              find . -type d -name "dist" -print
+            displayName: "Find Dist Directory"
 
           - task: ArchiveFiles@2
             displayName: "Archive Frontend Files"

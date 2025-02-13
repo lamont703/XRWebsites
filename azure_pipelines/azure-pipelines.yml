@@ -43,6 +43,18 @@ stages:
             displayName: "Install Node.js"
 
           - script: |
+              echo "Node version:"
+              node -v
+              echo "NPM version:"
+              npm -v
+            displayName: "Check Node and NPM Versions"
+
+          - script: |
+              echo "Environment Variables:"
+              printenv
+            displayName: "List Environment Variables"
+
+          - script: |
               cd $(frontendDir)
               npm install
               npm run build || exit 1

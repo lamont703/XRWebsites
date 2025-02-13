@@ -45,8 +45,9 @@ stages:
           - script: |
               cd $(frontendDir)
               npm install
-              npm run build
+              npm run build || exit 1
             displayName: "Build Frontend"
+            continueOnError: false
 
           - script: |
               echo "Listing frontend directory contents:"

@@ -1,108 +1,76 @@
-# Node.js React Web App to Linux on Azure
-# Build a Node.js React app and deploy it to Azure as a Linux web app.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
   branches:
     include:
       - main
-    exclude:
-      - develop
-      - feature/*
 
 variables:
-  # Azure Resource Manager connection created during pipeline creation
   azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"
-
-  # Web app name
   webAppName: "xrwebsites-frontend"
-
-  # Environment name
   environmentName: "xrwebsites-frontend"
-
-  # Agent VM image name
   vmImageName: "ubuntu-latest"
-
   frontendDir: "frontend"
   distDir: "$(frontendDir)/dist"
 
 stages:
-  - stage: Build
-    displayName: Build stage
-    jobs:
-      - job: Build
-        displayName: Build
-        pool:
-          name: "Self_Hosted"
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
 
-        steps:
-          - task: NodeTool@0
+    steps:
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: "20.18.0"
+      displayName: "Install Node.js"
+
+    - script: |
+        cd $(frontendDir)
+        npm ci
+        npm run build
+      displayName: "Install Dependencies and Build"
+
+    - script: |
+        cd $(frontendDir)
+        cp package.json dist/
+        cp server.js dist/
+        cd dist
+        npm install --production
+        echo '#!/bin/bash' > run.sh
+        echo 'npm run start' >> run.sh
+        chmod +x run.sh
+      displayName: "Setup Deployment"
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(distDir)'
+        artifactName: 'frontend-dist'
+      displayName: "Publish Build Artifacts"
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: $(environmentName)
+    pool:
+      vmImage: $(vmImageName)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureRmWebAppDeployment@4
+            displayName: "Azure App Service Deploy: xrwebsites-frontend"
             inputs:
-              versionSpec: "20.18.0"
-            displayName: "Install Node.js"
-
-          - script: |
-              echo "Node version:"
-              node -v
-              echo "NPM version:"
-              npm -v
-            displayName: "Check Node and NPM Versions"
-
-          - script: |
-              echo "Environment Variables:"
-              printenv
-            displayName: "List Environment Variables"
-
-          - script: |
-              cd $(frontendDir)
-              npm install
-              npm run build --verbose || exit 1
-            displayName: "Build Frontend with Verbose Logging"
-            continueOnError: false
-
-          - script: |
-              echo "Listing frontend directory contents after build:"
-              ls -la $(frontendDir)
-            displayName: "List Frontend Directory After Build"
-
-          - script: |
-              echo "Searching for dist directory from project root, excluding node_modules:"
-              find . -path ./node_modules -prune -o -type d -name "dist" -print
-            displayName: "Find Dist Directory"
-
-          - task: ArchiveFiles@2
-            displayName: "Archive Frontend Files"
-            inputs:
-              rootFolderOrFile: "$(distDir)"
-              includeRootFolder: false
-              archiveType: zip
-              archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-              replaceExistingArchive: true
-
-          - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-            artifact: drop
-
-  - stage: Deploy
-    displayName: Deploy stage
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - deployment: Deploy
-        displayName: Deploy
-        environment: $(environmentName)
-        pool:
-          name: "Self_Hosted"
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureRmWebAppDeployment@4
-                  displayName: "Azure App Service Deploy: xrwebsites-frontend"
-                  inputs:
-                    azureSubscription: $(azureSubscription)
-                    appType: webAppLinux
-                    WebAppName: $(webAppName)
-                    packageForLinux: "$(Pipeline.Workspace)/drop/$(Build.BuildId).zip"
-                    RuntimeStack: "NODE|20LTS"
-                    StartupCommand: "npm run start"
+              azureSubscription: $(azureSubscription)
+              appType: webAppLinux
+              WebAppName: $(webAppName)
+              packageForLinux: "$(Pipeline.Workspace)/frontend-dist"
+              RuntimeStack: "NODE|20LTS"
+              StartupCommand: "bash run.sh"

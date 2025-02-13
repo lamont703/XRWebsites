@@ -24,6 +24,9 @@ variables:
   # Agent VM image name
   vmImageName: "ubuntu-latest"
 
+  frontendDir: "frontend"
+  distDir: "$(frontendDir)/dist"
+
 stages:
   - stage: Build
     displayName: Build stage
@@ -40,19 +43,25 @@ stages:
             displayName: "Install Node.js"
 
           - script: |
-              cd frontend
+              cd $(frontendDir)
               npm install
               npm run build
             displayName: "Build Frontend"
 
           - script: |
-              ls -la frontend/dist
+              echo "Listing frontend directory contents:"
+              ls -la $(frontendDir)
+            displayName: "List Frontend Directory"
+
+          - script: |
+              echo "Listing dist directory contents:"
+              ls -la $(distDir)
             displayName: "Verify Build Output"
 
           - task: ArchiveFiles@2
             displayName: "Archive Frontend Files"
             inputs:
-              rootFolderOrFile: "frontend/dist"
+              rootFolderOrFile: "$(distDir)"
               includeRootFolder: false
               archiveType: zip
               archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip

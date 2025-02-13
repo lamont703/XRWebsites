@@ -57,9 +57,14 @@ stages:
           - script: |
               cd $(frontendDir)
               npm install
-              npm run build || exit 1
-            displayName: "Build Frontend"
+              npm run build --verbose || exit 1
+            displayName: "Build Frontend with Verbose Logging"
             continueOnError: false
+
+          - script: |
+              echo "Listing frontend directory contents after build:"
+              ls -la $(frontendDir)
+            displayName: "List Frontend Directory After Build"
 
           - script: |
               echo "Searching for dist directory from project root:"

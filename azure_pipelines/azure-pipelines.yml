@@ -34,6 +34,17 @@ stages:
               npm run build
             displayName: "Install Dependencies and Build"
 
+          - script: |
+              cd $(frontendDir)
+              cp package.json dist/
+              cp server.js dist/
+              cd dist
+              npm install --production
+              echo '#!/bin/bash' > run.sh
+              echo 'npm run start' >> run.sh
+              chmod +x run.sh
+            displayName: "Setup Deployment"
+
           - task: PublishBuildArtifacts@1
             inputs:
               pathToPublish: "$(distDir)"
@@ -62,4 +73,4 @@ stages:
                     WebAppName: $(webAppName)
                     packageForLinux: "$(Pipeline.Workspace)/frontend-dist"
                     RuntimeStack: "NODE|20LTS"
-                    StartupCommand: "npm run start"
+                    StartupCommand: "bash run.sh"

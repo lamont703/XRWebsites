@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 
 // Force reload environment variables
-dotenv.config({ override: true });
+dotenv.config();
 
 // Enhanced debugging
 console.log('Blob Storage Configuration:');

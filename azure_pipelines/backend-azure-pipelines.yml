@@ -2,6 +2,10 @@ trigger:
   branches:
     include:
       - main
+  paths:
+    include:
+      - azure_pipelines/backend-azure-pipelines.yml
+      - backend/**
 
 variables:
   azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"

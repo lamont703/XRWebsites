@@ -12,65 +12,54 @@ variables:
   distDir: "$(frontendDir)/dist"
 
 stages:
-- stage: Build
-  displayName: Build stage
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: $(vmImageName)
+  - stage: Build
+    displayName: Build stage
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: $(vmImageName)
 
-    steps:
-    - checkout: self
+        steps:
+          - checkout: self
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: "20.18.0"
-      displayName: "Install Node.js"
-
-    - script: |
-        cd $(frontendDir)
-        npm ci
-        npm run build
-      displayName: "Install Dependencies and Build"
-
-    - script: |
-        cd $(frontendDir)
-        cp package.json dist/
-        cp server.js dist/
-        cd dist
-        npm install --production
-        echo '#!/bin/bash' > run.sh
-        echo 'npm run start' >> run.sh
-        chmod +x run.sh
-      displayName: "Setup Deployment"
-
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(distDir)'
-        artifactName: 'frontend-dist'
-      displayName: "Publish Build Artifacts"
-
-- stage: Deploy
-  displayName: Deploy stage
-  dependsOn: Build
-  condition: succeeded()
-  jobs:
-  - deployment: Deploy
-    displayName: Deploy
-    environment: $(environmentName)
-    pool:
-      vmImage: $(vmImageName)
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureRmWebAppDeployment@4
-            displayName: "Azure App Service Deploy: xrwebsites-frontend"
+          - task: NodeTool@0
             inputs:
-              azureSubscription: $(azureSubscription)
-              appType: webAppLinux
-              WebAppName: $(webAppName)
-              packageForLinux: "$(Pipeline.Workspace)/frontend-dist"
-              RuntimeStack: "NODE|20LTS"
-              StartupCommand: "bash run.sh"
+              versionSpec: "20.18.0"
+            displayName: "Install Node.js"
+
+          - script: |
+              cd $(frontendDir)
+              npm ci
+              npm run build
+            displayName: "Install Dependencies and Build"
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: "$(distDir)"
+              artifactName: "frontend-dist"
+            displayName: "Publish Build Artifacts"
+
+  - stage: Deploy
+    displayName: Deploy stage
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy
+        environment: $(environmentName)
+        pool:
+          vmImage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureRmWebAppDeployment@4
+                  displayName: "Azure App Service Deploy: xrwebsites-frontend"
+                  inputs:
+                    azureSubscription: $(azureSubscription)
+                    appType: webAppLinux
+                    WebAppName: $(webAppName)
+                    packageForLinux: "$(Pipeline.Workspace)/frontend-dist"
+                    RuntimeStack: "NODE|20LTS"
+                    StartupCommand: "npm run start"

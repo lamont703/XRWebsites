@@ -1,0 +1,76 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"
+  webAppName: "xrwebsites-api"
+  environmentName: "xrwebsites-api"
+  vmImageName: "ubuntu-latest"
+  backendDir: "backend"
+  distDir: "$(backendDir)/dist"
+
+stages:
+  - stage: Build
+    displayName: Build stage
+    jobs:
+      - job: Build
+        displayName: Build
+        pool:
+          vmImage: $(vmImageName)
+
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "20.18.0"
+            displayName: "Install Node.js"
+
+          - script: |
+              cd $(backendDir)
+              npm ci
+              npm run build
+            displayName: "Install Dependencies and Build"
+
+          - script: |
+              cd $(backendDir)
+              cp package.json dist/
+              cp -R src dist/
+              cd dist
+              npm install --production
+              echo '#!/bin/bash' > run.sh
+              echo 'node src/index.js' >> run.sh
+              chmod +x run.sh
+            displayName: "Setup Deployment"
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: "$(distDir)"
+              artifactName: "backend-dist"
+            displayName: "Publish Build Artifacts"
+
+  - stage: Deploy
+    displayName: Deploy stage
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy
+        environment: $(environmentName)
+        pool:
+          vmImage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureRmWebAppDeployment@4
+                  displayName: "Azure App Service Deploy: xrwebsites-api"
+                  inputs:
+                    azureSubscription: $(azureSubscription)
+                    appType: webAppLinux
+                    WebAppName: $(webAppName)
+                    packageForLinux: "$(Pipeline.Workspace)/backend-dist"
+                    RuntimeStack: "NODE|20LTS"
+                    StartupCommand: "bash run.sh"

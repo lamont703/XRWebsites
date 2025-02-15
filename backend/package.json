@@ -9,7 +9,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "create-admin": "node src/scripts/createSuperAdmin.js",
-    "build": "node src/index.js",
+    "build": "npm run clean && npm run transpile",
     "test-connections": "node src/startup.js"
   },
   "keywords": [

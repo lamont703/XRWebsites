@@ -6,14 +6,12 @@ import path from "path";
 // Load environment variables
 dotenv.config();
 
-if (!process.env.AZURE_STORAGE_CONNECTION_STRING) {
-    throw new Error('Azure Storage connection string is missing. Please check your .env file.');
+if (!process.env.AZURE_BLOB_SERVICE_SAS_URL) {
+    throw new Error('Azure Blob Service SAS URL is missing. Please check your .env file.');
 }
 
-// Create BlobServiceClient using the connection string
-export const blobServiceClient = BlobServiceClient.fromConnectionString(
-    process.env.AZURE_STORAGE_CONNECTION_STRING
-);
+// Create BlobServiceClient using the SAS URL
+export const blobServiceClient = new BlobServiceClient(process.env.AZURE_BLOB_SERVICE_SAS_URL);
 
 // Verify storage connection
 export const verifyStorage = async () => {
@@ -22,7 +20,7 @@ export const verifyStorage = async () => {
         const containerClient = blobServiceClient.getContainerClient(containerName);
         const exists = await containerClient.exists();
         if (exists) {
-            console.log('✅ Blob Storage connected successfully');
+            console.log('✅ Blob Storage connected successfully to the uploads container');
             return true;
         } else {
             console.log('⚠️ Container not found, will be created when needed');
@@ -89,24 +87,35 @@ const deleteFromAzureBlob = async (publicUrl) => {
 
 export const generateSasUrl = async (blobName) => {
     try {
-        if (!process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_STORAGE_SAS_TOKEN) {
+        if (!process.env.AZURE_STORAGE_ACCOUNT_NAME || !process.env.AZURE_SAS_TOKEN) {
             console.warn('Azure Storage credentials not configured, returning original blob name');
             return blobName;
         }
+
+        // Debug: Log the presence of environment variables
+        console.log('Azure Storage Account Name:', process.env.AZURE_STORAGE_ACCOUNT_NAME ? 'Set' : 'Missing');
+        console.log('Azure SAS Token:', process.env.AZURE_SAS_TOKEN ? 'Set' : 'Missing');
 
         // Extract just the blob name from the full URL if it's a full URL
         const actualBlobName = blobName.includes('blob.core.windows.net') 
             ? blobName.split('/').pop() 
             : blobName;
 
+        // Debug: Log the actual blob name
+        console.log('Actual Blob Name:', actualBlobName);
+
         // Construct the URL with SAS token
         const baseUrl = `https://${process.env.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`;
         const containerPath = '/uploads';
-        const sasToken = process.env.AZURE_STORAGE_SAS_TOKEN.startsWith('?') 
-            ? process.env.AZURE_STORAGE_SAS_TOKEN 
-            : `?${process.env.AZURE_STORAGE_SAS_TOKEN}`;
+        const sasToken = process.env.AZURE_SAS_TOKEN.startsWith('?') 
+            ? process.env.AZURE_SAS_TOKEN 
+            : `?${process.env.AZURE_SAS_TOKEN}`;
 
-        return `${baseUrl}${containerPath}/${actualBlobName}${sasToken}`;
+        // Debug: Log the constructed URL
+        const sasUrl = `${baseUrl}${containerPath}/${actualBlobName}${sasToken}`;
+        console.log('Generated SAS URL:', sasUrl);
+
+        return sasUrl;
     } catch (error) {
         console.error('Generate SAS URL error:', error);
         return blobName;

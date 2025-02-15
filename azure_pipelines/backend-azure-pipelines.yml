@@ -29,10 +29,11 @@ stages:
 
           - task: NodeTool@0
             inputs:
-              versionSpec: "22.8.0"
+              versionSpec: "22.13.0"
             displayName: "Install Node.js"
 
           - script: |
+              npm cache clean --force
               cd $(backendDir)
               npm ci
               npm run build

@@ -10,22 +10,27 @@ if (!process.env.AZURE_BLOB_SERVICE_SAS_URL) {
     throw new Error('Azure Blob Service SAS URL is missing. Please check your .env file.');
 }
 
-// Create BlobServiceClient using the SAS URL
-export const blobServiceClient = new BlobServiceClient(process.env.AZURE_BLOB_SERVICE_SAS_URL);
+// Create BlobServiceClient using the storage SAS URL
+const blobServiceClient = new BlobServiceClient(process.env.AZURE_BLOB_SERVICE_SAS_URL);
 
 // Verify storage connection
 export const verifyStorage = async () => {
     try {
-        const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || "uploads";
+        // Test access to the blob storage account
+        console.log('Testing access to Blob Storage account...');
+        const accountInfo = await blobServiceClient.getAccountInfo();
+        console.log('Blob Storage account access successful:', accountInfo);
+
+        const containerName = "xrwebsites-container";
         const containerClient = blobServiceClient.getContainerClient(containerName);
-        const exists = await containerClient.exists();
-        if (exists) {
-            console.log('✅ Blob Storage connected successfully to the uploads container');
-            return true;
-        } else {
-            console.log('⚠️ Container not found, will be created when needed');
-            return false;
-        }
+        console.log('Container client:', containerClient);
+
+        // Create the new container if it doesn't exist
+        console.log(`Creating container '${containerName}' if it doesn't exist...`);
+        await containerClient.createIfNotExists();
+        console.log(`✅ Container '${containerName}' is ready for use`);
+
+        return true;
     } catch (error) {
         console.error('❌ Error connecting to Blob Storage:', error.message);
         throw error;
@@ -127,4 +132,4 @@ export const getSecureUrl = async (blobName) => {
     return await generateSasUrl(blobName);
 };
 
-export { uploadToAzureBlob, deleteFromAzureBlob };
+export { uploadToAzureBlob, deleteFromAzureBlob, blobServiceClient };

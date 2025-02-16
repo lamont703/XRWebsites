@@ -46,7 +46,7 @@ stages:
               cd dist
               npm install --production
               echo '#!/bin/bash' > run.sh
-              echo 'node index.js' >> run.sh
+              echo 'node src/index.js' >> run.sh
               chmod +x run.sh
             displayName: "Setup Deployment"
 

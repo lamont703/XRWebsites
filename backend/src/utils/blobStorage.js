@@ -16,9 +16,6 @@ const blobServiceClient = new BlobServiceClient(process.env.AZURE_BLOB_SERVICE_S
 // Verify storage connection
 export const verifyStorage = async () => {
     try {
-        // Create BlobServiceClient using the storage SAS URL
-        const blobServiceClient = new BlobServiceClient(process.env.AZURE_BLOB_SERVICE_SAS_URL);
-
         // Test access to the blob storage account
         console.log('Testing access to Blob Storage account...');
         const accountInfo = await blobServiceClient.getAccountInfo();

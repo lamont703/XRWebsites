@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import app from './server.js';
 import { connectDB } from './database.js';
+import { testConnections } from './startup.js';
 
 // Environment setup for Azure App Service
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -18,15 +19,14 @@ const port = process.env.PORT || 8080;
 // Initialize server with database connection
 const startServer = async () => {
     try {
+        
+        await testConnections();
+        console.log('✅ All connections verified');
+
         // Connect to database
         console.log('Connecting to database...');
         await connectDB();
         console.log('✅ Database connected successfully');
-
-        // Test all connections
-        const { testConnections } = await import('./startup.js');
-        await testConnections();
-        console.log('✅ All connections verified');
 
         // Start the server
         app.listen(port, '0.0.0.0', () => {

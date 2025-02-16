@@ -25,7 +25,7 @@ app.use(cookieParser());
 // CORS configuration
 const corsOptions = {
     origin: process.env.SITE_NAME  
-        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites.io']
+        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://xrwebsites-frontend-hzdgbhcbfvdhb8fn.eastus2-01.azurewebsites.net']
         : ['http://localhost:3000', 'http://127.0.0.1:5500'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

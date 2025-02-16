@@ -33,7 +33,6 @@ stages:
             displayName: "Install Node.js"
 
           - script: |
-              npm cache clean --force
               cd $(backendDir)
               npm ci
               npm run build
@@ -46,7 +45,7 @@ stages:
               cd dist
               npm install --production
               echo '#!/bin/bash' > run.sh
-              echo 'node src/index.js' >> run.sh
+              echo 'node index.js' >> run.sh
               chmod +x run.sh
             displayName: "Setup Deployment"
 
@@ -77,5 +76,5 @@ stages:
                     appType: webAppLinux
                     WebAppName: $(webAppName)
                     packageForLinux: "$(Pipeline.Workspace)/backend-dist"
-                    RuntimeStack: "NODE|20LTS"
+                    RuntimeStack: "NODE|22LTS"
                     StartupCommand: "bash run.sh"

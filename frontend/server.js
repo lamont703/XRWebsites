@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(__dirname));
 
 // Handle all routes by serving the index.html file
-app.get('/', (req, res) => {
+app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 

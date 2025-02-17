@@ -44,6 +44,10 @@ export const Login = () => {
           throw new Error('Passwords do not match');
         }
 
+        console.log("VITE_BACKEND_API_URL:", import.meta.env.VITE_BACKEND_API_URL);
+        console.log("VITE_ENV:", import.meta.env.VITE_ENV);
+        console.log("VITE_PORT:", import.meta.env.VITE_PORT);
+        
         const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/register`, {
           method: 'POST',
           headers: {

@@ -58,6 +58,7 @@ const User = {
                 throw new ApiError(409, "User already exists");
             }
 
+            const container = await getContainer();
             const { resource } = await container.items.create(userData);
             return resource;
         } catch (error) {
@@ -73,6 +74,7 @@ const User = {
                 parameters: [{ name: "@id", value: id }]
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             return resources[0] || null;
         } catch (error) {
@@ -112,6 +114,7 @@ const User = {
                 parameters: [{ name: "@id", value: userId }]
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             const user = resources[0];
             
@@ -135,6 +138,7 @@ const User = {
                 parameters: [{ name: "@id", value: id }]
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             const user = resources[0];
             
@@ -159,6 +163,7 @@ const User = {
                 parameters: [{ name: "@id", value: id }]
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             const user = resources[0];
             
@@ -185,6 +190,7 @@ const User = {
             user.adminRole = adminRole;
             user.updatedAt = new Date();
 
+            const container = await getContainer();
             const { resource } = await container.items.upsert(user);
             return resource;
         } catch (error) {
@@ -201,6 +207,7 @@ const User = {
                 query: "SELECT * FROM c WHERE c.type = 'user'"
             };
             
+            
             const { resources } = await container.items.query(querySpec).fetchAll();
             return resources;
         } catch (error) {
@@ -216,6 +223,7 @@ const User = {
                 query: "SELECT VALUE COUNT(1) FROM c"
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             return resources[0] || 0;
         } catch (error) {
@@ -231,6 +239,7 @@ const User = {
                 parameters: [{ name: "@id", value: id }]
             };
             
+            const container = await getContainer();
             const { resources } = await container.items.query(querySpec).fetchAll();
             const user = resources[0];
             
@@ -278,6 +287,7 @@ const User = {
                 return null;
             }
 
+            const container = await getContainer();
             await container.item(id, user.type).delete();
             return true;
         } catch (error) {

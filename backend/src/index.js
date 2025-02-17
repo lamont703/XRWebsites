@@ -14,7 +14,7 @@ if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
 }
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8081;
 
 // Initialize server with database connection
 const startServer = async () => {

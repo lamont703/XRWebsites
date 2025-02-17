@@ -6,7 +6,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 8080, // Match the port expected in backend CORS
+    port: parseInt(process.env.VITE_PORT || '8080'), // Ensure a string is always passed to parseInt
     host: true, // Listen on all local IPs
     open: true, // Open browser on server start
     hmr: {

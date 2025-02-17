@@ -180,6 +180,8 @@ export const Login = () => {
             {isLogin ? 'Sign in' : 'Create account'}
           </button>
         </form>
+
+        {isLoading && <div>Loading...</div>}
       </div>
     </div>
   );

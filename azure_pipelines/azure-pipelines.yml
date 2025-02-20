@@ -12,7 +12,7 @@ variables:
   webAppName: "xrwebsites-frontend"
   environmentName: "xrwebsites-frontend"
   vmImageName: "ubuntu-latest"
-  frontendDir: "site/wwwroot"
+  frontendDir: "frontend"
   distDir: "$(frontendDir)/dist"
 
 stages:

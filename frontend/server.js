@@ -10,15 +10,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static files from the root directory
-//app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(__dirname));
+//app.use(express.static(path.join(__dirname, 'dist')));
 
 
 // Handle all routes by serving the index.html file
 /*app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });*/
-app.get('*', (req, res) => {
+app.get('*' || '/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 

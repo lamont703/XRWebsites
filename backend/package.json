@@ -9,7 +9,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "create-admin": "node src/scripts/createSuperAdmin.js",
-    "lint": "eslint .",
+    "build": "echo 'No build step required for plain JavaScript' && cp -R src dist",
     "test-connections": "node src/startup.js"
   },
   "keywords": [

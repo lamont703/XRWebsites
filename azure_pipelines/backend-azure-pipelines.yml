@@ -41,6 +41,7 @@ stages:
           - script: |
               cd $(backendDir)
               cp package.json dist/
+              cp package-lock.json dist/
               cp -R src dist/
               cd dist
               npm install --production

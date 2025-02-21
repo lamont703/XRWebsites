@@ -6,11 +6,10 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rm -rf dist",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "create-admin": "node src/scripts/createSuperAdmin.js",
-    "build": "npm run clean",
+    "lint": "eslint .",
     "test-connections": "node src/startup.js"
   },
   "keywords": [

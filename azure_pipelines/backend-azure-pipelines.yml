@@ -40,7 +40,6 @@ stages:
 
           - script: |
               cd $(backendDir)
-              mkdir -p dist
               cp package.json dist/
               cp -R src dist/
               cd dist

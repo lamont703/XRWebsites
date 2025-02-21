@@ -25,7 +25,7 @@ app.use(cookieParser());
 // CORS configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
-        ? ['http://localhost:8080', 'https://xrwebsites-frontend-hzdgbhcbfvdhb8fn.eastus2-01.azurewebsites.net']
+        ? ['http://localhost:8080', 'https://app.xrwebsites.io']
         : ['http://localhost:8080'], // Allow requests from this origin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

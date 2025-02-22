@@ -183,6 +183,17 @@ export const Login = () => {
           >
             {isLogin ? 'Sign in' : 'Create account'}
           </button>
+          
+          <div className="mt-4 text-center">
+            <a
+              href="https://xrwebsites.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 transition-colors duration-200 text-sm"
+            >
+              Visit XRWebsites.io
+            </a>
+          </div>
         </form>
 
         {isLoading && <div>Loading...</div>}

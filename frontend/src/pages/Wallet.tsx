@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
-import styles from '../styles/Dashboard.module.css';
+import styles from './Wallet.module.css';
 import { FundWallet } from '@/components/features/wallet/FundWallet';
 import { BuyVisorcoin } from '@/components/features/wallet/BuyVisorcoin';
 import { SendReceiveVisorcoin } from '@/components/features/wallet/SendReceiveVisorcoin';
 import { RecentTransactions } from '@/components/features/wallet/RecentTransactions';
-
-
+import type User from '../types/user';
 
 interface WalletData {
   balance: string;
@@ -36,9 +35,16 @@ interface TransactionStats {
   transfers: number;
 }
 
+interface Token {
+  id: string;
+  name: string;
+  symbol: string;
+  balance: string;
+  value: string;
+}
 
 export const Wallet = () => {
-  const { user } = useAuth();
+  const { user } = useAuth() as { user: User | null };
   const [walletData, setWalletData] = useState<WalletData>({
     balance: '0.00',
     totalTokens: 0,
@@ -58,6 +64,7 @@ export const Wallet = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tokens, setTokens] = useState<Token[]>([]);
 
   const loadWalletData = async () => {
     console.log('🔄 Loading wallet data...');
@@ -298,9 +305,19 @@ export const Wallet = () => {
     initializeWallet();
   }, [walletData.id]);
 
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="w-full max-w-[100vw] overflow-x-hidden p-4 md:px-6 lg:px-8 space-y-6">
+      <div className={styles.walletContainer}>
         {/* Welcome Section */}
         <div className="bg-gray-800 rounded-lg p-4 md:p-6">
           <h1 className="text-xl md:text-2xl font-bold text-white mb-2">Wallet Overview</h1>
@@ -332,19 +349,19 @@ export const Wallet = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="bg-gray-800 rounded-lg p-4 md:p-6">
+          <div className={styles.balanceCard}>
             <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Dollars</div>
             <div className="text-lg md:text-2xl font-bold text-white">${walletData.balance}</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 md:p-6">
+          <div className={styles.balanceCard}>
             <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Visorcoin (XRV)</div>
             <div className="text-lg md:text-2xl font-bold text-white">{walletData.totalTokens}</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 md:p-6">
+          <div className={styles.balanceCard}>
             <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Pending Transactions</div>
             <div className="text-lg md:text-2xl font-bold text-white">{walletData.pendingTransactions}</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 md:p-6">
+          <div className={styles.balanceCard}>
             <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Value Locked</div>
             <div className="text-lg md:text-2xl font-bold text-white">${walletData.totalValueLocked}</div>
           </div>
@@ -366,6 +383,20 @@ export const Wallet = () => {
           isLoading={isLoading}
           className="bg-gray-800 rounded-lg"
         />
+
+        {/* Tokens Section */}
+        <div className={styles.card}>
+          <h2 className="text-xl font-semibold text-white mb-4">Your Tokens</h2>
+          <div className={styles.tokenGrid}>
+            {tokens.map(token => (
+              <div key={token.id} className={styles.tokenCard}>
+                <div className="text-sm text-gray-400">{token.name}</div>
+                <div className="text-lg font-semibold text-white">{token.balance} {token.symbol}</div>
+                <div className="text-sm text-blue-400">${token.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </MainLayout>
   );

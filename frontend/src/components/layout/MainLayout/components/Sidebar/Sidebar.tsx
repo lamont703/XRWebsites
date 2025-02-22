@@ -3,10 +3,11 @@
  * 
  * This component provides the sidebar for the application, including navigation and user information.
  */ 
-import React, { useState } from 'react';
+import React, { memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth/Auth';
 import styles from '../../../../../styles/Sidebar.module.css';
+import type User from '../../../../../types/user';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,15 +15,11 @@ interface SidebarProps {
   isMobile: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) => {
+const SidebarComponent: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) => {
+  console.log('Sidebar rendered with isOpen:', isOpen);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const { user, logout } = useAuth() as { user: User | null; logout: () => Promise<void> };
 
   const navigationItems = [
     { name: 'Overview', path: '/dashboard', icon: 'grid' },
@@ -34,17 +31,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
     { name: 'Marketplace', path: '/marketplace', icon: 'shopping-cart' },
     { name: 'Forum', path: '/forum', icon: 'chat' },
     { name: 'Settings', path: '/settings', icon: 'cog' },
-    
   ];
 
-  const sidebarClasses = `
-    fixed lg:relative w-64 h-full bg-gray-800 p-4 transition-transform duration-300 ease-in-out z-40
-    ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-    ${isMobile ? 'top-16' : 'top-0'}
-  `;
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const sidebarClasses = [
+    'fixed',
+    'lg:relative',
+    'w-64',
+    'h-screen',
+    'bg-gray-800',
+    'p-4',
+    'transition-transform',
+    'duration-300',
+    'ease-in-out',
+    isMobile ? 'z-40' : 'z-10',
+    isMobile && !isOpen ? '-translate-x-full' : 'translate-x-0',
+    isMobile ? 'top-16 left-0' : 'top-0'
+  ].join(' ');
+
+  if (isMobile && !isOpen) {
+    return null;
+  }
 
   return (
-    <div className={sidebarClasses}>
+    <aside className={sidebarClasses}>
       {!isMobile && <div className="text-2xl font-bold text-blue-400 mb-8">XRWebsites.io</div>}
       
       <div className={`${styles.userCard} mb-6 p-4`}>
@@ -66,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
           <Link
             key={item.path}
             to={item.path}
-            onClick={onClose}
+            onClick={() => isMobile && onClose()}
             className={`${styles.navItem} block p-2 rounded ${
               location.pathname === item.path
                 ? 'bg-blue-600 text-white'
@@ -78,12 +92,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) =
         ))}
         
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            if (isMobile) onClose();
+            handleLogout();
+          }}
           className="w-full mt-4 p-2 rounded bg-red-600 hover:bg-red-700 text-white transition-all hover:-translate-y-0.5"
         >
           Logout
         </button>
       </nav>
-    </div>
+    </aside>
   );
-}; 
+};
+
+// Add comparison function for memo
+const areEqual = (prevProps: SidebarProps, nextProps: SidebarProps) => {
+  return (
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.isMobile === nextProps.isMobile
+  );
+};
+
+export const Sidebar = memo(SidebarComponent, areEqual); 

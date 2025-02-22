@@ -4,68 +4,58 @@
  * This component provides the main layout for the application, including a sidebar and a header.
  * It also handles user authentication and provides a logout function.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/store/auth/Auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { Toaster } from 'react-hot-toast';
+import { debounce } from 'lodash';
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 1024);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobileView);
+  // Initialize states with window check to prevent hydration mismatch
+  const [isMobileView, setIsMobileView] = useState(true); // Default to mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed
 
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobileView(mobile);
-      if (!mobile) {
+  const handleResize = useCallback(
+    debounce(() => {
+      const isMobile = window.innerWidth < 1024;
+      setIsMobileView(isMobile);
+      // Only auto-open sidebar when switching to desktop
+      if (!isMobile) {
         setIsSidebarOpen(true);
       } else {
-        setIsSidebarOpen(false);
+        setIsSidebarOpen(false); // Ensure sidebar is closed on mobile
       }
-    };
+    }, 100),
+    []
+  );
 
+  useEffect(() => {
+    // Set initial states after component mount
+    setIsMobileView(window.innerWidth < 1024);
+    setIsSidebarOpen(window.innerWidth >= 1024);
+    
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    return () => {
+      handleResize.cancel();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [handleResize]);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const handleClose = useCallback(() => setIsSidebarOpen(false), []);
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
 
   return (
     <div className="min-h-screen flex bg-gray-900">
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          className: '',
-          style: {
-            background: '#374151',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#10B981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#EF4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
+      <Toaster position="top-right" />
 
-      {/* Mobile Header with Hamburger */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-800 z-40 px-4 flex items-center justify-between">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-800 z-50 px-4 flex items-center justify-between">
         <div className="text-xl font-bold text-blue-400">XRWebsites.io</div>
         <button
-          className="p-2 rounded-lg bg-gray-700 text-white"
+          className="p-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600"
           onClick={toggleSidebar}
+          aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
         >
           <svg
             className="w-6 h-6"
@@ -92,21 +82,31 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
         </button>
       </div>
 
-      {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} isMobile={isMobileView} />
-
-      {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 ${isMobileView ? 'pt-16' : ''}`}>
-        {children}
-      </div>
-
-      {/* Mobile Overlay */}
+      {/* Sidebar with overlay */}
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={handleClose} 
+        isMobile={isMobileView} 
+      />
+      
+      {/* Overlay */}
       {isMobileView && isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={handleClose}
         />
       )}
+
+      {/* Main Content */}
+      <main 
+        className={`flex-1 transition-all duration-300 ${
+          isMobileView ? 'pt-16' : ''
+        } ${
+          isSidebarOpen && !isMobileView ? 'ml-64' : ''
+        }`}
+      >
+        {children}
+      </main>
     </div>
   );
 }; 

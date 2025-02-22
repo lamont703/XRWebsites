@@ -1,0 +1,122 @@
+.walletContainer {
+  padding: 1rem;
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+.walletSection {
+  margin-bottom: 1.5rem;
+}
+
+.walletGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.balanceCard {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 120px;
+}
+
+.transactionsList {
+  composes: card;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.transactionItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transactionItem:last-child {
+  border-bottom: none;
+}
+
+.tokenGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin-top: 1rem;
+}
+
+.tokenCard {
+  composes: card;
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 0;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.actionButtons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .walletContainer {
+    padding: 1.5rem;
+  }
+  
+  .walletGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .actionButtons {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .walletContainer {
+    max-width: 1280px;
+    padding: 2rem;
+  }
+  
+  .walletGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  .tokenGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .card {
+    padding: 1.75rem;
+  }
+} 

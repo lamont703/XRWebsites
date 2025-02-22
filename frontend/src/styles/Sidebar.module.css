@@ -3,6 +3,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #1a1c2e 0%, #0f172a 100%);
   color: white;
+  transition: transform 0.3s ease-in-out;
 }
 
 .navItem {

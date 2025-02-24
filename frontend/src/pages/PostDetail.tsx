@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { PostComments } from '@/components/features/forum/PostComments/PostComments';
 import { useAuth } from '@/store/auth/Auth';
 import { toast } from 'react-hot-toast';
+import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
 
 interface Author {
   id: string;
@@ -43,6 +44,7 @@ export const PostDetail = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [likingStates, setLikingStates] = useState<{ [key: string]: boolean }>({});
+  const [comments, setComments] = useState([]);
 
   // Fetch post details
   const { data: postData, isLoading, error } = useQuery({
@@ -217,15 +219,8 @@ export const PostDetail = () => {
     });
   }, [postData]);
 
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div>Loading...</div>
-        </div>
-      </MainLayout>
-    );
-  }
+  if (isLoading) return <LoadingOverlay isLoading={true} />;
+  if (!comments) return null;
 
   const post = postData?.data;
 
@@ -281,14 +276,14 @@ export const PostDetail = () => {
           <p className="text-gray-300 mb-6">{post.content}</p>
           
           <div className="flex gap-2 mb-8">
-            {post.tags.map((tag: string) => (
+            {post.tags?.map((tag: string) => (
               <span key={tag} className="px-2 py-1 bg-gray-700 text-gray-300 text-sm rounded-full">
                 {tag}
               </span>
             ))}
           </div>
 
-          <div className="border-t border-gray-700 pt-6">
+          <div id="comments" className="border-t border-gray-700 pt-6">
             <h2 className="text-xl font-bold text-white mb-4">Comments</h2>
             <PostComments
               comments={post.comments || []}

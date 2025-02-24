@@ -10,6 +10,7 @@ import tokenomicsRouter from "./routes/tokenomicsRouter.js";
 import paymentRouter from "./routes/payment.routes.js";
 import marketplaceRouter from "./routes/marketplace.routes.js";
 import forumRoutes from './routes/forum.routes.js';
+import messageRouter from './routes/message.routes.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -89,6 +90,7 @@ app.use("/api/v1/tokenomics", tokenomicsRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/marketplace", marketplaceRouter);
 app.use('/api/v1/forum', forumRoutes);
+app.use("/api/v1/messages", messageRouter);
 
 // Add this before other middleware for webhook requests from Stripe.
 app.post('/api/v1/payments/webhook', express.raw({type: 'application/json'}));

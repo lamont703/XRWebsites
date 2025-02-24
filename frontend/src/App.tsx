@@ -34,6 +34,8 @@ import { JobMarketplace } from './pages/JobMarketplace';
 import { Tokenomics } from './pages/Tokenomics';
 import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
+import { UserProfile } from '@/pages/UserProfile';
+import { Messages } from './pages/Messages';
 
 const queryClient = new QueryClient();
 
@@ -140,6 +142,22 @@ function App() {
                       }
                     />
                   </Route>
+                  <Route 
+                    path="/users/:userId" 
+                    element={
+                      <AuthGuard>
+                        <UserProfile />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/messages/:userId" 
+                    element={
+                      <AuthGuard>
+                        <Messages />
+                      </AuthGuard>
+                    } 
+                  />
 
                   {/* Redirect root to dashboard */}
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />

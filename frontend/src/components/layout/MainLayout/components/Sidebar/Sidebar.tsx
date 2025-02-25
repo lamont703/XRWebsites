@@ -30,6 +30,7 @@ const SidebarComponent: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile })
     { name: 'My Jobs', path: '/jobs', icon: 'briefcase' },
     { name: 'Marketplace', path: '/marketplace', icon: 'shopping-cart' },
     { name: 'Forum', path: '/forum', icon: 'chat' },
+    { name: 'Profile', path: `/users/${user?.id}`, icon: 'user' },
     { name: 'Settings', path: '/settings', icon: 'cog' },
   ];
 

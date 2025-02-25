@@ -1,3 +1,5 @@
+import React, { useNavigate } from 'react-router-dom';
+
 interface JobCardProps {
   job: {
     id: string;
@@ -10,21 +12,36 @@ interface JobCardProps {
       name: string;
       rating: number;
     };
+    createdAt: string;
   };
-  onClick: (job: Job) => void;
+  onClick: (job: any) => void;
 }
 
-export const JobCard = ({ job, onClick }: JobCardProps) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onClick }) => {
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick(job);
+  };
+
   return (
     <div 
       className="bg-gray-800 rounded-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors"
       onClick={() => onClick(job)}
     >
-      <h3 className="text-xl font-semibold text-white mb-2">{job.title}</h3>
-      <p className="text-gray-400 mb-4">{job.description}</p>
-      <div className="flex justify-between items-center">
-        <span className="text-blue-400">${job.price}</span>
-        <span className="text-gray-400">{job.location}</span>
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-xl font-semibold text-white">{job.title}</h3>
+        <span className="text-green-400 font-medium">${job.price}</span>
+      </div>
+      
+      <p className="text-gray-300 mb-4 line-clamp-2">{job.description}</p>
+      
+      <div className="flex justify-end">
+        <button
+          onClick={handleViewDetails}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+        >
+          View Details
+        </button>
       </div>
     </div>
   );

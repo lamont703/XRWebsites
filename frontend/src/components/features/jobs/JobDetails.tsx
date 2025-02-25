@@ -68,6 +68,23 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
     
     try {
       await onApply(id, applicationData);
+      
+      // Send message to job poster
+      const messageResponse = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/messages/${poster.id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          content: `Hi, I've applied for your job: "${title}". You can view my application in your Jobs dashboard.`
+        })
+      });
+
+      if (!messageResponse.ok) {
+        console.error('Failed to send notification message to job poster');
+      }
+
       setShowApplicationForm(false);
       setSuccess('Application submitted successfully!');
       

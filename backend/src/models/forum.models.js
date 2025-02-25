@@ -253,6 +253,51 @@ const Forum = {
             console.error("Error in softDeleteComment:", error);
             throw new ApiError(500, "Failed to delete comment");
         }
+    },
+
+    async deletePost(postId) {
+        try {
+            const container = await getContainer();
+            const { resource: post } = await container.item(postId, 'forum_post').read();
+            
+            if (!post) {
+                throw new ApiError(404, "Post not found");
+            }
+
+            // Soft delete by marking the post as deleted
+            post.isDeleted = true;
+            post.updatedAt = new Date().toISOString();
+            
+            await container.item(postId, 'forum_post').replace(post);
+            return post;
+        } catch (error) {
+            console.error("Error in deletePost:", error);
+            throw new ApiError(500, "Failed to delete post");
+        }
+    },
+
+    async getUserPosts(userId) {
+        try {
+            const container = await getContainer();
+            const querySpec = {
+                query: `
+                    SELECT * FROM c 
+                    WHERE c.type = 'forum_post' 
+                    AND c.author.id = @userId 
+                    AND (NOT IS_DEFINED(c.status) OR c.status != 'deleted')
+                    ORDER BY c.createdAt DESC
+                `,
+                parameters: [
+                    { name: "@userId", value: userId }
+                ]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            return resources;
+        } catch (error) {
+            console.error("Error in getUserPosts:", error);
+            throw new ApiError(500, "Failed to fetch user posts");
+        }
     }
 };
 

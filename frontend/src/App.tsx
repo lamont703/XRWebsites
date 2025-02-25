@@ -21,6 +21,8 @@ import {
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
+import { MessageInbox } from '@/components/features/messages/MessageInbox/MessageInbox';
+import { Messages } from '@/pages/Messages';
 
 // Page imports
 import { Login } from './pages/Login';
@@ -35,7 +37,6 @@ import { Tokenomics } from './pages/Tokenomics';
 import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
 import { UserProfile } from '@/pages/UserProfile';
-import { Messages } from './pages/Messages';
 
 const queryClient = new QueryClient();
 
@@ -147,6 +148,14 @@ function App() {
                     element={
                       <AuthGuard>
                         <UserProfile />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/messages/inbox" 
+                    element={
+                      <AuthGuard>
+                        <MessageInbox />
                       </AuthGuard>
                     } 
                   />

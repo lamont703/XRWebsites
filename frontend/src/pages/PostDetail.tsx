@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PostComments } from '@/components/features/forum/PostComments/PostComments';
@@ -40,6 +40,7 @@ interface Comment {
 
 export const PostDetail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -207,6 +208,19 @@ export const PostDetail = () => {
     }
   };
 
+  const handleUserClick = (userId: string) => {
+    navigate(`/users/${userId}`);
+  };
+
+  const handleBackClick = () => {
+    // Check if we came from a user profile page
+    if (location.state?.from === 'profile') {
+      navigate(`/users/${location.state.userId}`);
+    } else {
+      navigate('/forum');
+    }
+  };
+
   useEffect(() => {
     console.log('Post data updated:', {
       comments: postData?.data?.comments?.map(c => ({
@@ -238,7 +252,7 @@ export const PostDetail = () => {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <button
-          onClick={() => navigate('/forum')}
+          onClick={handleBackClick}
           className="mb-6 flex items-center gap-2 text-blue-400 hover:text-blue-500"
         >
           <svg 
@@ -253,12 +267,15 @@ export const PostDetail = () => {
               clipRule="evenodd" 
             />
           </svg>
-          Back to Forum
+          {location.state?.from === 'profile' ? 'Back to Profile' : 'Back to Forum'}
         </button>
 
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <div 
+              onClick={() => handleUserClick(post.author?.id)}
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80"
+            >
               {post.author?.avatar ? (
                 <img src={post.author.avatar} alt={post.author.name} className="w-full h-full rounded-full" />
               ) : (
@@ -268,7 +285,15 @@ export const PostDetail = () => {
             <div>
               <h1 className="text-2xl font-bold text-white">{post.title}</h1>
               <div className="text-sm text-gray-400">
-                Posted by {post.author?.name || 'Unknown'} • {new Date(post.createdAt).toLocaleDateString()}
+                Posted by{' '}
+                <button
+                  onClick={() => handleUserClick(post.author?.id)}
+                  className="text-gray-400 hover:text-blue-400"
+                >
+                  {post.author?.name || 'Unknown'}
+                </button>
+                {' • '}
+                {new Date(post.createdAt).toLocaleDateString()}
               </div>
             </div>
           </div>

@@ -222,6 +222,37 @@ const toggleLike = asyncHandler(async (req, res) => {
     );
 });
 
+const getUserPosts = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const container = await getContainer();
+
+    const querySpec = {
+        query: `
+            SELECT * FROM c 
+            WHERE c.type = 'forum_post' 
+            AND c.author.id = @userId 
+            AND (NOT IS_DEFINED(c.status) OR c.status != 'deleted')
+            ORDER BY c.createdAt DESC
+        `,
+        parameters: [
+            { name: "@userId", value: userId }
+        ]
+    };
+
+    try {
+        const { resources: posts } = await container.items.query(querySpec).fetchAll();
+        
+        res.json(
+            new ApiResponse(200, "User posts retrieved successfully", {
+                posts: posts || []
+            })
+        );
+    } catch (error) {
+        console.error("Error fetching user posts:", error);
+        throw new ApiError(500, "Failed to fetch user posts");
+    }
+});
+
 export {
     getPosts,
     createPost,
@@ -232,5 +263,6 @@ export {
     getCategories,
     deletePost,
     deleteComment,
-    toggleLike
+    toggleLike,
+    getUserPosts
 };

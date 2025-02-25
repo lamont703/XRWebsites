@@ -11,7 +11,7 @@ export const UserProfile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { data: userData, isLoading } = useQuery({
+  const { data: userData, isLoading: userLoading } = useQuery({
     queryKey: ['user', userId],
     queryFn: async () => {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/${userId}/profile`, {
@@ -25,12 +25,35 @@ export const UserProfile = () => {
     }
   });
 
+  const { data: userPosts, isLoading: postsLoading } = useQuery({
+    queryKey: ['user-posts', userId],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/users/${userId}/posts`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch user posts');
+      const data = await response.json();
+      return data.data.posts; // Access posts through the data property of ApiResponse
+    }
+  });
+
   const handleMessageClick = () => {
     if (!user) {
       toast.error('Please login to send messages');
       return;
     }
-    navigate(`/messages/${userId}`);
+    navigate('/messages/inbox');
+  };
+
+  const handlePostClick = (postId: string) => {
+    navigate(`/forum/posts/${postId}`, {
+      state: { 
+        from: 'profile',
+        userId: userId 
+      }
+    });
   };
 
   // Add console logs to debug the condition
@@ -43,11 +66,11 @@ export const UserProfile = () => {
     userData
   });
 
-  if (isLoading) return <LoadingOverlay isLoading={true} />;
+  if (userLoading || postsLoading) return <LoadingOverlay isLoading={true} />;
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pt-20 lg:pt-8">
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -83,7 +106,29 @@ export const UserProfile = () => {
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-700 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-white mb-4">Recent Posts</h2>
-              {/* Add user's posts here */}
+              <div className="space-y-4">
+                {userPosts?.length > 0 ? (
+                  userPosts.map((post: any) => (
+                    <div 
+                      key={post.id}
+                      onClick={() => handlePostClick(post.id)}
+                      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors"
+                    >
+                      <h3 className="text-white font-medium mb-2">{post.title}</h3>
+                      <p className="text-gray-300 text-sm line-clamp-2 mb-2">
+                        {post.content}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <span>👍 {post.likes || 0}</span>
+                        <span>💬 {post.replies || 0}</span>
+                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400">No posts yet</p>
+                )}
+              </div>
             </div>
             <div className="bg-gray-700 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-white mb-4">Activity</h2>

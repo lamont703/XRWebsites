@@ -9,6 +9,7 @@ import { CreatePostForm } from '@/components/features/forum/CreatePostForm/Creat
 import { Dialog } from '@headlessui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
 
 interface ForumPost {
   id: string;
@@ -27,6 +28,7 @@ interface ForumPost {
   likes: number;
   replies: number;
   isStickied?: boolean;
+  likedBy: string[];
 }
 
 export const Forum = () => {
@@ -194,12 +196,12 @@ export const Forum = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="container mx-auto px-2 sm:px-4 py-8 pt-20 lg:pt-8 max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold text-white">Forum</h1>
           <button
             onClick={() => setIsCreatePostOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full sm:w-auto"
           >
             Create Post
           </button>
@@ -213,15 +215,18 @@ export const Forum = () => {
         />
 
         {isLoading ? (
-          <div>Loading...</div>
+          <div className="flex justify-center py-8">
+            <LoadingOverlay isLoading={true} />
+          </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             <div className="lg:col-span-2">
               <div className="space-y-4">
                 {postsData?.data?.posts?.map((post: ForumPost) => (
                   <ForumPost 
                     key={post.id} 
                     {...post} 
+                    likedBy={post.likedBy || []}
                     onLike={async (postId) => {
                       try {
                         await likePostMutation.mutateAsync(postId);
@@ -243,9 +248,9 @@ export const Forum = () => {
                 ))}
               </div>
             </div>
-            <ForumSidebar
-              popularTopics={postsData?.data?.posts?.slice(0, 5) || []}
-            />
+            <div className="hidden lg:block">
+              <ForumSidebar />
+            </div>
           </div>
         )}
       </div>

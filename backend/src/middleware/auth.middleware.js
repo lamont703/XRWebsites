@@ -10,33 +10,41 @@ export const verifyJWT = async (req, res, next) => {
             throw new ApiError(401, "Unauthorized request");
         }
     
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // Get full user data from database
-        const container = await getContainer();
-        const querySpec = {
-            query: "SELECT * FROM c WHERE c.type = 'user' AND c.id = @id",
-            parameters: [{ name: '@id', value: decodedToken.id }]
-        };
-        
-        const { resources } = await container.items.query(querySpec).fetchAll();
-        const userData = resources[0];
+        try {
+            const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+            
+            // Get full user data from database
+            const container = await getContainer();
+            const querySpec = {
+                query: "SELECT * FROM c WHERE c.type = 'user' AND c.id = @id",
+                parameters: [{ name: '@id', value: decodedToken.id }]
+            };
+            
+            const { resources } = await container.items.query(querySpec).fetchAll();
+            const userData = resources[0];
 
-        if (!userData) {
-            throw new ApiError(404, "User not found");
+            if (!userData) {
+                throw new ApiError(404, "User not found");
+            }
+
+            // Combine token data with database user data
+            req.user = {
+                ...decodedToken,
+                name: userData.fullName,
+                username: userData.username,
+                avatar: userData.avatar
+            };
+
+            next();
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                throw new ApiError(401, "Token has expired");
+            }
+            throw new ApiError(401, "Invalid access token");
         }
-
-        // Combine token data with database user data
-        req.user = {
-            ...decodedToken,
-            name: userData.fullName,
-            username: userData.username,
-            avatar: userData.avatar
-        };
-
-        next();
     } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid access token");
+        // Pass the error to the error handling middleware
+        next(error);
     }
 };
 

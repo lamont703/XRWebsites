@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth/Auth';
 import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
 
@@ -34,12 +35,17 @@ export const PostComments: React.FC<PostCommentsProps> = ({
   isLiking = {}
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<string | null>(null);
 
   // Filter out deleted comments
   const activeComments = comments.filter(comment => comment.status !== 'deleted');
+
+  const handleUserClick = (userId: string) => {
+    navigate(`/users/${userId}`);
+  };
 
   const handleSubmit = async (e: React.FormEvent, parentId?: string) => {
     e.preventDefault();
@@ -60,7 +66,10 @@ export const PostComments: React.FC<PostCommentsProps> = ({
         className={`${depth > 0 ? 'ml-8 border-l border-gray-700' : ''} py-4`}
       >
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+          <div 
+            onClick={() => handleUserClick(comment.author?.id)}
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80"
+          >
             {comment.author?.avatar ? (
               <img 
                 src={comment.author.avatar} 
@@ -75,13 +84,19 @@ export const PostComments: React.FC<PostCommentsProps> = ({
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-white">
+              <button
+                onClick={() => handleUserClick(comment.author?.id)}
+                className="font-medium text-white hover:text-blue-400"
+              >
                 {comment.author?.name || comment.author?.username || 'Anonymous'}
-              </span>
+              </button>
               {comment.author?.username && (
-                <span className="text-sm text-gray-400">
+                <button
+                  onClick={() => handleUserClick(comment.author?.id)}
+                  className="text-sm text-gray-400 hover:text-blue-400"
+                >
                   @{comment.author.username}
-                </span>
+                </button>
               )}
             </div>
             <p className="text-gray-300 mb-2">{comment.content}</p>

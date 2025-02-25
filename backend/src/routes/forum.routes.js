@@ -9,7 +9,8 @@ import {
     getCategories,
     toggleCommentLike,
     deletePost,
-    deleteComment
+    deleteComment,
+    getUserPosts
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.delete('/posts/:id', verifyJWT, deletePost);
 router.delete('/comments/:id', verifyJWT, deleteComment);
 router.get('/categories', verifyJWT, getCategories);
 router.post('/posts/:id/comments', verifyJWT, createComment);
+router.get('/users/:userId/posts', verifyJWT, getUserPosts);
 
 export default router; 

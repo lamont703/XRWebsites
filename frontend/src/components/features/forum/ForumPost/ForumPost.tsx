@@ -60,14 +60,6 @@ export const ForumPost: React.FC<ForumPostProps> = ({
     navigate(`/users/${author.id}`);
   };
 
-  const handleMessageClick = () => {
-    if (!user) {
-      toast.error('Please login to send messages');
-      return;
-    }
-    navigate(`/messages/${author.id}`);
-  };
-
   return (
     <>
       <div className="bg-gray-800 rounded-lg overflow-hidden">
@@ -94,7 +86,22 @@ export const ForumPost: React.FC<ForumPostProps> = ({
                   {title}
                 </button>
                 <div className="text-sm text-gray-400">
-                  Posted by {author.name} (@{author.username}) • {new Date(createdAt).toLocaleDateString()}
+                  Posted by{' '}
+                  <button
+                    onClick={handleUserClick}
+                    className="text-gray-400 hover:text-blue-400"
+                  >
+                    {author.name}
+                  </button>
+                  {' '}
+                  <button
+                    onClick={handleUserClick}
+                    className="text-gray-400 hover:text-blue-400"
+                  >
+                    (@{author.username})
+                  </button>
+                  {' • '}
+                  {new Date(createdAt).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -150,12 +157,6 @@ export const ForumPost: React.FC<ForumPostProps> = ({
                 className="flex items-center gap-1 text-gray-400 hover:text-blue-400"
               >
                 💬 {replies || 0}
-              </button>
-              <button
-                onClick={handleMessageClick}
-                className="flex items-center gap-1 text-gray-400 hover:text-blue-400"
-              >
-                ✉️ Message
               </button>
             </div>
           </div>

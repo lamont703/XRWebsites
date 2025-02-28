@@ -25,7 +25,7 @@ export default defineConfig({
     devSourcemap: true, // Enable CSS source maps
   },
   build: {
-    sourcemap: true, // Enable JS source maps
+    sourcemap: process.env.NODE_ENV !== 'production', // Only generate sourcemaps in development
     outDir: 'dist',
     rollupOptions: {
       output: {

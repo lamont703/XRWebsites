@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -10,22 +10,39 @@ interface ConnectWalletProps {
 export const ConnectWallet = ({ onConnect }: ConnectWalletProps) => {
   const wallet = useWallet();
   const [error, setError] = useState<string | null>(null);
+  const [hasConnected, setHasConnected] = useState(false);
 
-  const handleWalletConnect = async () => {
-    try {
-      if (wallet.connected && wallet.publicKey && onConnect) {
-        await onConnect(wallet.publicKey.toString());
+  useEffect(() => {
+    let mounted = true;
+
+    const connectWallet = async () => {
+      if (wallet.connected && wallet.publicKey && onConnect && !hasConnected) {
+        try {
+          await onConnect(wallet.publicKey.toString());
+          if (mounted) {
+            setHasConnected(true);
+          }
+        } catch (err) {
+          if (mounted) {
+            setError(err instanceof Error ? err.message : 'Failed to connect wallet');
+          }
+        }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect wallet');
-    }
-  };
+    };
 
-  React.useEffect(() => {
-    if (wallet.connected && wallet.publicKey) {
-      handleWalletConnect();
+    connectWallet();
+
+    return () => {
+      mounted = false;
+    };
+  }, [wallet.connected, wallet.publicKey, onConnect, hasConnected]);
+
+  // Reset hasConnected when wallet disconnects
+  useEffect(() => {
+    if (!wallet.connected) {
+      setHasConnected(false);
     }
-  }, [wallet.connected, wallet.publicKey]);
+  }, [wallet.connected]);
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
@@ -36,23 +53,25 @@ export const ConnectWallet = ({ onConnect }: ConnectWalletProps) => {
             ? `Connected: ${wallet.publicKey?.toString().slice(0, 6)}...${wallet.publicKey?.toString().slice(-4)}`
             : 'Connect your Solana wallet to continue'}
         </p>
-        <style jsx global>{`
-          .wallet-adapter-button {
-            background-color: rgb(37, 99, 235) !important;
-            transition-property: background-color, border-color, color, fill, stroke !important;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-            transition-duration: 150ms !important;
-          }
-          .wallet-adapter-button:hover {
-            background-color: rgb(29, 78, 216) !important;
-          }
-          .wallet-adapter-button:not([disabled]) {
-            background-color: rgb(37, 99, 235) !important;
-          }
-          .wallet-adapter-button:not([disabled]):hover {
-            background-color: rgb(29, 78, 216) !important;
-          }
-        `}</style>
+        <style>
+          {`
+            .wallet-adapter-button {
+              background-color: rgb(37, 99, 235) !important;
+              transition-property: background-color, border-color, color, fill, stroke !important;
+              transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+              transition-duration: 150ms !important;
+            }
+            .wallet-adapter-button:hover {
+              background-color: rgb(29, 78, 216) !important;
+            }
+            .wallet-adapter-button:not([disabled]) {
+              background-color: rgb(37, 99, 235) !important;
+            }
+            .wallet-adapter-button:not([disabled]):hover {
+              background-color: rgb(29, 78, 216) !important;
+            }
+          `}
+        </style>
         <WalletMultiButton 
           className="!bg-blue-600 !hover:bg-blue-700 !rounded-lg !px-4 !py-3 !h-auto !text-sm sm:!text-base !font-medium !transition-colors w-full sm:w-auto"
         />

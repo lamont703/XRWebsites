@@ -10,17 +10,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './store/auth/Auth';
 import { AuthGuard } from './store/auth/Auth';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import {
-  ConnectionProvider,
-  WalletProvider,
-} from '@solana/wallet-adapter-react';
+import { WalletProvider, ConnectionProvider } from '@solana/wallet-adapter-react';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
 import { MessageInbox } from '@/components/features/messages/MessageInbox/MessageInbox';
 import { Messages } from '@/pages/Messages';
 
@@ -37,20 +33,24 @@ import { Tokenomics } from './pages/Tokenomics';
 import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
 import { UserProfile } from '@/pages/UserProfile';
+import { useMemo } from 'react';
+import { clusterApiUrl } from '@solana/web3.js';
 
 const queryClient = new QueryClient();
 
 function App() {
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = clusterApiUrl(network);
-  const wallets = [
-    new PhantomWalletAdapter(),
-    new SolflareWalletAdapter(),
-    new TorusWalletAdapter(),
-  ];
+  // Configure wallet adapters with required features
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new TorusWalletAdapter()
+    ],
+    []
+  );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={import.meta.env.VITE_SOLANA_RPC_URL}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <BrowserRouter>

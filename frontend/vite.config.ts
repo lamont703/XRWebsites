@@ -25,14 +25,28 @@ export default defineConfig({
     devSourcemap: true, // Enable CSS source maps
   },
   build: {
-    sourcemap: process.env.NODE_ENV !== 'production', // Only generate sourcemaps in development
+    sourcemap: false, // Completely disable sourcemaps
     outDir: 'dist',
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'solana-vendor': ['@solana/web3.js', '@solana/spl-token'],
         },
       },
+      // Add external dependencies that shouldn't be bundled
+      external: [
+        '@trezor/blockchain-link',
+        '@trezor/connect'
+      ]
     },
+    // Ensure clean dist directory
+    emptyOutDir: true,
+    // Don't copy node_modules to dist
+    copyPublicDir: false,
+    // Add these to optimize the build
+    target: 'esnext',
+    minify: 'esbuild',
+    chunkSizeWarningLimit: 2000,
   },
 })

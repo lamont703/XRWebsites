@@ -11,7 +11,8 @@ variables:
   azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"
   webAppName: "xrwebsites-frontend"
   environmentName: "xrwebsites-frontend"
-  vmImageName: "Self_Hosted"
+  agentPoolName: "Self_Hosted"  # Self-hosted agent pool
+  agentName: "Lamont"           # Specific agent name
   frontendDir: "frontend"
   distDir: "$(frontendDir)/dist"
 
@@ -22,7 +23,9 @@ stages:
       - job: Build
         displayName: Build
         pool:
-          vmImage: $(vmImageName)
+          name: $(agentPoolName)  # Use self-hosted pool
+          demands:
+            - Agent.Name -equals $(agentName)  # Use specific agent "Lamont"
 
         steps:
           - checkout: self

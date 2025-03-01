@@ -11,7 +11,7 @@ variables:
   azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"
   webAppName: "xrwebsites-frontend"
   environmentName: "xrwebsites-frontend"
-  vmImageName: "Lamont"
+  vmImageName: "Self-Hosted"
   frontendDir: "frontend"
   distDir: "$(frontendDir)/dist"
 

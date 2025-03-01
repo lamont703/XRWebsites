@@ -33,6 +33,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'solana-vendor': ['@solana/web3.js', '@solana/spl-token'],
           'polyfills': ['es6-promise'], // Bundle polyfills separately
+          'ethereum-vendor': ['viem'], // Bundle viem separately
         },
       },
       // External dependencies that shouldn't be bundled
@@ -56,6 +57,18 @@ export default defineConfig({
     commonjsOptions: {
       include: [/es6-promise/, /node_modules/],
       transformMixedEsModules: true
+    },
+    // Add TypeScript handling
+    rollupOptions: {
+      output: {
+        // Exclude .d.ts and .d.ts.map files
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name.endsWith('.d.ts') || assetInfo.name.endsWith('.d.ts.map')) {
+            return 'assets/types/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        }
+      }
     }
   },
 })

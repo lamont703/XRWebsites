@@ -32,9 +32,10 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'solana-vendor': ['@solana/web3.js', '@solana/spl-token'],
+          'polyfills': ['es6-promise'], // Bundle polyfills separately
         },
       },
-      // Add external dependencies that shouldn't be bundled
+      // External dependencies that shouldn't be bundled
       external: [
         '@trezor/blockchain-link',
         '@trezor/connect'
@@ -48,5 +49,13 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     chunkSizeWarningLimit: 2000,
+    // Add these options
+    modulePreload: {
+      polyfill: false // Disable module preload polyfills
+    },
+    commonjsOptions: {
+      include: [/es6-promise/, /node_modules/],
+      transformMixedEsModules: true
+    }
   },
 })

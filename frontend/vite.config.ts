@@ -30,24 +30,62 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes('react')) return 'react-vendor';
-          if (id.includes('@solana/')) return 'solana-vendor';
+          // Solana-related chunks
+          if (id.includes('@solana/web3.js')) return 'solana-core';
+          if (id.includes('@solana/spl-token')) return 'solana-token';
+          if (id.includes('@solana/wallet-adapter')) return 'solana-wallet';
+          if (id.includes('wallet-adapter-react-ui')) return 'solana-wallet-ui';
+          if (id.includes('@solana/buffer-layout-utils')) return 'solana-utils';
+          
+          // Wallet adapters and providers
+          if (id.includes('phantom') || 
+              id.includes('solflare') || 
+              id.includes('torus') ||
+              id.includes('wallet-standard') ||
+              id.includes('wallet-adapter-base')) return 'wallet-adapters';
+          
+          // Ethereum-related chunks
+          if (id.includes('viem') || id.includes('ethereum')) return 'ethereum-vendor';
           if (id.includes('@trezor/')) return 'trezor-vendor';
-          if (id.includes('@web3')) return 'web3-vendor';
+          
+          // Other crypto dependencies
+          if (id.includes('bn.js') || 
+              id.includes('tweetnacl') || 
+              id.includes('secp256k1') || 
+              id.includes('ed25519') ||
+              id.includes('bs58') ||
+              id.includes('buffer-layout') ||
+              id.includes('borsh') ||
+              id.includes('@project-serum/borsh') ||
+              id.includes('@metaplex') ||
+              id.includes('superstruct')) return 'crypto-core';
+          
+          // React and other vendors
+          if (id.includes('react')) return 'react-vendor';
           if (id.includes('node_modules')) {
-            // Split large dependencies into separate chunks
             if (id.includes('buffer')) return 'polyfills';
-            if (id.includes('bn.js')) return 'crypto-vendor';
             return 'vendor';
           }
         },
-        // Don't copy unnecessary files
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
           const info = assetInfo.name.split('.');
           const ext = info[info.length - 1];
-          // Skip .d.ts, .map files, package.json, and README.md
-          if (info.includes('d.ts') || info.includes('map') || 
+          
+          // Skip crypto-related type definitions and source maps
+          if (assetInfo.name.includes('viem/_types') || 
+              assetInfo.name.includes('@solana/') ||
+              assetInfo.name.includes('@trezor/') ||
+              assetInfo.name.includes('wallet-adapter') ||
+              assetInfo.name.includes('phantom') ||
+              assetInfo.name.includes('solflare') ||
+              assetInfo.name.includes('torus') ||
+              assetInfo.name.includes('borsh') ||
+              assetInfo.name.includes('buffer-layout') ||
+              assetInfo.name.includes('@metaplex') ||
+              assetInfo.name.includes('superstruct') ||
+              info.includes('d.ts') || 
+              info.includes('map') || 
               assetInfo.name.includes('package.json') || 
               assetInfo.name.includes('README.md')) {
             return '';

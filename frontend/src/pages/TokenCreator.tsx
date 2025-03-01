@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { 
   getMint,
-  getOrCreateAssociatedTokenAccount,
-  mintTo,
   TOKEN_PROGRAM_ID,
   createInitializeMintInstruction,
   MINT_SIZE,
@@ -16,8 +12,8 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createMintToInstruction
 } from '@solana/spl-token';
-import { PublicKey, Transaction, Keypair, Connection, SystemProgram, sendAndConfirmTransaction } from '@solana/web3.js';
-import { ConnectionProvider, useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey, Transaction, Keypair, Connection, SystemProgram } from '@solana/web3.js';
+import { useConnection } from '@solana/wallet-adapter-react';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 
 interface TokenConfig {

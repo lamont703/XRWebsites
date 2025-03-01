@@ -25,50 +25,38 @@ export default defineConfig({
     devSourcemap: true, // Enable CSS source maps
   },
   build: {
-    sourcemap: false, // Completely disable sourcemaps
+    sourcemap: false,
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'solana-vendor': ['@solana/web3.js', '@solana/spl-token'],
-          'polyfills': ['es6-promise'], // Bundle polyfills separately
-          'ethereum-vendor': ['viem'], // Bundle viem separately
-        },
-      },
-      // External dependencies that shouldn't be bundled
-      external: [
-        '@trezor/blockchain-link',
-        '@trezor/connect'
-      ]
-    },
-    // Ensure clean dist directory
-    emptyOutDir: true,
-    // Don't copy node_modules to dist
-    copyPublicDir: false,
-    // Add these to optimize the build
-    target: 'esnext',
-    minify: 'esbuild',
-    chunkSizeWarningLimit: 2000,
-    // Add these options
-    modulePreload: {
-      polyfill: false // Disable module preload polyfills
-    },
-    commonjsOptions: {
-      include: [/es6-promise/, /node_modules/],
-      transformMixedEsModules: true
-    },
-    // Add TypeScript handling
-    rollupOptions: {
-      output: {
-        // Exclude .d.ts and .d.ts.map files
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name.endsWith('.d.ts') || assetInfo.name.endsWith('.d.ts.map')) {
-            return 'assets/types/[name]-[hash][extname]';
+        manualChunks: (id) => {
+          if (id.includes('react')) return 'react-vendor';
+          if (id.includes('@solana/')) return 'solana-vendor';
+          if (id.includes('@trezor/')) return 'trezor-vendor';
+          if (id.includes('@web3')) return 'web3-vendor';
+          if (id.includes('node_modules')) {
+            // Split large dependencies into separate chunks
+            if (id.includes('buffer')) return 'polyfills';
+            if (id.includes('bn.js')) return 'crypto-vendor';
+            return 'vendor';
           }
-          return 'assets/[name]-[hash][extname]';
+        },
+        // Don't copy unnecessary files
+        assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) return 'assets/[name]-[hash].[ext]';
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          // Skip .d.ts, .map files, package.json, and README.md
+          if (info.includes('d.ts') || info.includes('map') || 
+              assetInfo.name.includes('package.json') || 
+              assetInfo.name.includes('README.md')) {
+            return '';
+          }
+          return `assets/[name]-[hash].${ext}`;
         }
       }
-    }
+    },
+    emptyOutDir: true,
+    copyPublicDir: false
   },
 })

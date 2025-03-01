@@ -54,12 +54,6 @@ export default defineConfig({
               id.includes('next/image') ||
               id.includes('sharp')) return 'image-optimization';
               
-          // State management and effects
-          if (id.includes('zustand') ||
-              id.includes('jotai') ||
-              id.includes('recoil') ||
-              id.includes('redux')) return 'state-management';
-              
           // Loading and skeleton components
           if (id.includes('react-loading-skeleton') ||
               id.includes('react-content-loader') ||
@@ -75,81 +69,37 @@ export default defineConfig({
               id.includes('react-image') ||
               id.includes('media-loader')) return 'media-utils';
               
-          // Data fetching and state management
+          // Data fetching
           if (id.includes('@tanstack/react-query') ||
-              id.includes('swr') ||
-              id.includes('@project-serum/borsh') ||
-              id.includes('@metaplex') ||
-              id.includes('superstruct')) return 'data-fetching';
-              
-          // Transaction and Web3 utilities
-          if (id.includes('web3') ||
-              id.includes('transaction') ||
-              id.includes('blockchain')) return 'web3-utils';
-              
-          // Animation and UI effects
-          if (id.includes('framer-motion') ||
-              id.includes('react-spring') ||
-              id.includes('transition')) return 'animations';
+              id.includes('swr')) return 'data-fetching';
           
           // Routing chunks
           if (id.includes('react-router') ||
               id.includes('history')) return 'routing';
               
-          // UI Framework chunks (assuming you use these)
+          // UI Framework chunks
           if (id.includes('tailwindcss') ||
               id.includes('@headlessui') ||
               id.includes('@heroicons')) return 'ui-framework';
-              
-          // Form handling (if you use these)
-          if (id.includes('react-hook-form') ||
-              id.includes('formik') ||
-              id.includes('yup')) return 'forms';
               
           // Authentication related
           if (id.includes('jwt-decode') ||
               id.includes('auth') ||
               id.includes('cookie')) return 'auth';
           
-          // UI and Icon libraries
-          if (id.includes('@heroicons/')) return 'ui-icons';
-          if (id.includes('@headlessui/')) return 'ui-components';
-          
           // Solana-related chunks
           if (id.includes('@solana/web3.js')) return 'solana-core';
           if (id.includes('@solana/spl-token')) return 'solana-token';
           if (id.includes('@solana/wallet-adapter')) return 'solana-wallet';
           if (id.includes('wallet-adapter-react-ui')) return 'solana-wallet-ui';
-          if (id.includes('@solana/buffer-layout-utils')) return 'solana-utils';
           
-          // Wallet adapters and providers
+          // Wallet adapters
           if (id.includes('phantom') || 
               id.includes('solflare') || 
-              id.includes('torus') ||
-              id.includes('wallet-standard') ||
-              id.includes('wallet-adapter-base')) return 'wallet-adapters';
+              id.includes('torus')) return 'wallet-adapters';
           
           // Ethereum-related chunks
-          if (id.includes('viem') || id.includes('ethereum')) return 'ethereum-vendor';
-          if (id.includes('@trezor/')) return 'trezor-vendor';
-          
-          // Other crypto dependencies
-          if (id.includes('bn.js') || 
-              id.includes('tweetnacl') || 
-              id.includes('secp256k1') || 
-              id.includes('ed25519') ||
-              id.includes('bs58') ||
-              id.includes('buffer-layout') ||
-              id.includes('borsh') ||
-              id.includes('@project-serum/borsh') ||
-              id.includes('@metaplex') ||
-              id.includes('superstruct')) return 'crypto-core';
-          
-          // Development and debugging
-          if (id.includes('debug') ||
-              id.includes('logger') ||
-              id.includes('devtools') ||
-              id.includes('performance')) return 'dev-utils';
+          if (id.includes('viem')) return 'ethereum-vendor';
           
           // Keep existing vendor chunks
           if (id.includes('react')) return 'react-vendor';
@@ -163,8 +113,9 @@ export default defineConfig({
           const info = assetInfo.name.split('.');
           const ext = info[info.length - 1];
           
-          // Skip type definitions and source maps
-          if (assetInfo.name.includes('viem/_types') || 
+          // Skip unnecessary chain definitions and type files
+          if (assetInfo.name.includes('viem/_esm/chains/definitions') ||
+              assetInfo.name.includes('viem/_types') || 
               assetInfo.name.includes('@solana/') ||
               assetInfo.name.includes('@trezor/') ||
               assetInfo.name.includes('wallet-adapter') ||
@@ -175,7 +126,7 @@ export default defineConfig({
               assetInfo.name.includes('buffer-layout') ||
               assetInfo.name.includes('@metaplex') ||
               assetInfo.name.includes('superstruct') ||
-              assetInfo.name.includes('@heroicons/') ||  // Added Heroicons
+              assetInfo.name.includes('@heroicons/') ||
               info.includes('d.ts') || 
               info.includes('map') || 
               assetInfo.name.includes('package.json') || 
@@ -187,6 +138,8 @@ export default defineConfig({
       }
     },
     emptyOutDir: true,
-    copyPublicDir: false
+    copyPublicDir: false,
+    target: 'esnext',
+    chunkSizeWarningLimit: 1000
   },
 })

@@ -26,6 +26,7 @@ stages:
           name: $(agentPoolName)  # Use self-hosted pool
           demands:
             - Agent.Name -equals $(agentName)  # Use specific agent "Lamont"
+        timeoutInMinutes: 180  # ⏳ Increased timeout from 60 to 120 minutes
 
         steps:
           - checkout: self
@@ -68,6 +69,7 @@ stages:
         environment: $(environmentName)
         pool:
           vmImage: $(vmImageName)
+        timeoutInMinutes: 180  # ⏳ Increased timeout for deployment
         strategy:
           runOnce:
             deploy:

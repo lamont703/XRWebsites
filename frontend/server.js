@@ -9,10 +9,19 @@ const port = process.env.VITE_PORT || 8080;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static files from the root directory
-app.use(express.static(__dirname));
-//app.use(express.static(path.join(__dirname, 'dist')));
-
+// Set proper MIME types
+app.use(express.static(__dirname, {
+  setHeaders: (res, path) => {
+    // Set correct MIME type for JavaScript modules
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+    // Set correct MIME type for CSS
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // Handle all routes by serving the index.html file
 /*app.get('/login', (req, res) => {

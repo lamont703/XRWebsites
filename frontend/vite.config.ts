@@ -40,5 +40,11 @@ export default defineConfig({
     target: 'esnext', // Uses modern JavaScript for better performance
     copyPublicDir: false, // Prevents unnecessary copying of 'public' folder
     chunkSizeWarningLimit: 1000, // Warns if chunks exceed 1MB
+    rollupOptions: {
+      external: [/node_modules/], // Exclude node_modules from being included in the build
+      output: {
+        preserveModules: false, // Ensures modules are bundled properly
+      },
+    },
   },
 });

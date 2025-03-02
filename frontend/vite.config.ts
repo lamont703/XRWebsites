@@ -12,6 +12,17 @@ export default defineConfig({
       threshold: 1024, // Compress files larger than 1KB
       deleteOriginFile: false, // Keeps original files while adding .gz versions
     }),
+    {
+      name: 'configure-server',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.endsWith('.js') || req.url?.endsWith('.mjs')) {
+            res.setHeader('Content-Type', 'application/javascript');
+          }
+          next();
+        });
+      },
+    },
   ],
   server: {
     port: parseInt(process.env.VITE_PORT || '8080'), // Default port
@@ -22,6 +33,10 @@ export default defineConfig({
     },
     watch: {
       usePolling: true, // Ensures file changes are detected properly
+    },
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
   resolve: {
@@ -41,9 +56,13 @@ export default defineConfig({
     copyPublicDir: false, // Prevents unnecessary copying of 'public' folder
     chunkSizeWarningLimit: 1000, // Warns if chunks exceed 1MB
     rollupOptions: {
-      external: [/node_modules/], // Exclude node_modules from being included in the build
+      external: ['react', 'react-dom'], // ✅ Excludes only necessary dependencies
       output: {
-        preserveModules: false, // Ensures modules are bundled properly
+        format: 'es', // ✅ Ensures proper ES module output
+        entryFileNames: 'assets/[name]-[hash].mjs', // ✅ Ensure `.mjs` extension for modules
+        chunkFileNames: 'assets/[name]-[hash].mjs',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        preserveModules: false, // ✅ Ensures modules are bundled properly
       },
     },
   },

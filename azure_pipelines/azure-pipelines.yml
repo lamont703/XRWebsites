@@ -11,8 +11,8 @@ variables:
   azureSubscription: "9abd54ba-7abf-43d5-b936-973310267f7d"
   webAppName: "xrwebsites-frontend"
   environmentName: "xrwebsites-frontend"
-  agentPoolName: "Self_Hosted"  # Self-hosted agent pool
-  agentName: "Lamont"           # Specific agent name
+  agentPoolName: "Self_Hosted" # Self-hosted agent pool
+  agentName: "Lamont" # Specific agent name
   frontendDir: "frontend"
   distDir: "$(frontendDir)/dist"
 
@@ -23,11 +23,11 @@ stages:
       - job: Build
         displayName: Build
         pool:
-          name: $(agentPoolName)  # Use self-hosted pool
+          name: $(agentPoolName) # Use self-hosted pool
           demands:
-            - Agent.Name -equals $(agentName)  # Use specific agent "Lamont"
-          allowUnauthorized: true  # ✅ Explicitly allow the pipeline to use this agent pool
-        timeoutInMinutes: 180  # ⏳ Increased timeout
+            - Agent.Name -equals $(agentName) # Use specific agent "Lamont"
+          allowUnauthorized: true # ✅ Explicitly allow the pipeline to use this agent pool
+        timeoutInMinutes: 180 # ⏳ Increased timeout
 
         steps:
           # ✅ Ensure repo is checked out before looking for package-lock.json
@@ -37,12 +37,16 @@ stages:
           - task: Cache@2
             inputs:
               key: 'npm | "$(Agent.OS)" | frontend/package-lock.json'
-              path: '$(frontendDir)/node_modules'
+              path: "$(frontendDir)/node_modules"
               restoreKeys: |
                 npm | "$(Agent.OS)"
             displayName: "Cache node_modules"
 
           # ✅ Cache global npm directory
+          - script: |
+              mkdir -p ~/.npm
+            displayName: "Ensure Global npm Cache Directory Exists"
+
           - task: Cache@2
             inputs:
               key: 'npm-global | "$(Agent.OS)"'
@@ -50,6 +54,7 @@ stages:
               restoreKeys: |
                 npm-global | "$(Agent.OS)"
             displayName: "Cache global npm directory"
+            condition: succeededOrFailed()
 
           # ✅ Install Node.js
           - task: NodeTool@0
@@ -93,9 +98,9 @@ stages:
         displayName: Deploy
         environment: $(environmentName)
         pool:
-          name: $(agentPoolName)  # Self-hosted pool for Deploy stage
-          allowUnauthorized: true  # ✅ Explicitly allow the pipeline to use this agent pool
-        timeoutInMinutes: 180  # ⏳ Increased timeout
+          name: $(agentPoolName) # Self-hosted pool for Deploy stage
+          allowUnauthorized: true # ✅ Explicitly allow the pipeline to use this agent pool
+        timeoutInMinutes: 180 # ⏳ Increased timeout
         strategy:
           runOnce:
             deploy:

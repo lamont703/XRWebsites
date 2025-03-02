@@ -43,7 +43,7 @@ stages:
             displayName: "Cache node_modules"
 
           # ✅ Cache global npm directory
-          - script: |
+            - script: |
                 mkdir -p ~/.npm
               displayName: "Ensure Global npm Cache Directory Exists"
 

@@ -254,6 +254,7 @@ export const JobMarketplace = () => {
               <div className="mb-6">
                 <h3 className="text-lg font-medium mb-2 text-white">Category</h3>
                 <select
+                  title="Filter by category"
                   className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}

@@ -219,6 +219,7 @@ export const Assets = () => {
             <h2 className="text-xl font-bold text-white">Your NFT Collection</h2>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <select 
+                title="Sort NFTs by"
                 className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm w-full sm:w-auto"
                 onChange={(e) => console.log('Sort by:', e.target.value)}
               >

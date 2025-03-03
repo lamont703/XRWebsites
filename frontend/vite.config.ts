@@ -16,7 +16,7 @@ export default defineConfig({
       name: 'configure-server',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          if (req.url?.endsWith('.js') || req.url?.endsWith('.mjs')) {
+          if (req.url?.endsWith('.js') || req.url?.endsWith('.mjs') || req.url?.endsWith('.ts') || req.url?.endsWith('.tsx')) {
             res.setHeader('Content-Type', 'application/javascript');
           }
           next();
@@ -56,14 +56,12 @@ export default defineConfig({
     copyPublicDir: false, // Prevents unnecessary copying of 'public' folder
     chunkSizeWarningLimit: 1000, // Warns if chunks exceed 1MB
     rollupOptions: {
-      external: ['react', 'react-dom'], // ✅ Excludes only necessary dependencies
       output: {
-        format: 'es', // ✅ Ensures proper ES module output
-        entryFileNames: 'assets/[name]-[hash].mjs', // ✅ Ensure `.mjs` extension for modules
-        chunkFileNames: 'assets/[name]-[hash].mjs',
+        format: 'es',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
-        preserveModules: false, // ✅ Ensures modules are bundled properly
-      },
+      }
     },
   },
 });

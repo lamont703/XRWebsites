@@ -12,8 +12,8 @@ const __dirname = path.dirname(__filename);
 // Set proper MIME types
 app.use(express.static(__dirname, {
   setHeaders: (res, path) => {
-    // Set correct MIME type for JavaScript modules
-    if (path.endsWith('.js')) {
+    // Set correct MIME type for JavaScript modules and TypeScript files
+    if (path.endsWith('.js') || path.endsWith('.mjs') || path.endsWith('.ts') || path.endsWith('.tsx')) {
       res.setHeader('Content-Type', 'application/javascript');
     }
     // Set correct MIME type for CSS

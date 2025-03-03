@@ -5,8 +5,8 @@
  * It also handles user authentication and provides a logout function.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/store/auth/Auth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {} from '@/store/auth/Auth';
+import {} from 'react-router-dom';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { Toaster } from 'react-hot-toast';
 import { debounce } from 'lodash';

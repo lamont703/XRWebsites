@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DeleteConfirmationModal } from '../../../DeleteConfirmationModal';
 import { useAuth } from '../../../../store/auth/Auth';
 import { toast } from 'react-hot-toast';
@@ -31,7 +31,6 @@ export const ForumPost: React.FC<ForumPostProps> = ({
   title,
   content,
   author,
-  category,
   tags,
   createdAt,
   likes,

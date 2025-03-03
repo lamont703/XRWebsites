@@ -16,7 +16,6 @@ interface FundWalletProps {
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const PaymentForm: React.FC<{ clientSecret: string; amount: number; onSuccess: () => void }> = ({ 
-    clientSecret, 
     amount, 
     onSuccess 
 }) => {

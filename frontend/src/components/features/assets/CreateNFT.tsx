@@ -25,7 +25,7 @@ export const CreateNFT: React.FC<CreateNFTProps> = ({
   onSubmit,
   onCancel
 }) => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attributes, setAttributes] = useState<NFTAttribute[]>([

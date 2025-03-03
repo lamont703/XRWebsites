@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {} from 'react-router-dom';
 
 interface NFTMetadata {
   name: string;
   description: string;
   imageUrl: string;
+  image_url?: string;
+  image?: string;
   value: number;
 }
 
-interface NFT {
+export interface NFT {
   id: string;
   name: string;
   description: string;
   image_url: string;
+  imageUrl?: string;
+  image?: string;
   value: number;
   metadata: NFTMetadata;
+  owner_wallet_id: string;
 }
 
 interface NFTGalleryProps {
@@ -29,8 +34,7 @@ export const NFTGallery = ({
   nfts, 
   isLoading, 
   onViewDetails, 
-  compact = false,
-  title = "Your NFTs" 
+  compact = false 
 }: NFTGalleryProps) => {
   const PLACEHOLDER_IMAGE = '/assets/images/placeholder-nft.jpg';
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});

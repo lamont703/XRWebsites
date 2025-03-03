@@ -14,14 +14,6 @@ interface Job {
   applications: any[];
 }
 
-interface JobApplication {
-  id: string;
-  jobId: string;
-  userId: string;
-  status: string;
-  created_at: string;
-}
-
 export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicationCancel }) => {
   const { user } = useAuth();
   const [activeJobs, setActiveJobs] = useState<Job[]>([]);
@@ -32,37 +24,37 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
   const [jobApplications, setJobApplications] = useState<any[]>([]);
   const [showApplicationsModal, setShowApplicationsModal] = useState(false);
 
+  const loadActiveJobs = async () => {
+    try {
+      const [jobsResponse, applicationsResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/user/${user?.id}/active`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        }),
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/applications/user/${user?.id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        })
+      ]);
+
+      const jobsData = await jobsResponse.json();
+      const applicationsData = await applicationsResponse.json();
+
+      setActiveJobs(jobsData.data?.jobs || []);
+      setApplications(applicationsData.data || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Failed to load jobs data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [jobsResponse, applicationsResponse] = await Promise.all([
-          fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/user/${user?.id}/active`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-          }),
-          fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/applications/user/${user?.id}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-          })
-        ]);
-
-        const jobsData = await jobsResponse.json();
-        const applicationsData = await applicationsResponse.json();
-
-        setActiveJobs(jobsData.data?.jobs || []);
-        setApplications(applicationsData.data || []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to load jobs data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (user?.id) {
-      fetchData();
+      loadActiveJobs();
     }
   }, [user?.id]);
 

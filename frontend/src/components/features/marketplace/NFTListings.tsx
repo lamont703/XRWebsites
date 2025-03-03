@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/store/auth/Auth';
+import {} from '@/store/auth/Auth';
+
+interface NFT {
+  id: string;
+  name?: string;
+  description?: string;
+  image_url?: string;
+}
 
 interface NFTListing {
   id: string;

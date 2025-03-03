@@ -16,12 +16,11 @@ export interface JobApplicationData {
 }
 
 export const JobApplication: React.FC<JobApplicationProps> = ({
-  jobId,
   jobTitle,
   onSubmit,
   onCancel
 }) => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [portfolioLinks, setPortfolioLinks] = useState<string[]>(['']);

@@ -107,7 +107,7 @@ export const PostComments: React.FC<PostCommentsProps> = ({
                 className={`flex items-center gap-1 ${
                   isLiking?.[comment.id]
                     ? 'opacity-50 cursor-not-allowed'
-                    : comment.likedBy?.includes(user?.id)
+                    : comment.likedBy?.includes(user?.id || '')
                     ? 'text-blue-400'
                     : 'text-gray-400 hover:text-blue-400'
                 }`}

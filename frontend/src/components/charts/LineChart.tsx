@@ -4,7 +4,7 @@ interface LineChartProps {
   data: any[];
 }
 
-export const LineChart: React.FC<LineChartProps> = ({ data }) => {
+export const LineChart: React.FC<LineChartProps> = ({}) => {
   return (
     <div>
       {/* Implement actual chart library here */}

@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { JobDetails } from '@/components/features/jobs/JobDetails';
 import { useAuth } from '@/store/auth/Auth';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { JobApplication } from '@/components/features/jobs/JobApplication';
-import styles from '../styles/Dashboard.module.css'
-import { NFTListings } from '@/components/features/marketplace/NFTListings';
-import { ActiveJobs } from '@/components/features/jobs/ActiveJobs';
+import { JobApplicationData } from '@/components/features/jobs/JobApplication';
+import {} from '../styles/Dashboard.module.css'
+import {} from '@/components/features/marketplace/NFTListings';
+import {} from '@/components/features/jobs/ActiveJobs';
 import { JobCard } from '@/components/features/jobs/JobCard';
 import { NFTListingCard } from '@/components/features/marketplace/NFTListingCard';
 
@@ -28,6 +28,7 @@ interface Job {
     memberSince: string;
   };
   status: string;
+  createdAt: string;
 }
 
 interface MarketplaceItem {
@@ -44,38 +45,13 @@ interface MarketplaceItem {
 
 export const JobMarketplace = () => {
   const { user, isAuthenticated } = useAuth();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
-  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-
-  const loadJobs = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/public`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to load jobs');
-      }
-
-      const data = await response.json();
-      // Filter out cancelled jobs
-      const activeJobs = data.jobs.filter(job => job.status !== 'cancelled');
-      setJobs(activeJobs);
-    } catch (err) {
-      setError('Failed to load jobs');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const loadMarketplaceItems = async () => {
     if (!isAuthenticated) {
@@ -206,7 +182,7 @@ export const JobMarketplace = () => {
       }
 
       // Refresh jobs list after saving
-      await loadJobs();
+      await loadMarketplaceItems();
     } catch (err) {
       throw new Error('Failed to save job');
     }
@@ -226,14 +202,29 @@ export const JobMarketplace = () => {
       return (
         <NFTListingCard 
           key={item.id}
-          listing={item}
+          listing={item as { id: string; nft_name?: string; nft_description?: string; image_url?: string; price: number }}
         />
       );
+    }
+    if (!('skills' in item) || !('experienceLevel' in item)) {
+      return null; // Skip rendering if it's not a proper job
     }
     return (
       <JobCard 
         key={item.id}
-        job={item as Job}
+        job={{
+          id: item.id,
+          title: item.title || '',
+          description: item.description || '',
+          price: item.price || 0,
+          experienceLevel: 'beginner',
+          location: '',
+          poster: {
+            name: '',
+            rating: 0
+          },
+          createdAt: new Date().toISOString()
+        }}
         onClick={handleJobClick}
       />
     );

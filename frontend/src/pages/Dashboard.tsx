@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
+import {} from '../styles/Dashboard.module.css';
 
 
 interface Transaction {
@@ -183,7 +183,7 @@ export const Dashboard = () => {
         {/* Welcome Section */}
         <div className="bg-gray-800 rounded-lg p-6 mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">
-            Welcome back, {user?.fullName}!
+            Welcome back, {user?.name}!
           </h1>
           <p className="text-gray-400">
             Here's what's happening with your XRWebsites account today.

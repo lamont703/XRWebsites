@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -14,7 +14,7 @@ interface Author {
   avatar?: string;
 }
 
-interface Post {
+/*interface Post {
   id: string;
   title: string;
   content: string;
@@ -25,7 +25,7 @@ interface Post {
   likes: number;
   replies: number;
   isStickied?: boolean;
-}
+}*/
 
 interface Comment {
   id: string;
@@ -43,12 +43,12 @@ export const PostDetail = () => {
   const location = useLocation();
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const {} = useAuth();
   const [likingStates, setLikingStates] = useState<{ [key: string]: boolean }>({});
-  const [comments, setComments] = useState([]);
+  const [comments] = useState([]);
 
   // Fetch post details
-  const { data: postData, isLoading, error } = useQuery({
+  const { data: postData, isLoading } = useQuery({
     queryKey: ['forum-post', id],
     queryFn: async () => {
       console.log('Fetching post data...');
@@ -166,7 +166,7 @@ export const PostDetail = () => {
       console.log('Delete response:', data);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       console.log('Delete mutation success, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['forum-post', id] });
       queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
@@ -223,7 +223,7 @@ export const PostDetail = () => {
 
   useEffect(() => {
     console.log('Post data updated:', {
-      comments: postData?.data?.comments?.map(c => ({
+      comments: postData?.data?.comments?.map((c: Comment) => ({
         id: c.id,
         status: c.status,
         content: c.content

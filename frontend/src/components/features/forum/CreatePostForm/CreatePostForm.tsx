@@ -9,10 +9,11 @@ interface CreatePostFormProps {
     tags: string[];
   }) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
 export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCancel }) => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     content: '',

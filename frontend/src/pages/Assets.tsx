@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import styles from '../styles/Dashboard.module.css';
 import { useLocation } from 'react-router-dom';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
+import type { NFT } from '@/components/features/wallet/NFTGallery';
 import { FeaturedNFT } from '@/components/features/assets/FeaturedNFT';
-import type { NFT } from '@/types/nft';
 import { CreateNFT, NFTData } from '@/components/features/assets/CreateNFT';
 
 export const Assets = () => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const { state } = useLocation();
   const [selectedNft, setSelectedNft] = useState<NFT | null>(state?.selectedNft || null);
   const [nfts, setNfts] = useState<NFT[]>([]);

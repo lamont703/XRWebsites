@@ -9,7 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './store/auth/Auth';
 import { AuthGuard } from './store/auth/Auth';
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import {} from '@solana/wallet-adapter-base';
 import { WalletProvider, ConnectionProvider } from '@solana/wallet-adapter-react';
 import {
   PhantomWalletAdapter,
@@ -34,7 +34,7 @@ import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
 import { UserProfile } from '@/pages/UserProfile';
 import { useMemo } from 'react';
-import { clusterApiUrl } from '@solana/web3.js';
+import {} from '@solana/web3.js';
 
 const queryClient = new QueryClient();
 

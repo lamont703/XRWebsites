@@ -61,6 +61,8 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
+            title="Switch to send mode"
+            aria-label="Switch to send mode"
           >
             Send
           </button>
@@ -71,6 +73,8 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
+            title="Switch to receive mode"
+            aria-label="Switch to receive mode"
           >
             Receive
           </button>
@@ -89,10 +93,14 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
                 value={walletAddress}
                 readOnly
                 className="bg-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                title="Your wallet address"
+                aria-label="Your wallet address"
               />
               <button
                 onClick={copyToClipboard}
                 className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+                title="Copy wallet address to clipboard"
+                aria-label="Copy wallet address"
               >
                 Copy
               </button>
@@ -117,6 +125,8 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
               onChange={(e) => setRecipientAddress(e.target.value)}
               className="bg-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter XRV address"
+              title="Recipient wallet address"
+              aria-label="Recipient wallet address"
             />
           </div>
           <div>
@@ -132,6 +142,8 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
               placeholder="0.00"
               step="0.01"
               min="0"
+              title="Amount of Visorcoin to send"
+              aria-label="Amount of Visorcoin to send"
             />
           </div>
           {error && (
@@ -142,6 +154,8 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
             disabled={isLoading}
             className={`w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 transition-colors
               ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title="Send Visorcoin to recipient"
+            aria-label="Send Visorcoin"
           >
             {isLoading ? 'Processing...' : 'Send Visorcoin'}
           </button>

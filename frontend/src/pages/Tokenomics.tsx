@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LineChart } from '@/components/charts/LineChart';
 import { BarChart } from '@/components/charts/BarChart';
-import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
+import {} from '@/store/auth/Auth';
+import {} from '../styles/Dashboard.module.css';
 
 interface TokenMetrics {
   price: number;
@@ -26,6 +26,7 @@ const formatNumber = (num: number): string => {
 };
 
 export const Tokenomics = () => {
+  const tokenId = 'xrv-token'; // Default token ID for XRV
   const [metrics, setMetrics] = useState<TokenMetrics>({
     price: 0,
     marketCap: 0,
@@ -61,105 +62,117 @@ export const Tokenomics = () => {
   return (
     <MainLayout>
       <div className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 lg:px-8 py-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Token Analytics</h1>
-          <p className="text-gray-400">Comprehensive analytics for your token</p>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-[50vh]">
+            <span className="text-gray-400">Loading token metrics...</span>
+          </div>
+        ) : error ? (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-white mb-2">Token Analytics</h1>
+              <p className="text-gray-400">Comprehensive analytics for your token</p>
+            </div>
 
-        {/* Key Metrics Grid - Similar to Assets.tsx styling */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-            <div className="text-sm font-medium text-gray-400 mb-2">Current Price</div>
-            <div className="text-2xl font-bold text-white">${metrics.price.toFixed(4)}</div>
-          </div>
-          <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-            <div className="text-sm font-medium text-gray-400 mb-2">Market Cap</div>
-            <div className="text-2xl font-bold text-white">${formatNumber(metrics.marketCap)}</div>
-          </div>
-          <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-            <div className="text-sm font-medium text-gray-400 mb-2">24h Volume</div>
-            <div className="text-2xl font-bold text-white">${formatNumber(metrics.volume24h)}</div>
-          </div>
-          <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-            <div className="text-sm font-medium text-gray-400 mb-2">Holders</div>
-            <div className="text-2xl font-bold text-white">{metrics.holders.toLocaleString()}</div>
-          </div>
-        </div>
-
-        {/* Supply Metrics - Using Dashboard.tsx card styling */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">Supply Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <div className="text-sm text-gray-400 mb-1">Circulating Supply</div>
-              <div className="text-lg font-bold text-white">
-                {formatNumber(metrics.circulatingSupply)} tokens
+            {/* Key Metrics Grid - Similar to Assets.tsx styling */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
+                <div className="text-sm font-medium text-gray-400 mb-2">Current Price</div>
+                <div className="text-2xl font-bold text-white">${metrics.price.toFixed(4)}</div>
+              </div>
+              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
+                <div className="text-sm font-medium text-gray-400 mb-2">Market Cap</div>
+                <div className="text-2xl font-bold text-white">${formatNumber(metrics.marketCap)}</div>
+              </div>
+              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
+                <div className="text-sm font-medium text-gray-400 mb-2">24h Volume</div>
+                <div className="text-2xl font-bold text-white">${formatNumber(metrics.volume24h)}</div>
+              </div>
+              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
+                <div className="text-sm font-medium text-gray-400 mb-2">Holders</div>
+                <div className="text-2xl font-bold text-white">{metrics.holders.toLocaleString()}</div>
               </div>
             </div>
-            <div>
-              <div className="text-sm text-gray-400 mb-1">Total Supply</div>
-              <div className="text-lg font-bold text-white">
-                {formatNumber(metrics.totalSupply)} tokens
+
+            {/* Supply Metrics - Using Dashboard.tsx card styling */}
+            <div className="bg-gray-800 rounded-lg p-6 mb-8">
+              <h2 className="text-xl font-bold text-white mb-6">Supply Metrics</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Circulating Supply</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatNumber(metrics.circulatingSupply)} tokens
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Total Supply</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatNumber(metrics.totalSupply)} tokens
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Staking Ratio</div>
+                  <div className="text-lg font-bold text-white">
+                    {metrics.stakingRatio.toFixed(2)}%
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <div className="text-sm text-gray-400 mb-1">Staking Ratio</div>
-              <div className="text-lg font-bold text-white">
-                {metrics.stakingRatio.toFixed(2)}%
+
+            {/* Market Activity Chart - Similar to Dashboard transaction styling */}
+            <div className="bg-gray-800 rounded-lg p-6 mb-8">
+              <h2 className="text-xl font-bold text-white mb-6">Price History</h2>
+              <div className="h-[400px]">
+                <LineChart data={[]} /> {/* Implement chart component */}
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Market Activity Chart - Similar to Dashboard transaction styling */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">Price History</h2>
-          <div className="h-[400px]">
-            <LineChart data={[]} /> {/* Implement chart component */}
-          </div>
-        </div>
-
-        {/* Token Distribution */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">Token Distribution</h2>
-          <div className="h-[300px]">
-            <BarChart data={[]} /> {/* Implement chart component */}
-          </div>
-        </div>
-
-        {/* Activity Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-6">Network Activity</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Active Addresses (24h)</span>
-                <span className="text-white font-bold">{metrics.activeAddresses}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Transactions (24h)</span>
-                <span className="text-white font-bold">{metrics.transactions24h}</span>
+            {/* Token Distribution */}
+            <div className="bg-gray-800 rounded-lg p-6 mb-8">
+              <h2 className="text-xl font-bold text-white mb-6">Token Distribution</h2>
+              <div className="h-[300px]">
+                <BarChart data={[]} /> {/* Implement chart component */}
               </div>
             </div>
-          </div>
 
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-6">Holder Statistics</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Total Holders</span>
-                <span className="text-white font-bold">{metrics.holders}</span>
+            {/* Activity Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-6">Network Activity</h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Active Addresses (24h)</span>
+                    <span className="text-white font-bold">{metrics.activeAddresses}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Transactions (24h)</span>
+                    <span className="text-white font-bold">{metrics.transactions24h}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Staking Participants</span>
-                <span className="text-white font-bold">
-                  {Math.floor(metrics.holders * (metrics.stakingRatio / 100))}
-                </span>
+
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-white mb-6">Holder Statistics</h2>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Holders</span>
+                    <span className="text-white font-bold">{metrics.holders}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Staking Participants</span>
+                    <span className="text-white font-bold">
+                      {Math.floor(metrics.holders * (metrics.stakingRatio / 100))}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </MainLayout>
   );

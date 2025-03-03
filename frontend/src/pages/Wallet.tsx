@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
@@ -44,7 +44,7 @@ interface Token {
 }
 
 export const Wallet = () => {
-  const { user } = useAuth() as { user: User | null };
+  const {} = useAuth() as { user: User | null };
   const [walletData, setWalletData] = useState<WalletData>({
     balance: '0.00',
     totalTokens: 0,
@@ -64,7 +64,7 @@ export const Wallet = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tokens, setTokens] = useState<Token[]>([]);
+  const [tokens] = useState<Token[]>([]);
 
   const loadWalletData = async () => {
     console.log('🔄 Loading wallet data...');
@@ -165,7 +165,7 @@ export const Wallet = () => {
     }
   };
 
-  const connectExternalWallet = async (address: string) => {
+  /*const connectExternalWallet = async (address: string) => {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_API_URL}/wallet/${walletData.id}/connect`,
@@ -193,7 +193,7 @@ export const Wallet = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect wallet');
     }
-  };
+  };*/
 
   const handleFundWallet = async (amount: number) => {
     console.log('🔄 Starting wallet update process for amount:', amount);

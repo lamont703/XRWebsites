@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { ForumCategories } from '@/components/features/forum/ForumCategories/ForumCategories';
@@ -30,6 +30,15 @@ interface ForumPost {
   isStickied?: boolean;
   likedBy: string[];
 }
+
+interface CreatePostData {
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+}
+
+type PostWithAuthor = CreatePostData & { author: { id: string; name: string; username: string | undefined } };
 
 export const Forum = () => {
   const { user } = useAuth();
@@ -79,7 +88,7 @@ export const Forum = () => {
   });
 
   // Create post mutation
-  const createPostMutation = useMutation({
+  const createPostMutation = useMutation<ForumPost, Error, PostWithAuthor>({
     mutationFn: async (postData) => {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/posts`, {
         method: 'POST',
@@ -116,7 +125,7 @@ export const Forum = () => {
     }
   });
 
-  const deleteCommentMutation = useMutation({
+  /*const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/forum/comments/${commentId}`, {
         method: 'DELETE',
@@ -131,7 +140,7 @@ export const Forum = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
     }
-  });
+  });*/
 
   // Add like post mutation
   const likePostMutation = useMutation({
@@ -165,7 +174,7 @@ export const Forum = () => {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
     },
     onError: (error) => {
@@ -174,20 +183,21 @@ export const Forum = () => {
     }
   });
 
-  const handleCreatePost = async (postData) => {
+  const handleCreatePost = async (postData: CreatePostData) => {
     try {
-      console.log('Creating post with user data:', user);
-      console.log('Post data before sending:', postData);
+      if (!user) {
+        throw new Error('You must be logged in to create a post');
+      }
+      
+      const currentUser = user; // TypeScript will now know user is not null
       const postWithAuthor = {
         ...postData,
         author: {
-          id: user.id,
-          name: user.name,
-          username: user.username,
-          avatar: user.avatar
+          id: currentUser.id,
+          name: currentUser.name,
+          username: currentUser.username
         }
       };
-      console.log('Final post data:', postWithAuthor);
       await createPostMutation.mutateAsync(postWithAuthor);
     } catch (error) {
       console.error('Failed to create post:', error);
@@ -211,7 +221,9 @@ export const Forum = () => {
         <ForumFilters
           onCategoryChange={setSelectedCategory}
           onSortChange={setSelectedSort}
-          onSearchChange={setSearchQuery}
+          onSearch={setSearchQuery}
+          selectedCategory={selectedCategory}
+          selectedSort={selectedSort}
         />
 
         {isLoading ? (

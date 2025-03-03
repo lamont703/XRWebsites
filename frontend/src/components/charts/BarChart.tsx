@@ -4,7 +4,7 @@ interface BarChartProps {
   data: any[];
 }
 
-export const BarChart: React.FC<BarChartProps> = ({ data }) => {
+export const BarChart: React.FC<BarChartProps> = ({}) => {
   return (
     <div>
       {/* Implement actual chart library here */}

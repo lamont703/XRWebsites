@@ -61,7 +61,7 @@ const testTokenConfig = {
 };
 
 // Create a reusable signer function
-const createWalletSigner = (wallet: WalletContextState, connection: Connection) => {
+export const createWalletSigner = (wallet: WalletContextState, connection: Connection) => {
   if (!wallet.publicKey || !wallet.signTransaction || !wallet.signAllTransactions) {
     throw new Error('Wallet is not properly connected');
   }
@@ -99,9 +99,7 @@ const createWalletSigner = (wallet: WalletContextState, connection: Connection) 
 // Add this helper function at the top of the file
 const confirmTransaction = async (
   connection: Connection,
-  signature: string,
-  blockhash: string,
-  lastValidBlockHeight: number
+  signature: string
 ) => {
   const start = Date.now();
   const timeout = 30000; // 30 second timeout
@@ -127,26 +125,16 @@ const confirmTransaction = async (
 
 // Add these debug functions at the top of TokenCreator.tsx after imports
 const debugTransaction = (tx: Transaction) => {
-  console.log('🔍 Transaction Debug:', {
-    feePayer: tx.feePayer?.toString(),
+  console.log('📝 Transaction Debug:', {
     recentBlockhash: tx.recentBlockhash,
-    signatures: tx.signatures.map(sig => ({
-      publicKey: sig.publicKey.toString(),
-      signature: sig.signature?.toString('base64') || 'null'
-    })),
-    instructions: tx.instructions.length
+    feePayer: tx.feePayer?.toString(),
+    instructions: tx.instructions.map(ix => ({
+      programId: ix.programId.toString(),
+      keys: ix.keys.map(k => k.pubkey.toString())
+    }))
   });
 };
 
-const debugSigner = (signer: any) => {
-  console.log('🔑 Signer Debug:', {
-    publicKey: signer.publicKey.toString(),
-    hasSecretKey: !!signer.secretKey,
-    hasSignTransaction: !!signer.signTransaction
-  });
-};
-
-// Add this helper function at the top of the file after imports
 const createTokenAccount = async (
     connection: Connection,
     wallet: WalletContextState,
@@ -181,7 +169,7 @@ const createTokenAccount = async (
         transaction.add(ix);
         
         // Get latest blockhash with lastValidBlockHeight
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+        const { blockhash } = await connection.getLatestBlockhash('confirmed');
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = wallet.publicKey!;
 
@@ -196,9 +184,7 @@ const createTokenAccount = async (
         // Use our existing confirmTransaction helper
         const confirmed = await confirmTransaction(
             connection,
-            signature,
-            blockhash,
-            lastValidBlockHeight
+            signature
         );
 
         if (!confirmed) {
@@ -243,9 +229,9 @@ const handleMintTokens = async (
         const latestBlockhash = await connection.getLatestBlockhash('confirmed');
         
         transaction.recentBlockhash = latestBlockhash.blockhash;
-        transaction.feePayer = wallet.publicKey;
+        transaction.feePayer = wallet.publicKey!;
 
-        const signed = await wallet.signTransaction(transaction);
+        const signed = await wallet.signTransaction!(transaction);
         const rawTransaction = signed.serialize();
 
         // Send with specific options for Alchemy
@@ -279,7 +265,6 @@ const handleMintTokens = async (
         }
 
         console.log('✅ Tokens minted successfully');
-        return signature;
     } catch (error) {
         console.error('Mint tokens error:', error);
         throw error;
@@ -287,9 +272,8 @@ const handleMintTokens = async (
 };
 
 export const TokenCreator = () => {
-  const { user } = useAuth();
+  const {} = useAuth();
   const wallet = useWallet();
-  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -422,7 +406,7 @@ export const TokenCreator = () => {
         console.log('✅ Added mint initialization instruction');
 
         // Get recent blockhash and set on transaction
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
+        const { blockhash } = await connection.getLatestBlockhash('confirmed');
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = wallet.publicKey!;
 
@@ -539,7 +523,7 @@ export const TokenCreator = () => {
         const mintAmount = BigInt(tokenConfig.totalSupply * (10 ** tokenConfig.decimals));
         console.log('💰 Minting initial supply:', mintAmount);
 
-        const mintSignature = await handleMintTokens(
+        await handleMintTokens(
             connection,
             wallet,
             mintKeypair,
@@ -575,7 +559,6 @@ export const TokenCreator = () => {
 
         console.log('✅ Token creation complete');
         setIsLoading(false);
-        setCurrentStep(3);
     } catch (error) {
         console.error('❌ Token creation failed:', error);
         setError(error instanceof Error ? error.message : 'Failed to create token');

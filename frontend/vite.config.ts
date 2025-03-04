@@ -45,8 +45,8 @@ export default defineConfig(({ mode }) => {
         usePolling: true, // Ensures file changes are detected properly
       },
       headers: {
-        'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Cross-Origin-Embedder-Policy': 'credentialless'
       },
     },
     resolve: {

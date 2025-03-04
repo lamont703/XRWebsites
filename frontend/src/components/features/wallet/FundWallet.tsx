@@ -13,7 +13,15 @@ interface FundWalletProps {
     walletId: string;
 }
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+// Instead, create a function to get the Stripe promise
+const getStripePromise = () => {
+    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+    if (!key) {
+        console.error('Stripe public key is missing');
+        return null;
+    }
+    return loadStripe(key);
+};
 
 const PaymentForm: React.FC<{ clientSecret: string; amount: number; onSuccess: () => void }> = ({ 
     amount, 
@@ -109,6 +117,7 @@ export const FundWallet: React.FC<FundWalletProps> = ({ onFund, className = '', 
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [stripePromise] = useState(() => getStripePromise());
 
     // Add useEffect to handle success message timeout
     useEffect(() => {
@@ -221,15 +230,26 @@ export const FundWallet: React.FC<FundWalletProps> = ({ onFund, className = '', 
                         Continue to Payment
                     </button>
                 </div>
-            ) : clientSecret ? (
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
+            ) : showPayment && clientSecret && stripePromise ? (
+                <Elements 
+                    stripe={stripePromise} 
+                    options={{
+                        clientSecret,
+                        appearance: { theme: 'night' },
+                        loader: 'auto'
+                    }}
+                >
                     <PaymentForm 
                         clientSecret={clientSecret}
                         amount={parseFloat(amount)} 
                         onSuccess={handleSuccess} 
                     />
                 </Elements>
-            ) : null}
+            ) : !stripePromise && (
+                <div className="text-red-500 text-sm">
+                    Payment system is not properly configured. Please try again later.
+                </div>
+            )}
             {error && <div className="text-red-500 text-sm">{error}</div>}
         </div>
     );

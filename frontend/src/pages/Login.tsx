@@ -38,15 +38,16 @@ export const Login = () => {
 
     try {
       if (isLogin) {
+        console.log('Login attempt with URL:', import.meta.env.VITE_BACKEND_API_URL);
+        console.log('Full login URL:', `${import.meta.env.VITE_BACKEND_API_URL}/users/login`);
         await login(formData.email, formData.password);
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
 
-        console.log("VITE_BACKEND_API_URL:", import.meta.env.VITE_BACKEND_API_URL);
-        console.log("VITE_ENV:", import.meta.env.VITE_ENV);
-        console.log("VITE_PORT:", import.meta.env.VITE_PORT);
+        console.log('Register attempt with URL:', import.meta.env.VITE_BACKEND_API_URL);
+        console.log('Full register URL:', `${import.meta.env.VITE_BACKEND_API_URL}/users/register`);
         
         const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/register`, {
           method: 'POST',

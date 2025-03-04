@@ -37,6 +37,9 @@ interface RegisterData {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  console.log('Build ENV:', import.meta.env.MODE);
+  console.log('Backend URL at load:', import.meta.env.VITE_BACKEND_API_URL);
+
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,15 +51,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const loadUserData = async () => {
-    console.log('🔄 Loading user data...');
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        setIsLoading(false);
+        console.log('No token found');
+        setIsAuthenticated(false);
+        setUser(null);
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/me`, {
+      const url = `${import.meta.env.VITE_BACKEND_API_URL}/users/me`;
+      console.log('Making request to:', url);
+      console.log('URL starts with http:', url.startsWith('http'));
+      console.log('URL starts with https:', url.startsWith('https'));
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }

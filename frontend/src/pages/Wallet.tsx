@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
-import styles from './Wallet.module.css';
 import { FundWallet } from '@/components/features/wallet/FundWallet';
 import { BuyVisorcoin } from '@/components/features/wallet/BuyVisorcoin';
 import { SendReceiveVisorcoin } from '@/components/features/wallet/SendReceiveVisorcoin';
 import { RecentTransactions } from '@/components/features/wallet/RecentTransactions';
 import type User from '../types/user';
+import styles from '@/styles/Wallet.module.css';
 
 interface WalletData {
   balance: string;
@@ -317,20 +317,20 @@ export const Wallet = () => {
 
   return (
     <MainLayout>
-      <div className={styles.walletContainer}>
+      <div className={styles.container}>
         {/* Welcome Section */}
-        <div className="bg-gray-800 rounded-lg p-4 md:p-6">
-          <h1 className="text-xl md:text-2xl font-bold text-white mb-2">Wallet Overview</h1>
-          <p className="text-sm md:text-base text-gray-400">Manage your crypto assets and transactions</p>
+        <div className={styles.welcomeCard}>
+          <h1 className={styles.title}>Wallet Overview</h1>
+          <p className={styles.subtitle}>Manage your crypto assets and transactions</p>
         </div>
 
         {/* Wallet Actions */}
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className={styles.actionsContainer}>
+          <div className={styles.actionsGrid}>
             <FundWallet 
-                onFund={handleFundWallet} 
-                walletId={walletData.id}
-                className=""
+              onFund={handleFundWallet} 
+              walletId={walletData.id}
+              className={styles.actionCard}
             />
             <BuyVisorcoin onPurchase={handleBuyVisorcoin} />
           </div>
@@ -342,33 +342,31 @@ export const Wallet = () => {
         </div>
 
         {error && (
-          <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-500 px-4 py-3 rounded text-sm md:text-base">
-            {error}
-          </div>
+          <div className={styles.errorMessage}>{error}</div>
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className={styles.balanceCard}>
-            <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Dollars</div>
-            <div className="text-lg md:text-2xl font-bold text-white">${walletData.balance}</div>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Total Dollars</div>
+            <div className={styles.statValue}>${walletData.balance}</div>
           </div>
-          <div className={styles.balanceCard}>
-            <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Visorcoin (XRV)</div>
-            <div className="text-lg md:text-2xl font-bold text-white">{walletData.totalTokens}</div>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Total Visorcoin (XRV)</div>
+            <div className={styles.statValue}>{walletData.totalTokens}</div>
           </div>
-          <div className={styles.balanceCard}>
-            <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Pending Transactions</div>
-            <div className="text-lg md:text-2xl font-bold text-white">{walletData.pendingTransactions}</div>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Pending Transactions</div>
+            <div className={styles.statValue}>{walletData.pendingTransactions}</div>
           </div>
-          <div className={styles.balanceCard}>
-            <div className="text-xs md:text-sm font-medium text-gray-400 mb-1 md:mb-2">Total Value Locked</div>
-            <div className="text-lg md:text-2xl font-bold text-white">${walletData.totalValueLocked}</div>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Total Value Locked</div>
+            <div className={styles.statValue}>${walletData.totalValueLocked}</div>
           </div>
         </div>
 
         {/* NFTs Section */}
-        <div className="space-y-4 md:space-y-6">
+        <div className={styles.nftSection}>
           <NFTGallery 
             nfts={nfts} 
             isLoading={isLoadingNFTs} 
@@ -381,18 +379,18 @@ export const Wallet = () => {
         <RecentTransactions 
           transactions={walletData.recentTransactions || []}
           isLoading={isLoading}
-          className="bg-gray-800 rounded-lg"
+          className={styles.transactionsCard}
         />
 
         {/* Tokens Section */}
         <div className={styles.card}>
-          <h2 className="text-xl font-semibold text-white mb-4">Your Tokens</h2>
+          <h2 className={styles.sectionTitle}>Your Tokens</h2>
           <div className={styles.tokenGrid}>
             {tokens.map(token => (
               <div key={token.id} className={styles.tokenCard}>
-                <div className="text-sm text-gray-400">{token.name}</div>
-                <div className="text-lg font-semibold text-white">{token.balance} {token.symbol}</div>
-                <div className="text-sm text-blue-400">${token.value}</div>
+                <div className={styles.tokenName}>{token.name}</div>
+                <div className={styles.tokenBalance}>{token.balance} {token.symbol}</div>
+                <div className={styles.tokenValue}>${token.value}</div>
               </div>
             ))}
           </div>

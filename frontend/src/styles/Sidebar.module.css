@@ -1,24 +1,77 @@
 .sidebar {
-   padding: 2rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1c2e 0%, #0f172a 100%);
-  color: white;
+  position: fixed;
+  width: 16rem;
+  height: 100vh;
+  background: rgba(31, 41, 55, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
   transition: transform 0.3s ease-in-out;
+  z-index: 50;
 }
 
-.navItem {
-  transition: transform 0.2s ease, background-color 0.2s ease;
+.sidebarDesktop {
+  position: relative;
+  z-index: 10;
 }
 
-.navItem:hover {
-  transform: translateX(4px);
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(96, 165, 250);
+  margin-bottom: 2rem;
 }
 
 .userCard {
-  background: rgba(17, 24, 39, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(17, 24, 39, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.37);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.userAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom right, rgb(59, 130, 246), rgb(37, 99, 235));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: rgb(209, 213, 219);
+  transition: all 0.2s ease;
+}
+
+.navItemActive {
+  background-color: rgb(37, 99, 235);
+  color: white;
+}
+
+.navItem:hover:not(.navItemActive) {
+  background-color: rgba(55, 65, 81, 0.8);
+  color: white;
+}
+
+.logoutButton {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgb(220, 38, 38);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: rgb(185, 28, 28);
+  transform: translateY(-1px);
 } 

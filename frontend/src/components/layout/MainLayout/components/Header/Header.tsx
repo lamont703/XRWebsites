@@ -6,6 +6,7 @@
 import React from 'react';
 import { useAuth } from '@/store/auth/Auth';
 import type User from '@/types/user';
+import styles from '@/styles/Header.module.css';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -16,16 +17,16 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) =>
   const { user } = useAuth() as { user: User | null };
 
   return (
-    <header className="bg-gray-800 fixed w-full z-50 shadow-lg">
-      <div className="flex items-center justify-between px-4 py-3">
+    <header className={styles.header}>
+      <div className={styles.headerContent}>
         <div className="flex items-center">
           <button
             onClick={onMenuClick}
-            className="text-gray-400 hover:text-white focus:outline-none focus:text-white lg:hidden"
+            className={styles.menuButton}
             aria-label="Toggle menu"
           >
             <svg
-              className="h-6 w-6 fill-current"
+              className="h-6 w-6"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -43,15 +44,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick, isSidebarOpen }) =>
               )}
             </svg>
           </button>
-          <div className="ml-4 lg:hidden">
-            <span className="text-white text-lg font-semibold">XRWebsites.io</span>
-          </div>
+          <div className={styles.logo}>XRWebsites.io</div>
         </div>
         
-        <div className="flex items-center">
-          <div className="hidden md:flex items-center space-x-4">
-            <span className="text-gray-300">{user?.email}</span>
-          </div>
+        <div className={styles.userInfo}>
+          <span>{user?.email}</span>
         </div>
       </div>
     </header>

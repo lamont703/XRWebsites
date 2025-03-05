@@ -1,11 +1,69 @@
 .container {
-  @apply min-h-screen flex flex-col lg:flex-row;
+  min-height: 100vh;
+  display: flex;
+  background: linear-gradient(135deg, #1a1c2e 0%, #0f172a 100%);
 }
 
-.main {
-  @apply flex-1 lg:ml-64 transition-all duration-300 ease-in-out;
+.mobileHeader {
+  display: none;
 }
 
-.content {
-  @apply p-4;
+.headerLogo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgb(96, 165, 250);
+}
+
+.menuButton {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(55, 65, 81, 0.8);
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: rgba(75, 85, 99, 0.8);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 30;
+}
+
+.mainContent {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+/* Mobile styles */
+@media (max-width: 1023px) {
+  .mobileHeader {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rem;
+    background-color: rgba(31, 41, 55, 0.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    z-index: 50;
+    padding: 0 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mainContent {
+    padding-top: 4rem;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  .mainContent.sidebarOpen {
+    margin-left: 16rem;
+  }
 } 

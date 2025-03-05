@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { 
   getMint,
   TOKEN_PROGRAM_ID,
@@ -15,6 +14,7 @@ import {
 import { PublicKey, Transaction, Keypair, Connection, SystemProgram } from '@solana/web3.js';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { WalletContextState } from '@solana/wallet-adapter-react';
+import styles from '@/styles/TokenCreator.module.css';
 
 interface TokenConfig {
   name: string;
@@ -566,19 +566,6 @@ export const TokenCreator = () => {
     }
 };
 
-
-  const handleWalletConnect = useCallback(async (address: string) => {
-    try {
-      setTokenConfig(prev => ({
-        ...prev,
-        initialOwner: address
-      }));
-    } catch (error) {
-      console.error('Wallet connection error:', error);
-      setError('Failed to connect wallet');
-    }
-  }, []);
-
   const testTokenCreation = async () => {
     try {
       if (!wallet.publicKey) {
@@ -613,147 +600,87 @@ export const TokenCreator = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* Header Section */}
-        <div className="bg-gray-800 rounded-lg p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Token Creator</h1>
-          <p className="text-gray-400 text-sm sm:text-base">Create your own Solana token in minutes</p>
-        </div>
-
-        {/* Wallet Connection Section */}
-        <div className="mb-6 sm:mb-8">
-          <ConnectWallet onConnect={handleWalletConnect} />
-        </div>
-
-        {/* Token Configuration Form */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-xl font-bold text-white mb-6">Token Configuration</h3>
-          
-          <div className="space-y-6">
-            {/* Basic Token Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Token Name</label>
-                <input
-                  type="text"
-                  value={tokenConfig.name}
-                  onChange={(e) => setTokenConfig(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Example Token"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Token Symbol</label>
-                <input
-                  type="text"
-                  value={tokenConfig.symbol}
-                  onChange={(e) => setTokenConfig(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="EXM"
-                  maxLength={5}
-                />
-              </div>
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.formGrid}>
+            {/* Token Name and Symbol */}
+            <div>
+              <label className={styles.label}>Token Name</label>
+              <input
+                type="text"
+                value={tokenConfig.name}
+                onChange={(e) => setTokenConfig(prev => ({ ...prev, name: e.target.value }))}
+                className={styles.input}
+                placeholder="Example Token"
+              />
+            </div>
+            
+            <div>
+              <label className={styles.label}>Token Symbol</label>
+              <input
+                type="text"
+                value={tokenConfig.symbol}
+                onChange={(e) => setTokenConfig(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                className={styles.input}
+                placeholder="EXM"
+                maxLength={5}
+              />
             </div>
 
             {/* Supply and Decimals */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Total Supply</label>
-                <input
-                  type="number"
-                  value={tokenConfig.totalSupply}
-                  onChange={(e) => setTokenConfig(prev => ({ ...prev, totalSupply: Number(e.target.value) }))}
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  title="Total Supply"
-                  placeholder="Enter total supply"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Decimals</label>
-                <input
-                  type="number"
-                  value={tokenConfig.decimals}
-                  onChange={(e) => setTokenConfig(prev => ({ ...prev, decimals: Number(e.target.value) }))}
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  max="9"
-                  title="Decimals"
-                  placeholder="Enter number of decimals (0-9)"
-                />
-              </div>
+            <div>
+              <label className={styles.label}>Total Supply</label>
+              <input
+                type="number"
+                value={tokenConfig.totalSupply}
+                onChange={(e) => setTokenConfig(prev => ({ ...prev, totalSupply: Number(e.target.value) }))}
+                className={styles.input}
+                min="0"
+                placeholder="Enter total supply"
+              />
+            </div>
+            
+            <div>
+              <label className={styles.label}>Decimals</label>
+              <input
+                type="number"
+                value={tokenConfig.decimals}
+                onChange={(e) => setTokenConfig(prev => ({ ...prev, decimals: Number(e.target.value) }))}
+                className={styles.input}
+                min="0"
+                max="9"
+                placeholder="Enter number of decimals (0-9)"
+              />
             </div>
 
             {/* Token Features */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-3">Token Features</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <label className="flex items-center space-x-2">
+            <div className={styles.checkboxGroup}>
+              {Object.entries(tokenConfig.features).map(([key, value]) => (
+                <label key={key} className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    checked={tokenConfig.features.mintable}
+                    checked={value}
                     onChange={(e) => setTokenConfig(prev => ({
                       ...prev,
-                      features: { ...prev.features, mintable: e.target.checked }
+                      features: { ...prev.features, [key]: e.target.checked }
                     }))}
-                    className="form-checkbox text-blue-500 bg-gray-700 border-gray-600 rounded"
+                    className={styles.checkbox}
                   />
-                  <span className="text-sm text-gray-300">Mintable</span>
+                  <span>{key}</span>
                 </label>
-                
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={tokenConfig.features.freezable}
-                    onChange={(e) => setTokenConfig(prev => ({
-                      ...prev,
-                      features: { ...prev.features, freezable: e.target.checked }
-                    }))}
-                    className="form-checkbox text-blue-500 bg-gray-700 border-gray-600 rounded"
-                  />
-                  <span className="text-sm text-gray-300">Freezable</span>
-                </label>
-
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={tokenConfig.features.burnable}
-                    onChange={(e) => setTokenConfig(prev => ({
-                      ...prev,
-                      features: { ...prev.features, burnable: e.target.checked }
-                    }))}
-                    className="form-checkbox text-blue-500 bg-gray-700 border-gray-600 rounded"
-                  />
-                  <span className="text-sm text-gray-300">Burnable</span>
-                </label>
-
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={tokenConfig.features.immutable}
-                    onChange={(e) => setTokenConfig(prev => ({
-                      ...prev,
-                      features: { ...prev.features, immutable: e.target.checked }
-                    }))}
-                    className="form-checkbox text-blue-500 bg-gray-700 border-gray-600 rounded"
-                  />
-                  <span className="text-sm text-gray-300">Immutable</span>
-                </label>
-              </div>
+              ))}
             </div>
 
-            {/* Token Description */}
+            {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+              <label className={styles.label}>Description</label>
               <textarea
                 value={tokenConfig.metadata.description}
                 onChange={(e) => setTokenConfig(prev => ({
                   ...prev,
                   metadata: { ...prev.metadata, description: e.target.value }
                 }))}
-                className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={styles.textarea}
                 rows={4}
                 placeholder="Describe your token's purpose and features..."
               />
@@ -761,92 +688,81 @@ export const TokenCreator = () => {
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="text-red-500 text-sm p-3 bg-red-500/10 border border-red-500/20 rounded-lg mt-4">
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorMessage}>{error}</div>}
 
-        {/* Submit Button */}
-        <div className="mt-6 flex justify-end gap-4">
+        <div className={styles.buttonContainer}>
           <button
             onClick={testTokenCreation}
             disabled={!wallet.connected}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={styles.secondaryButton}
           >
-            Test Creation
+            Test Token
           </button>
           <button
             onClick={() => setShowConfirmation(true)}
             disabled={!wallet.connected}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={styles.primaryButton}
           >
-            Confirm Details
+            Create Token
           </button>
         </div>
 
         {/* Confirmation Modal */}
         {showConfirmation && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-bold text-white mb-4">Confirm Token Details</h3>
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h3 className={styles.modalTitle}>Confirm Token Details</h3>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Token Name:</span>
-                    <p className="text-white">{tokenConfig.name}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Symbol:</span>
-                    <p className="text-white">{tokenConfig.symbol}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-gray-400 text-sm">Total Supply:</span>
-                    <p className="text-white">{tokenConfig.totalSupply}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-sm">Decimals:</span>
-                    <p className="text-white">{tokenConfig.decimals}</p>
-                  </div>
-                </div>
-
+              <div className={styles.confirmationGrid}>
                 <div>
-                  <span className="text-gray-400 text-sm">Features:</span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {Object.entries(tokenConfig.features).map(([key, value]) => (
-                      value && (
-                        <span key={key} className="px-2 py-1 bg-gray-700 rounded-full text-sm text-white">
-                          {key}
-                        </span>
-                      )
-                    ))}
-                  </div>
+                  <span className={styles.confirmationLabel}>Token Name:</span>
+                  <p className={styles.confirmationValue}>{tokenConfig.name}</p>
                 </div>
-
-                {tokenConfig.metadata.description && (
-                  <div>
-                    <span className="text-gray-400 text-sm">Description:</span>
-                    <p className="text-white mt-1">{tokenConfig.metadata.description}</p>
-                  </div>
-                )}
+                <div>
+                  <span className={styles.confirmationLabel}>Symbol:</span>
+                  <p className={styles.confirmationValue}>{tokenConfig.symbol}</p>
+                </div>
+                <div>
+                  <span className={styles.confirmationLabel}>Total Supply:</span>
+                  <p className={styles.confirmationValue}>{tokenConfig.totalSupply}</p>
+                </div>
+                <div>
+                  <span className={styles.confirmationLabel}>Decimals:</span>
+                  <p className={styles.confirmationValue}>{tokenConfig.decimals}</p>
+                </div>
               </div>
 
-              <div className="flex justify-end gap-4 mt-6">
+              <div>
+                <span className={styles.confirmationLabel}>Features:</span>
+                <div>
+                  {Object.entries(tokenConfig.features).map(([key, value]) => (
+                    value && (
+                      <span key={key} className={styles.featureTag}>
+                        {key}
+                      </span>
+                    )
+                  ))}
+                </div>
+              </div>
+
+              {tokenConfig.metadata.description && (
+                <div>
+                  <span className={styles.confirmationLabel}>Description:</span>
+                  <p className={styles.confirmationValue}>{tokenConfig.metadata.description}</p>
+                </div>
+              )}
+
+              <div className={styles.buttonContainer}>
                 <button
                   onClick={() => setShowConfirmation(false)}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  className={styles.secondaryButton}
                 >
                   Edit Details
                 </button>
                 <button
                   onClick={handleCreateToken}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={styles.primaryButton}
                 >
                   {isLoading ? 'Creating...' : 'Create Token'}
                 </button>

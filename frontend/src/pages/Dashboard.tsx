@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
-import {} from '../styles/Dashboard.module.css';
+import styles from '../styles/Dashboard.module.css';
 
 
 interface Transaction {
@@ -179,9 +179,9 @@ export const Dashboard = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={styles.dashboardContainer}>
         {/* Welcome Section */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
+        <div className={styles.welcomeCard}>
           <h1 className="text-2xl font-bold text-white mb-2">
             Welcome back, {user?.name}!
           </h1>
@@ -191,26 +191,26 @@ export const Dashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-800 rounded-lg p-6">
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
             <div className="text-sm font-medium text-gray-400 mb-2">Total NFTs</div>
             <div className="text-2xl font-bold text-white">
               {isLoading ? '...' : stats.totalNFTs}
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className={styles.statCard}>
             <div className="text-sm font-medium text-gray-400 mb-2">Active Jobs</div>
             <div className="text-2xl font-bold text-white">
               {isLoading ? '...' : stats.activeJobs}
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className={styles.statCard}>
             <div className="text-sm font-medium text-gray-400 mb-2">Wallet Balance (USD)</div>
             <div className="text-2xl font-bold text-white">
               ${isLoading ? '...' : walletData.balance}
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-6">
+          <div className={styles.statCard}>
             <div className="text-sm font-medium text-gray-400 mb-2">Visorcoin Balance (XRV)</div>
             <div className="text-2xl font-bold text-white">
               {isLoading ? '...' : walletData.totalTokens} XRV
@@ -219,7 +219,7 @@ export const Dashboard = () => {
         </div>
 
         {/* Recent Activity Section */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className={styles.card}>
           <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
           {isLoading ? (
             <div className="text-center py-8">
@@ -237,7 +237,7 @@ export const Dashboard = () => {
                       {items.map((item: any) => (
                         <div 
                           key={item.id} 
-                          className="bg-gray-700 rounded-lg p-4 flex justify-between items-center"
+                          className={styles.card}
                         >
                           <div>
                             <div className="text-white">
@@ -263,7 +263,7 @@ export const Dashboard = () => {
                 )
               ))}
               {Object.values(recentActivity).every(items => items.length === 0) && (
-                <div className="text-gray-400 text-center py-8">
+                <div className={styles.emptyState}>
                   No recent activity to show.
                 </div>
               )}

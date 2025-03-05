@@ -56,6 +56,12 @@ export default defineConfig(({ mode }) => {
     },
     css: {
       devSourcemap: true, // Enables source maps for easier debugging in development
+      modules: {
+        // Generate scoped class names
+        generateScopedName: '[name]__[local]__[hash:base64:5]',
+        // Convert camelCase class names to kebab-case
+        localsConvention: 'camelCase',
+      },
     },
     build: {
       sourcemap: false, // Disables source maps in production for smaller build size

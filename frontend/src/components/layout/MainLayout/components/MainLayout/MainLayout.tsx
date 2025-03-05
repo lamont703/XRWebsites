@@ -10,6 +10,7 @@ import {} from 'react-router-dom';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { Toaster } from 'react-hot-toast';
 import { debounce } from 'lodash';
+import styles from '@/styles/MainLayout.module.css';
 
 export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize states with window check to prevent hydration mismatch
@@ -46,14 +47,14 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
   const toggleSidebar = useCallback(() => setIsSidebarOpen(prev => !prev), []);
 
   return (
-    <div className="min-h-screen flex bg-gray-900">
+    <div className={styles.container}>
       <Toaster position="top-right" />
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-800 z-50 px-4 flex items-center justify-between">
-        <div className="text-xl font-bold text-blue-400">XRWebsites.io</div>
+      <div className={styles.mobileHeader}>
+        <div className={styles.headerLogo}>XRWebsites.io</div>
         <button
-          className="p-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600"
+          className={styles.menuButton}
           onClick={toggleSidebar}
           aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
         >
@@ -91,20 +92,11 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
       
       {/* Overlay */}
       {isMobileView && isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={handleClose}
-        />
+        <div className={styles.overlay} onClick={handleClose} />
       )}
 
       {/* Main Content */}
-      <main 
-        className={`flex-1 transition-all duration-300 ${
-          isMobileView ? 'pt-16' : ''
-        } ${
-          isSidebarOpen && !isMobileView ? 'ml-64' : ''
-        }`}
-      >
+      <main className={`${styles.mainContent} ${isSidebarOpen && !isMobileView ? styles.sidebarOpen : ''}`}>
         {children}
       </main>
     </div>

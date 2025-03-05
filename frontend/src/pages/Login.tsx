@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../store/auth/Auth';
 import { useNavigate } from 'react-router-dom';
+import styles from '@/styles/Login.module.css';
+
 
 interface LoginData {
   email: string;
@@ -76,128 +78,95 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+    <div className={styles.loginContainer}>
+      <div className={styles.gradientOverlay}>
+        <div className={styles.formContainer}>
+          <h2 className={styles.title}>
             {isLogin ? 'Sign in to your account' : 'Create a new account'}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
+          <p className={styles.subtitle}>
             Or{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="font-medium text-blue-500 hover:text-blue-400"
+              className={styles.toggleButton}
             >
               {isLogin ? 'create a new account' : 'sign in to existing account'}
             </button>
           </p>
-        </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-            <p className="text-red-500 text-sm">{error}</p>
-          </div>
-        )}
+          {error && (
+            <div className={styles.errorContainer}>
+              <p className={styles.errorText}>{error}</p>
+            </div>
+          )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {!isLogin && (
-            <div>
-              <label htmlFor="name" className="sr-only">
-                Name
-              </label>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            {!isLogin && (
               <input
                 id="name"
                 name="name"
                 type="text"
                 required
-                className="appearance-none rounded-lg relative block w-full px-3 py-2 border
-                  border-gray-700 bg-gray-800 text-white placeholder-gray-400
-                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className={styles.input}
                 placeholder="Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
-            </div>
-          )}
+            )}
 
-          <div>
-            <label htmlFor="email" className="sr-only">
-              Email address
-            </label>
             <input
               id="email"
               name="email"
               type="email"
               required
-              className="appearance-none rounded-lg relative block w-full px-3 py-2 border
-                border-gray-700 bg-gray-800 text-white placeholder-gray-400
-                focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className={styles.input}
               placeholder="Email address"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
-          </div>
 
-          <div>
-            <label htmlFor="password" className="sr-only">
-              Password
-            </label>
             <input
               id="password"
               name="password"
               type="password"
               required
-              className="appearance-none rounded-lg relative block w-full px-3 py-2 border
-                border-gray-700 bg-gray-800 text-white placeholder-gray-400
-                focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className={styles.input}
               placeholder="Password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-          </div>
 
-          {!isLogin && (
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                Confirm Password
-              </label>
+            {!isLogin && (
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 required
-                className="appearance-none rounded-lg relative block w-full px-3 py-2 border
-                  border-gray-700 bg-gray-800 text-white placeholder-gray-400
-                  focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className={styles.input}
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               />
+            )}
+
+            <button type="submit" className={styles.submitButton}>
+              {isLogin ? 'Sign in' : 'Create account'}
+            </button>
+            
+            <div className={styles.subtitle}>
+              <a
+                href="https://xrwebsites.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                Visit XRWebsites.io
+              </a>
             </div>
-          )}
+          </form>
 
-          <button
-            type="submit"
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent
-              text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            {isLogin ? 'Sign in' : 'Create account'}
-          </button>
-          
-          <div className="mt-4 text-center">
-            <a
-              href="https://xrwebsites.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 transition-colors duration-200 text-sm"
-            >
-              Visit XRWebsites.io
-            </a>
-          </div>
-        </form>
-
-        {isLoading && <div>Loading...</div>}
+          {isLoading && <div>Loading...</div>}
+        </div>
       </div>
     </div>
   );

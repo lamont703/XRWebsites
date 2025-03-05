@@ -1,4 +1,3 @@
-
 // CSS Modules for CSS files in the frontend directory.
 declare module '*.module.css' {
   const classes: { [key: string]: string };

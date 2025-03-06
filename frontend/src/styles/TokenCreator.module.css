@@ -1,17 +1,22 @@
 .container {
-  padding: 2rem;
+  width: 100%;
   max-width: 100vw;
+  padding: 1rem;
+  margin: 0 auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
   color: white;
 }
 
 .card {
   background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  margin-bottom: 1.5rem;
 }
 
 .formGrid {
@@ -20,31 +25,33 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 640px) {
-  .formGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .label {
-  display: block;
   font-size: 0.875rem;
   font-weight: 500;
   color: rgb(209, 213, 219);
-  margin-bottom: 0.5rem;
 }
 
 .input {
-  width: 100%;
-  background-color: rgb(55, 65, 81);
-  color: white;
+  max-width: 100%;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  color: white;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
 }
 
 .input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(59, 130, 246);
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .textarea {
@@ -57,12 +64,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-}
-
-@media (min-width: 640px) {
-  .checkboxGroup {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  margin-top: 0.5rem;
 }
 
 .checkboxLabel {
@@ -71,30 +73,21 @@
   gap: 0.5rem;
   color: rgb(209, 213, 219);
   font-size: 0.875rem;
+  cursor: pointer;
 }
 
 .checkbox {
   width: 1rem;
   height: 1rem;
-  background-color: rgb(55, 65, 81);
-  border: 1px solid rgb(75, 85, 99);
   border-radius: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(31, 41, 55, 0.5);
   cursor: pointer;
 }
 
 .checkbox:checked {
-  background-color: rgb(59, 130, 246);
+  background: rgb(59, 130, 246);
   border-color: rgb(59, 130, 246);
-}
-
-.errorMessage {
-  color: rgb(239, 68, 68);
-  font-size: 0.875rem;
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 0.5rem;
-  margin-top: 1rem;
 }
 
 .buttonContainer {
@@ -108,7 +101,33 @@
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.primaryButton {
+  composes: button;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  composes: button;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(31, 41, 55, 0.7);
+  transform: translateY(-1px);
 }
 
 .button:disabled {
@@ -116,30 +135,21 @@
   cursor: not-allowed;
 }
 
-.secondaryButton {
-  composes: button;
-  background-color: rgb(75, 85, 99);
-  color: white;
-}
-
-.secondaryButton:hover:not(:disabled) {
-  background-color: rgb(55, 65, 81);
-}
-
-.primaryButton {
-  composes: button;
-  background-color: rgb(37, 99, 235);
-  color: white;
-}
-
-.primaryButton:hover:not(:disabled) {
-  background-color: rgb(29, 78, 216);
+.errorMessage {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
 }
 
 .modal {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,11 +158,14 @@
 }
 
 .modalContent {
-  background-color: rgb(31, 41, 55);
-  border-radius: 0.75rem;
+  background: rgba(17, 24, 39, 0.95);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
   padding: 1.5rem;
-  max-width: 42rem;
   width: 100%;
+  max-width: 42rem;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -189,4 +202,80 @@
   font-size: 0.875rem;
   color: white;
   margin: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .checkboxGroup {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem;
+  }
+  
+  .card {
+    padding: 2rem;
+  }
+  
+  .modalContent {
+    padding: 2rem;
+  }
+}
+
+@supports (padding: max(0px)) {
+  .container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+.connectWalletContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 2rem auto;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: rgb(156, 163, 175);
+  font-size: 1.125rem;
+  margin-bottom: 2rem;
+}
+
+.connectWalletWrapper {
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.walletButtonWrapper {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.formContainer {
+  margin-top: 2rem;
+  width: 100%;
 } 

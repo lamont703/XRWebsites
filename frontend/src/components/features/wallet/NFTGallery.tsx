@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {} from 'react-router-dom';
+import styles from '@/styles/NFTGallery.module.css';
 
 interface NFTMetadata {
   name: string;
@@ -60,54 +60,51 @@ export const NFTGallery = ({
   };
 
   return (
-    <div className="w-full">
-      <div className={`${compact ? 'h-[300px]' : 'h-[400px]'} overflow-y-auto`}>
+    <div className={styles.galleryContainer}>
+      <div className={compact ? styles.galleryScrollCompact : styles.galleryScroll}>
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-gray-400">Loading NFTs...</span>
+          <div className={styles.loadingContainer}>
+            <span className={styles.emptyText}>Loading NFTs...</span>
           </div>
         ) : !nfts || nfts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-gray-400 mb-4">No NFTs found in your collection</p>
-            <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-white transition-colors">
+          <div className={styles.emptyContainer}>
+            <p className={styles.emptyText}>No NFTs found in your collection</p>
+            <button className={styles.button}>
               Mint Your First NFT
             </button>
           </div>
         ) : (
-          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          <div className={styles.nftGrid}>
             {nfts.map((nft) => (
-              <div 
-                key={nft.id} 
-                className="flex-none w-[280px] bg-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
-              >
-                <div className="aspect-square bg-gray-800 relative">
+              <div key={nft.id} className={styles.nftCard}>
+                <div className={styles.imageContainer}>
                   {!loadedImages[nft.id] && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                      <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <div className={styles.loadingSpinner}>
+                      <div className={styles.spinner} />
                     </div>
                   )}
                   <img 
                     src={getImageUrl(nft)}
                     alt={nft.metadata?.name || nft.name || 'NFT Image'}
-                    className={`w-full h-full object-cover transition-opacity duration-300 ${loadedImages[nft.id] ? 'opacity-100' : 'opacity-0'}`}
+                    className={`${styles.nftImage} ${loadedImages[nft.id] ? styles.imageVisible : styles.imageHidden}`}
                     onError={(e) => handleImageError(e, nft.id)}
                     onLoad={() => handleImageLoad(nft.id)}
                     loading="lazy"
                   />
                 </div>
-                <div className="p-4">
-                  <h4 className="text-white font-medium text-lg mb-1 truncate">
+                <div className={styles.nftContent}>
+                  <h4 className={styles.nftTitle}>
                     {nft.metadata?.name || nft.name || 'Unnamed NFT'}
                   </h4>
-                  <p className="text-gray-400 text-sm line-clamp-2 mb-3">
+                  <p className={styles.nftDescription}>
                     {nft.metadata?.description || nft.description || 'No description available'}
                   </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-blue-400 font-bold">
+                  <div className={styles.nftFooter}>
+                    <span className={styles.nftPrice}>
                       ${(nft.metadata?.value || nft.value || 0).toFixed(2)}
                     </span>
                     <button 
-                      className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm text-white transition-colors"
+                      className={styles.button}
                       onClick={() => onViewDetails?.(nft)}
                     >
                       View Details

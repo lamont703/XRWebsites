@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from '@/styles/RecentTransactions.module.css';
 
 interface Transaction {
   id: string;
@@ -65,46 +66,40 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   };
 
   return (
-    <div className={`bg-gray-800 rounded-lg p-6 ${className}`}>
-      <h3 className="text-xl font-bold text-white mb-6">Recent Transactions</h3>
+    <div className={`${styles.container} ${className}`}>
+      <h3 className={styles.title}>Recent Transactions</h3>
       
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner} />
         </div>
       ) : transactions.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-400">No recent transactions</p>
+        <div className={styles.emptyState}>
+          <p>No recent transactions</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className={styles.transactionsList}>
           {transactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg hover:bg-gray-650 transition-colors"
-            >
-              <div className="flex items-center space-x-4">
-                <div className={`w-8 h-8 rounded-full ${getTransactionColor(transaction.type)} bg-opacity-20 flex items-center justify-center`}>
+            <div key={transaction.id} className={styles.transactionItem}>
+              <div className={styles.transactionLeft}>
+                <div className={`${styles.transactionIcon} ${getTransactionColor(transaction.type)}`}>
                   {getTransactionIcon(transaction.type)}
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-white">
+                <div className={styles.transactionDetails}>
+                  <div className={styles.transactionType}>
                     {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                     {transaction.details?.item_name && ` - ${transaction.details.item_name}`}
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className={styles.transactionTimestamp}>
                     {formatDate(transaction.timestamp)}
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className={`text-sm font-medium ${getTransactionColor(transaction.type)}`}>
+              <div className={styles.transactionRight}>
+                <div className={`${styles.transactionAmount} ${getTransactionColor(transaction.type)}`}>
                   {transaction.type === 'send' ? '-' : '+'}${transaction.amount}
                 </div>
-                <div className={`text-xs ${
-                  transaction.status === 'completed' ? 'text-green-400' :
-                  transaction.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                }`}>
+                <div className={styles.transactionStatus}>
                   {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                 </div>
               </div>

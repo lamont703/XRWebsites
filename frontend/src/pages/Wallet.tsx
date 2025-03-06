@@ -35,14 +35,6 @@ interface TransactionStats {
   transfers: number;
 }
 
-interface Token {
-  id: string;
-  name: string;
-  symbol: string;
-  balance: string;
-  value: string;
-}
-
 export const Wallet = () => {
   const {} = useAuth() as { user: User | null };
   const [walletData, setWalletData] = useState<WalletData>({
@@ -64,7 +56,6 @@ export const Wallet = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tokens] = useState<Token[]>([]);
 
   const loadWalletData = async () => {
     console.log('🔄 Loading wallet data...');
@@ -318,34 +309,11 @@ export const Wallet = () => {
   return (
     <MainLayout>
       <div className={styles.container}>
-        {/* Welcome Section */}
         <div className={styles.welcomeCard}>
           <h1 className={styles.title}>Wallet Overview</h1>
           <p className={styles.subtitle}>Manage your crypto assets and transactions</p>
         </div>
 
-        {/* Wallet Actions */}
-        <div className={styles.actionsContainer}>
-          <div className={styles.actionsGrid}>
-            <FundWallet 
-              onFund={handleFundWallet} 
-              walletId={walletData.id}
-              className={styles.actionCard}
-            />
-            <BuyVisorcoin onPurchase={handleBuyVisorcoin} />
-          </div>
-          
-          <SendReceiveVisorcoin 
-            onSend={handleSendVisorcoin}
-            walletAddress={walletData.id}
-          />
-        </div>
-
-        {error && (
-          <div className={styles.errorMessage}>{error}</div>
-        )}
-
-        {/* Stats Grid */}
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>Total Dollars</div>
@@ -365,7 +333,24 @@ export const Wallet = () => {
           </div>
         </div>
 
-        {/* NFTs Section */}
+        {error && (
+          <div className={styles.errorMessage}>{error}</div>
+        )}
+
+        <div className={styles.actionsGrid}>
+          <FundWallet 
+            onFund={handleFundWallet} 
+            walletId={walletData.id}
+            className={styles.actionCard}
+          />
+          <BuyVisorcoin onPurchase={handleBuyVisorcoin} />
+        </div>
+        
+        <SendReceiveVisorcoin 
+          onSend={handleSendVisorcoin}
+          walletAddress={walletData.id}
+        />
+
         <div className={styles.nftSection}>
           <NFTGallery 
             nfts={nfts} 
@@ -375,26 +360,11 @@ export const Wallet = () => {
           />
         </div>
 
-        {/* Recent Transactions */}
         <RecentTransactions 
           transactions={walletData.recentTransactions || []}
           isLoading={isLoading}
           className={styles.transactionsCard}
         />
-
-        {/* Tokens Section */}
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>Your Tokens</h2>
-          <div className={styles.tokenGrid}>
-            {tokens.map(token => (
-              <div key={token.id} className={styles.tokenCard}>
-                <div className={styles.tokenName}>{token.name}</div>
-                <div className={styles.tokenBalance}>{token.balance} {token.symbol}</div>
-                <div className={styles.tokenValue}>${token.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </MainLayout>
   );

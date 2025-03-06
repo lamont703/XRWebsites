@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/auth/Auth';
+import styles from '@/styles/CreatePostForm.module.css';
 
 interface CreatePostFormProps {
   onSubmit: (postData: {
@@ -12,7 +13,7 @@ interface CreatePostFormProps {
   isLoading?: boolean;
 }
 
-export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCancel }) => {
+export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCancel, isLoading }) => {
   const {} = useAuth();
   const [formData, setFormData] = useState({
     title: '',
@@ -50,40 +51,40 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCanc
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
-          Title
-        </label>
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label htmlFor="post-title" className={styles.label}>Title</label>
         <input
+          id="post-title"
           type="text"
           value={formData.title}
           onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className={styles.input}
           required
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
-          Content
-        </label>
+      <div className={styles.formGroup}>
+        <label htmlFor="post-content" className={styles.label}>Content</label>
         <textarea
+          id="post-content"
           value={formData.content}
           onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[200px]"
+          className={styles.textarea}
           required
+          title="Post content"
+          placeholder="Write your post content here..."
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
-          Category
-        </label>
+      <div className={styles.formGroup}>
+        <label htmlFor="post-category" className={styles.label}>Category</label>
         <select
+          id="post-category"
           value={formData.category}
           onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className={styles.select}
+          title="Select post category"
         >
           <option value="general">General</option>
           <option value="development">Development</option>
@@ -93,59 +94,56 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCanc
         </select>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">
-          Tags
-        </label>
-        <div className="flex gap-2 mb-2">
+      <div className={styles.formGroup}>
+        <label className={styles.label}>Tags</label>
+        <div className={styles.tagsContainer}>
           {formData.tags.map(tag => (
-            <span
-              key={tag}
-              className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm flex items-center gap-1"
-            >
+            <span key={tag} className={styles.tag}>
               {tag}
               <button
                 type="button"
                 onClick={() => handleRemoveTag(tag)}
-                className="hover:text-blue-300"
+                className={styles.removeTagButton}
               >
                 ×
               </button>
             </span>
           ))}
         </div>
-        <div className="flex gap-2">
+        <div className={styles.tagInput}>
           <input
             type="text"
             value={formData.tagInput}
             onChange={e => setFormData(prev => ({ ...prev, tagInput: e.target.value }))}
             onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-            className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className={styles.input}
             placeholder="Add a tag..."
           />
           <button
             type="button"
             onClick={handleAddTag}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={styles.addTagButton}
           >
             Add
           </button>
         </div>
       </div>
 
-      <div className="flex justify-end gap-4">
+      <div className={styles.footer}>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-400 hover:text-white"
+          className={styles.cancelButton}
+          disabled={isLoading}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className={styles.submitButton}
+          disabled={isLoading}
         >
-          Create Post
+          {isLoading ? 'Creating...' : 'Create Post'}
         </button>
       </div>
     </form>

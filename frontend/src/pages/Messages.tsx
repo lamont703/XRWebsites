@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
 import { toast } from 'react-hot-toast';
+import styles from '@/styles/Messages.module.css';
 
 export const Messages = () => {
   const { userId } = useParams();
@@ -58,23 +59,25 @@ export const Messages = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8 pt-10 lg:pt-8">
+      <div className={styles.container}>
         <button
           onClick={handleBackClick}
-          className="mb-4 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700"
+          className={styles.backButton}
         >
           Back to Messages
         </button>
-        <div className="bg-gray-800 rounded-lg p-6 max-w-3xl mx-auto">
-          <div className="h-[calc(100vh-280px)] overflow-y-auto mb-4 space-y-4">
+        <div className={styles.messageCard}>
+          <div className={styles.messagesContainer}>
             {messages?.map((msg: any) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.senderId === user?.id ? 'justify-end' : 'justify-start'}`}
+                className={`${styles.messageWrapper} ${
+                  msg.senderId === user?.id ? styles.messageWrapperSent : styles.messageWrapperReceived
+                }`}
               >
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
-                    msg.senderId === user?.id ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'
+                  className={`${styles.message} ${
+                    msg.senderId === user?.id ? styles.messageSent : styles.messageReceived
                   }`}
                 >
                   {msg.content}
@@ -83,18 +86,18 @@ export const Messages = () => {
             ))}
           </div>
           
-          <div className="flex gap-2">
+          <div className={styles.inputContainer}>
             <input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={styles.input}
               placeholder="Type your message..."
             />
             <button
               onClick={() => sendMessageMutation.mutate(message)}
               disabled={!message.trim()}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={styles.sendButton}
             >
               Send
             </button>

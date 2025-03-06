@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import '@solana/wallet-adapter-react-ui/styles.css';
+import styles from '@/styles/ConnectWallet.module.css';
 
 interface ConnectWalletProps {
   onConnect?: (address: string) => Promise<void>;
@@ -45,39 +46,20 @@ export const ConnectWallet = ({ onConnect }: ConnectWalletProps) => {
   }, [wallet.connected]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
-      <h3 className="text-xl font-bold text-white mb-4">Connect Wallet</h3>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-        <p className="text-gray-400 text-sm sm:text-base">
+    <div className={styles.container}>
+      <h3 className={styles.title}>Connect Wallet</h3>
+      <div className={styles.content}>
+        <p className={styles.walletInfo}>
           {wallet.connected 
             ? `Connected: ${wallet.publicKey?.toString().slice(0, 6)}...${wallet.publicKey?.toString().slice(-4)}`
             : 'Connect your Solana wallet to continue'}
         </p>
-        <style>
-          {`
-            .wallet-adapter-button {
-              background-color: rgb(37, 99, 235) !important;
-              transition-property: background-color, border-color, color, fill, stroke !important;
-              transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-              transition-duration: 150ms !important;
-            }
-            .wallet-adapter-button:hover {
-              background-color: rgb(29, 78, 216) !important;
-            }
-            .wallet-adapter-button:not([disabled]) {
-              background-color: rgb(37, 99, 235) !important;
-            }
-            .wallet-adapter-button:not([disabled]):hover {
-              background-color: rgb(29, 78, 216) !important;
-            }
-          `}
-        </style>
-        <WalletMultiButton 
-          className="!bg-blue-600 !hover:bg-blue-700 !rounded-lg !px-4 !py-3 !h-auto !text-sm sm:!text-base !font-medium !transition-colors w-full sm:w-auto"
-        />
+        <div className={styles.buttonContainer}>
+          <WalletMultiButton className={styles.walletButton} />
+        </div>
       </div>
       {error && (
-        <div className="text-red-500 mt-4 text-sm">{error}</div>
+        <div className={styles.error}>{error}</div>
       )}
     </div>
   );

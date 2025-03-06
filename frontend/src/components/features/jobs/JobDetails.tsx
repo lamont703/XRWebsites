@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/auth/Auth';
 import { JobApplication, JobApplicationData } from './JobApplication';
+import styles from '@/styles/JobDetails.module.css';
 
 interface Skill {
   name: string;
@@ -110,15 +111,12 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
+    <div className={styles.container}>
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
-          <p className="text-red-500 text-sm">{error}</p>
+        <div className={styles.errorAlert}>
+          <p className={styles.errorText}>{error}</p>
           {!user?.walletId && (
-            <a 
-              href="/profile" 
-              className="text-blue-400 hover:text-blue-300 text-sm block mt-2"
-            >
+            <a href="/profile" className={styles.profileLink}>
               Complete Profile →
             </a>
           )}
@@ -126,8 +124,8 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
       )}
       
       {success && (
-        <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mb-4">
-          <p className="text-green-500 text-sm">{success}</p>
+        <div className={styles.successAlert}>
+          <p className={styles.successText}>{success}</p>
         </div>
       )}
 
@@ -139,91 +137,87 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
           onCancel={() => setShowApplicationForm(false)}
         />
       ) : (
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-            <div className="flex items-center space-x-4 text-gray-400">
-              <span>Posted {postedDate}</span>
-              <span>•</span>
-              <span>{location}</span>
-            </div>
-          </div>
-          <button
-            onClick={handleSave}
-            className="text-gray-400 hover:text-blue-400"
-          >
-            <svg
-              className={`w-6 h-6 ${isSaved ? 'fill-current text-blue-400' : 'stroke-current'}`}
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-              />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        {/* Price and Experience Level */}
-        <div className="flex space-x-4">
-          <div className="bg-gray-700 rounded-lg p-4 flex-1">
-            <div className="text-gray-400 text-sm mb-1">Price</div>
-            <div className="text-xl font-bold text-white">{price} XRV</div>
-          </div>
-          <div className="bg-gray-700 rounded-lg p-4 flex-1">
-            <div className="text-gray-400 text-sm mb-1">Experience Level</div>
-            <div className="text-xl font-bold text-white capitalize">{experienceLevel}</div>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <h3 className="text-lg font-bold text-white mb-2">Job Description</h3>
-          <p className="text-gray-400">{description}</p>
-        </div>
-
-        {/* Skills */}
-        <div>
-          <h3 className="text-lg font-bold text-white mb-2">Skills & Expertise</h3>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <div key={skill.name} className="bg-gray-700 rounded-full px-3 py-1">
-                <span className="text-white">{skill.name}</span>
-                <span className="text-gray-400 text-sm"> • {skill.yearsRequired}+ years</span>
+        <>
+          <div className={styles.header}>
+            <div>
+              <h2 className={styles.title}>{title}</h2>
+              <div className={styles.metaInfo}>
+                <span>Posted {postedDate}</span>
+                <span>•</span>
+                <span>{location}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* About the Client */}
-        <div>
-          <h3 className="text-lg font-bold text-white mb-2">About the Client</h3>
-          <div className="bg-gray-700 rounded-lg p-4">
-            <div className="text-white font-medium mb-2">{poster.name}</div>
-            <div className="space-y-1 text-sm text-gray-400">
-              <div>Rating: {poster.rating}/5</div>
-              <div>{poster.jobsPosted} jobs posted</div>
-              <div>Member since {poster.memberSince}</div>
             </div>
+            <button
+              onClick={handleSave}
+              className={`${styles.saveButton} ${isSaved ? styles.saved : ''}`}
+              title={isSaved ? "Remove from saved jobs" : "Save job"}
+            >
+              <svg
+                className="w-6 h-6"
+                fill={isSaved ? 'currentColor' : 'none'}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                />
+              </svg>
+            </button>
           </div>
-        </div>
 
-        {/* Apply Button */}
-        <div className="mt-6">
-          <button
-            onClick={handleApplyClick}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mt-4"
-            disabled={isLoading}
-          >
-            Apply Now
-          </button>
-        </div>
-      </div>
+          <div className={styles.content}>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Price</div>
+                <div className={styles.statValue}>{price} XRV</div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Experience Level</div>
+                <div className={styles.statValue}>{experienceLevel}</div>
+              </div>
+            </div>
+
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Job Description</h3>
+              <p className={styles.description}>{description}</p>
+            </div>
+
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Skills & Expertise</h3>
+              <div className={styles.skillsGrid}>
+                {skills.map((skill) => (
+                  <div key={skill.name} className={styles.skillTag}>
+                    <span>{skill.name}</span>
+                    <span> • {skill.yearsRequired}+ years</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>About the Client</h3>
+              <div className={styles.clientCard}>
+                <div className={styles.clientName}>{poster.name}</div>
+                <div className={styles.clientInfo}>
+                  <div>Rating: {poster.rating}/5</div>
+                  <div>{poster.jobsPosted} jobs posted</div>
+                  <div>Member since {poster.memberSince}</div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleApplyClick}
+              className={styles.applyButton}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Applying...' : 'Apply Now'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }; 

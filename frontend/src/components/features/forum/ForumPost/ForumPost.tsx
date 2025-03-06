@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DeleteConfirmationModal } from '../../../DeleteConfirmationModal';
 import { useAuth } from '../../../../store/auth/Auth';
 import { toast } from 'react-hot-toast';
+import styles from '@/styles/ForumPost.module.css';
 
 interface ForumPostProps {
   id: string;
@@ -61,18 +62,18 @@ export const ForumPost: React.FC<ForumPostProps> = ({
 
   return (
     <>
-      <div className="bg-gray-800 rounded-lg overflow-hidden">
-        <div className={`p-4 ${isStickied ? 'bg-blue-900/20' : 'bg-gray-700'} rounded-lg transition-colors`}>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <div className={styles.userInfo}>
               <div 
                 onClick={handleUserClick}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80"
+                className={styles.avatar}
               >
                 {author.avatar ? (
-                  <img src={author.avatar} alt={author.name} className="w-full h-full rounded-full" />
+                  <img src={author.avatar} alt={author.name} className={styles.avatarImage} />
                 ) : (
-                  <span className="text-white font-bold">
+                  <span className={styles.avatarFallback}>
                     {author?.name?.charAt(0) || '?'}
                   </span>
                 )}
@@ -80,22 +81,22 @@ export const ForumPost: React.FC<ForumPostProps> = ({
               <div>
                 <button
                   onClick={handleTitleClick}
-                  className="text-white hover:text-blue-400 text-left"
+                  className={styles.title}
                 >
                   {title}
                 </button>
-                <div className="text-sm text-gray-400">
+                <div className={styles.metadata}>
                   Posted by{' '}
                   <button
                     onClick={handleUserClick}
-                    className="text-gray-400 hover:text-blue-400"
+                    className={styles.userLink}
                   >
                     {author.name}
                   </button>
                   {' '}
                   <button
                     onClick={handleUserClick}
-                    className="text-gray-400 hover:text-blue-400"
+                    className={styles.userLink}
                   >
                     (@{author.username})
                   </button>
@@ -104,16 +105,16 @@ export const ForumPost: React.FC<ForumPostProps> = ({
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className={styles.badges}>
               {isStickied && (
-                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                <span className={styles.pinnedBadge}>
                   Pinned
                 </span>
               )}
               {isAuthor && (
                 <button
                   onClick={() => setIsDeleteModalOpen(true)}
-                  className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full hover:bg-red-500/30"
+                  className={styles.deleteButton}
                 >
                   Delete
                 </button>
@@ -121,17 +122,17 @@ export const ForumPost: React.FC<ForumPostProps> = ({
             </div>
           </div>
           
-          <p className="mt-3 text-gray-300 line-clamp-2">{content}</p>
+          <p className={styles.postContent}>{content}</p>
           
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex space-x-2">
+          <div className={styles.footer}>
+            <div className={styles.tags}>
               {tags?.map((tag) => (
-                <span key={tag} className="px-2 py-1 bg-gray-600 text-gray-300 text-xs rounded-full">
+                <span key={tag} className={styles.tag}>
                   {tag}
                 </span>
               ))}
             </div>
-            <div className="flex items-center gap-4 mt-4">
+            <div className={styles.actions}>
               <button
                 onClick={() => {
                   if (!user) {
@@ -141,19 +142,13 @@ export const ForumPost: React.FC<ForumPostProps> = ({
                   onLike(id);
                 }}
                 disabled={isLiking}
-                className={`flex items-center gap-1 ${
-                  isLiking
-                    ? 'opacity-50 cursor-not-allowed'
-                    : hasLiked
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-blue-400'
-                }`}
+                className={`${styles.actionButton} ${hasLiked ? styles.liked : ''}`}
               >
                 {isLiking ? '⏳' : hasLiked ? '👍' : '👍'} {likes || 0}
               </button>
               <button
                 onClick={handleCommentClick}
-                className="flex items-center gap-1 text-gray-400 hover:text-blue-400"
+                className={styles.actionButton}
               >
                 💬 {replies || 0}
               </button>

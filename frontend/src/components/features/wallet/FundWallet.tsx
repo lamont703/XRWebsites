@@ -6,6 +6,7 @@ import {
     useStripe,
     useElements,
 } from '@stripe/react-stripe-js';
+import styles from '@/styles/FundWallet.module.css';
 
 interface FundWalletProps {
     onFund: (amount: number) => Promise<void>;
@@ -194,27 +195,27 @@ export const FundWallet: React.FC<FundWalletProps> = ({ onFund, className = '', 
     };
 
     return (
-        <div className={`bg-gray-800 rounded-lg p-6 ${className}`}>
-            <h2 className="text-xl font-bold text-white mb-4">Fund Your Wallet</h2>
+        <div className={`${styles.fundContainer} ${className}`}>
+            <h2 className={styles.title}>Fund Your Wallet</h2>
             {successMessage && (
-                <div className="mb-4 bg-green-500 bg-opacity-10 border border-green-500 text-green-500 px-4 py-3 rounded">
+                <div className={styles.successMessage}>
                     {successMessage}
                 </div>
             )}
             {!showPayment ? (
-                <div className="space-y-4">
-                    <div>
-                        <label htmlFor="amount" className="block text-sm font-medium text-gray-400 mb-2">
+                <div className={styles.form}>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="amount" className={styles.label}>
                             Amount (USD)
                         </label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
+                        <div className={styles.inputWrapper}>
+                            <span className={styles.currencySymbol}>$</span>
                             <input
                                 type="number"
                                 id="amount"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
-                                className="w-full p-2 pl-8 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                                className={styles.input}
                                 placeholder="0.00"
                                 min="1"
                                 step="0.01"
@@ -224,8 +225,7 @@ export const FundWallet: React.FC<FundWalletProps> = ({ onFund, className = '', 
                     <button
                         onClick={initializePayment}
                         disabled={!amount || parseFloat(amount) <= 0}
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 
-                            disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={styles.button}
                     >
                         Continue to Payment
                     </button>
@@ -245,12 +245,8 @@ export const FundWallet: React.FC<FundWalletProps> = ({ onFund, className = '', 
                         onSuccess={handleSuccess} 
                     />
                 </Elements>
-            ) : !stripePromise && (
-                <div className="text-red-500 text-sm">
-                    Payment system is not properly configured. Please try again later.
-                </div>
-            )}
-            {error && <div className="text-red-500 text-sm">{error}</div>}
+            ) : null}
+            {error && <div className={styles.errorMessage}>{error}</div>}
         </div>
     );
 }; 

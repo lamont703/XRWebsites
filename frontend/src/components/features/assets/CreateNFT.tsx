@@ -98,15 +98,17 @@ export const CreateNFT: React.FC<CreateNFTProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label htmlFor="nft-image" className="block text-sm font-medium text-gray-400 mb-2">
             NFT Image
           </label>
           <input
+            id="nft-image"
             type="file"
             accept="image/*"
             onChange={handleImageChange}
             className="w-full bg-gray-700 text-white rounded-lg p-3"
             required
+            title="Upload NFT image"
           />
           <p className="text-sm text-gray-500 mt-1">Max size: 10MB. Recommended: 1500x1500px</p>
         </div>

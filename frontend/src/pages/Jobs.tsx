@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { JobPosting, JobPostData } from '@/components/features/jobs/JobPosting';
-import {} from '../styles/Dashboard.module.css';
 import { ActiveJobs } from '@/components/features/jobs/ActiveJobs';
+import styles from '@/styles/Jobs.module.css';
 
 export const Jobs = () => {
   const { user } = useAuth();
@@ -120,47 +120,42 @@ export const Jobs = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="w-full sm:w-auto">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Jobs Dashboard</h1>
-            <p className="text-gray-400 text-sm sm:text-base">Manage your active and completed jobs</p>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <div className={styles.headerContent}>
+            <h1 className={styles.title}>Jobs Dashboard</h1>
+            <p className={styles.subtitle}>Manage your active and completed jobs</p>
           </div>
           <button
             onClick={() => setShowPostingForm(!showPostingForm)}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg
-              transition-colors duration-200 text-sm sm:text-base font-medium"
+            className={styles.postButton}
           >
             {showPostingForm ? 'Cancel' : 'Post New Job'}
           </button>
         </div>
 
         {success && (
-          <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mb-6">
-            <p className="text-green-500 text-sm">{success}</p>
+          <div className={styles.successAlert}>
+            <p className={styles.successText}>{success}</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-6">
-            <p className="text-red-500 text-sm">{error}</p>
+          <div className={styles.errorAlert}>
+            <p className={styles.errorText}>{error}</p>
           </div>
         )}
 
         {showPostingForm ? (
-          <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-6 max-w-full overflow-x-hidden">
+          <div className={styles.formContainer}>
             <JobPosting onSubmit={handlePostJob} />
           </div>
         ) : (
-          <>
-            {!showPostingForm && (
-              <ActiveJobs 
-                onJobCancel={handleCancelJob} 
-                onApplicationCancel={handleCancelApplication}
-                key={refreshJobs} 
-              />
-            )}
-          </>
+          <ActiveJobs 
+            onJobCancel={handleCancelJob} 
+            onApplicationCancel={handleCancelApplication}
+            key={refreshJobs} 
+          />
         )}
       </div>
     </MainLayout>

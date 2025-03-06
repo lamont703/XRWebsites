@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
 import { useAuth } from '@/store/auth/Auth';
 import { toast } from 'react-hot-toast';
+import styles from '@/styles/UserProfile.module.css';
 
 export const UserProfile = () => {
   const { userId } = useParams();
@@ -69,29 +70,29 @@ export const UserProfile = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8 pt-20 lg:pt-8">
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+      <div className={styles.container}>
+        <div className={styles.profileCard}>
+          <div className={styles.header}>
+            <div className={styles.userInfo}>
+              <div className={styles.avatar}>
                 {userData?.avatar ? (
-                  <img src={userData.avatar} alt={userData.name} className="w-full h-full rounded-full" />
+                  <img src={userData.avatar} alt={userData.name} className={styles.avatarImage} />
                 ) : (
-                  <span className="text-white text-4xl font-bold">
+                  <span className={styles.avatarFallback}>
                     {userData?.name?.charAt(0) || '?'}
                   </span>
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">{userData?.name}</h1>
-                <p className="text-gray-400">@{userData?.username}</p>
+                <h1 className={styles.userName}>{userData?.name}</h1>
+                <p className={styles.userHandle}>@{userData?.username}</p>
               </div>
             </div>
             {user && userData && (user.id !== userData.id) && (
               <button
                 type="button"
                 onClick={handleMessageClick}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                className={styles.messageButton}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
@@ -102,22 +103,20 @@ export const UserProfile = () => {
             )}
           </div>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-white mb-4">Recent Posts</h2>
-              <div className="space-y-4">
+          <div className={styles.content}>
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Recent Posts</h2>
+              <div className={styles.postsList}>
                 {userPosts?.length > 0 ? (
                   userPosts.map((post: any) => (
                     <div 
                       key={post.id}
                       onClick={() => handlePostClick(post.id)}
-                      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-750 transition-colors"
+                      className={styles.postCard}
                     >
-                      <h3 className="text-white font-medium mb-2">{post.title}</h3>
-                      <p className="text-gray-300 text-sm line-clamp-2 mb-2">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <h3 className={styles.postTitle}>{post.title}</h3>
+                      <p className={styles.postContent}>{post.content}</p>
+                      <div className={styles.postMetadata}>
                         <span>👍 {post.likes || 0}</span>
                         <span>💬 {post.replies || 0}</span>
                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
@@ -125,12 +124,12 @@ export const UserProfile = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-400">No posts yet</p>
+                  <p className={styles.emptyState}>No posts yet</p>
                 )}
               </div>
             </div>
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-white mb-4">Activity</h2>
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Activity</h2>
               {/* Add user's activity here */}
             </div>
           </div>

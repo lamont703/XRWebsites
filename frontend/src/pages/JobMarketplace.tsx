@@ -5,11 +5,9 @@ import { useAuth } from '@/store/auth/Auth';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { JobApplicationData } from '@/components/features/jobs/JobApplication';
-import {} from '../styles/Dashboard.module.css'
-import {} from '@/components/features/marketplace/NFTListings';
-import {} from '@/components/features/jobs/ActiveJobs';
 import { JobCard } from '@/components/features/jobs/JobCard';
 import { NFTListingCard } from '@/components/features/marketplace/NFTListingCard';
+import styles from '@/styles/JobMarketplace.module.css';
 
 interface Job {
   id: string;
@@ -66,14 +64,19 @@ export const JobMarketplace = () => {
         throw new Error('No access token found');
       }
 
+      const params = new URLSearchParams();
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+
       const [jobsResponse, listingsResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/public`, {
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/public?${params}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
           }
         }),
-        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/marketplace/listings`, {
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/marketplace/listings?${params}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -111,7 +114,7 @@ export const JobMarketplace = () => {
     if (isAuthenticated) {
       loadMarketplaceItems();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, selectedCategory]);
 
   const handleApplyJob = async (jobId: string, applicationData: JobApplicationData) => {
     try {
@@ -232,84 +235,61 @@ export const JobMarketplace = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Search Header */}
-        <div className="mb-6">
+      <div className={styles.container}>
+        <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Search for jobs..."
-            className="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            placeholder="Search jobs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
           />
         </div>
 
-        {/* Filters Section - Full width on mobile, sidebar on desktop */}
-        <div className="lg:flex lg:gap-8">
-          <div className="w-full lg:w-1/4 mb-6 lg:mb-0">
-            <div className="bg-gray-800 p-4 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4 text-white">Filters</h2>
-              
-              {/* Category Filter */}
-              <div className="mb-6">
-                <h3 className="text-lg font-medium mb-2 text-white">Category</h3>
+        <div className={styles.mainContent}>
+          <div className={styles.filtersContainer}>
+            <div className={styles.filterSection}>
+              <h3 className={styles.filterTitle}>Categories</h3>
+              <div className={styles.filterGroup}>
                 <select
-                  title="Filter by category"
-                  className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
+                  className={styles.select}
+                  title="Filter by category"
                 >
                   <option value="all">All Categories</option>
-                  <option value="web">Web Development</option>
-                  <option value="mobile">Mobile Development</option>
-                  <option value="design">UI/UX Design</option>
-                  <option value="writing">Content Writing</option>
+                  <option value="development">Development</option>
+                  <option value="design">Design</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
+            </div>
 
-              {/* Experience Level */}
-              <div className="mb-6">
-                <h3 className="text-lg font-medium mb-2 text-white">Experience Level</h3>
-                <div className="space-y-2 text-white">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Entry Level
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Intermediate
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Expert
-                  </label>
-                </div>
-              </div>
-
-              {/* Budget Range */}
-              <div className="mb-6">
-                <h3 className="text-lg font-medium mb-2 text-white">Hourly Rate</h3>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    className="w-1/2 p-2 rounded bg-gray-700 text-white border border-gray-600"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    className="w-1/2 p-2 rounded bg-gray-700 text-white border border-gray-600"
-                  />
-                </div>
+            <div className={styles.filterSection}>
+              <h3 className={styles.filterTitle}>Price Range</h3>
+              <div className={styles.priceInputs}>
+                <input
+                  type="number"
+                  placeholder="Min"
+                  className={styles.priceInput}
+                />
+                <input
+                  type="number"
+                  placeholder="Max"
+                  className={styles.priceInput}
+                />
               </div>
             </div>
           </div>
 
-          {/* Main Content - Job Listings */}
-          <div className="w-full lg:w-3/4">
+          <div>
             {isLoading ? (
-              <div>Loading marketplace items...</div>
+              <div className={styles.loadingText}>Loading marketplace items...</div>
             ) : error ? (
-              <div className="text-red-400">{error}</div>
+              <div className={styles.errorText}>{error}</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className={styles.listingsGrid}>
                 {marketplaceItems.map(renderMarketplaceItem)}
               </div>
             )}

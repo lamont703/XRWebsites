@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '@/styles/JobPosting.module.css';
 
 interface JobPostingProps {
   onSubmit: (jobData: JobPostData) => Promise<void>;
@@ -81,148 +82,125 @@ export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
+    <div className={styles.container}>
       <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Post a New Job</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1 sm:mb-2">
-            Job Title
-          </label>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Title</label>
           <input
             type="text"
             value={formData.title}
             onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm sm:text-base"
+            className={styles.input}
             required
+            title="Job Title"
+            placeholder="Enter job title"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1 sm:mb-2">
-            Project Type
-          </label>
-          <select
-            value={formData.projectType}
-            onChange={e => setFormData(prev => ({ ...prev, projectType: e.target.value as any }))}
-            className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm sm:text-base"
-          >
-            <option value="AR">AR (Augmented Reality)</option>
-            <option value="VR">VR (Virtual Reality)</option>
-            <option value="Web3">Web3</option>
-            <option value="Metaverse">Metaverse</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
-            Description
-          </label>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Description</label>
           <textarea
             value={formData.description}
             onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 h-32"
+            className={styles.textarea}
             required
+            title="Job Description"
+            placeholder="Enter job description"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Location
-            </label>
+        <div className={styles.gridContainer}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Location</label>
             <input
               type="text"
               value={formData.location}
               onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.input}
               placeholder="e.g., Remote, Worldwide"
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Price (XRV)
-            </label>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Price (XRV)</label>
             <input
               type="number"
               value={formData.price}
               onChange={e => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.input}
               min="0"
               required
+              title="Job Price"
+              placeholder="Enter price in XRV"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Experience Level
-            </label>
+        <div className={styles.gridContainer}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Experience Level</label>
             <select
               value={formData.experienceLevel}
               onChange={e => setFormData(prev => ({ ...prev, experienceLevel: e.target.value as any }))}
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.select}
+              title="Experience Level Required"
             >
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
               <option value="expert">Expert</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Project Duration
-            </label>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Project Duration</label>
             <input
               type="text"
               value={formData.projectDuration}
               onChange={e => setFormData(prev => ({ ...prev, projectDuration: e.target.value }))}
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.input}
               placeholder="e.g., 3 months"
               required
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
-            Required Skills
-          </label>
-          <div className="flex gap-2 mb-2">
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Required Skills</label>
+          <div className={styles.skillsInput}>
             <input
               type="text"
               value={skillInput.name}
               onChange={e => setSkillInput(prev => ({ ...prev, name: e.target.value }))}
-              className="flex-1 bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.input}
               placeholder="Skill name"
             />
             <input
               type="number"
               value={skillInput.yearsRequired}
               onChange={e => setSkillInput(prev => ({ ...prev, yearsRequired: Number(e.target.value) }))}
-              className="w-20 bg-gray-700 text-white rounded-lg px-4 py-2"
+              className={styles.input}
               min="0"
+              placeholder="Years"
             />
             <button
               type="button"
               onClick={handleAddSkill}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className={styles.addButton}
             >
               Add
             </button>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4">
+          
+          <div className={styles.skillsList}>
             {formData.skills.map(skill => (
-              <span
-                key={skill.name}
-                className="bg-gray-700 text-white text-xs sm:text-sm rounded-full px-3 py-1 flex items-center gap-2"
-              >
-                {skill.name}
+              <span key={skill.name} className={styles.skillTag}>
+                {skill.name} • {skill.yearsRequired}+ years
                 <button
                   type="button"
                   onClick={() => handleRemoveSkill(skill.name)}
-                  className="hover:text-red-400"
+                  className={styles.removeButton}
                 >
                   ×
                 </button>
@@ -232,22 +210,21 @@ export const JobPosting: React.FC<JobPostingProps> = ({ onSubmit }) => {
         </div>
 
         {success && (
-          <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mt-4">
-            <p className="text-green-500 text-sm">{success}</p>
+          <div className={styles.successAlert}>
+            <p className={styles.successText}>{success}</p>
           </div>
         )}
 
         {error && (
-          <div className="text-red-500 text-sm mt-4">
-            {error}
+          <div className={styles.errorAlert}>
+            <p className={styles.errorText}>{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg
-            transition-colors duration-200 text-sm sm:text-base font-medium disabled:opacity-50"
+          className={styles.submitButton}
         >
           {isLoading ? 'Posting...' : 'Post Job'}
         </button>

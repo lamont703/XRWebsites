@@ -1,0 +1,139 @@
+.container {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(156, 163, 175);
+}
+
+.input, .textarea, .select {
+  max-width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(55, 65, 81, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.input:focus, .textarea:focus, .select:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+}
+
+.textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.skillsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skillsInput {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.skillTag {
+  background: rgba(55, 65, 81, 0.5);
+  color: white;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.removeButton {
+  color: rgb(239, 68, 68);
+  transition: color 0.2s;
+}
+
+.removeButton:hover {
+  color: rgb(220, 38, 38);
+}
+
+.addButton {
+  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.addButton:hover {
+  background: linear-gradient(to right, rgb(29, 78, 216), rgb(30, 64, 175));
+  transform: translateY(-1px);
+}
+
+.submitButton {
+  width: 100%;
+  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(29, 78, 216), rgb(30, 64, 175));
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 0 -1rem;
+    border-radius: 0;
+  }
+} 

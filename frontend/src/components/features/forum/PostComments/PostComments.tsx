@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth/Auth';
 import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
+import styles from '@/styles/PostComments.module.css';
 
 interface Comment {
   id: string;
@@ -59,144 +60,117 @@ export const PostComments: React.FC<PostCommentsProps> = ({
   const renderComment = (comment: Comment, depth = 0) => {
     if (!comment || comment.status === 'deleted') return null;
     const isAuthor = user?.id === comment.author.id;
+    const hasLiked = comment.likedBy?.includes(user?.id || '');
 
     return (
-      <div
-        key={comment.id}
-        className={`${depth > 0 ? 'ml-8 border-l border-gray-700' : ''} py-4`}
-      >
-        <div className="flex gap-4">
+      <div key={comment.id} className={`${styles.comment} ${depth > 0 ? styles.nested : ''}`}>
+        <div className={styles.commentHeader}>
           <div 
             onClick={() => handleUserClick(comment.author?.id)}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80"
+            className={styles.avatar}
           >
-            {comment.author?.avatar ? (
-              <img 
-                src={comment.author.avatar} 
-                alt={comment.author?.name || 'User'} 
-                className="w-full h-full rounded-full" 
-              />
+            {comment.author.avatar ? (
+              <img src={comment.author.avatar} alt={comment.author.name} className={styles.avatarImage} />
             ) : (
-              <span className="text-white font-bold">
-                {comment.author?.name ? comment.author.name.charAt(0) : '?'}
-              </span>
+              <span className={styles.avatarFallback}>{comment.author.name.charAt(0)}</span>
             )}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <button
-                onClick={() => handleUserClick(comment.author?.id)}
-                className="font-medium text-white hover:text-blue-400"
-              >
-                {comment.author?.name || comment.author?.username || 'Anonymous'}
+          <div className={styles.commentContent}>
+            <div className={styles.userInfo}>
+              <button onClick={() => handleUserClick(comment.author.id)} className={styles.userName}>
+                {comment.author.name}
               </button>
-              {comment.author?.username && (
-                <button
-                  onClick={() => handleUserClick(comment.author?.id)}
-                  className="text-sm text-gray-400 hover:text-blue-400"
-                >
-                  @{comment.author.username}
-                </button>
-              )}
+              <span className={styles.timestamp}>
+                • {new Date(comment.createdAt).toLocaleDateString()}
+              </span>
             </div>
-            <p className="text-gray-300 mb-2">{comment.content}</p>
-            <div className="flex items-center gap-4 text-sm">
+            <p className={styles.text}>{comment.content}</p>
+            <div className={styles.actions}>
               <button
                 onClick={() => onLikeComment(comment.id)}
                 disabled={isLiking?.[comment.id]}
-                className={`flex items-center gap-1 ${
-                  isLiking?.[comment.id]
-                    ? 'opacity-50 cursor-not-allowed'
-                    : comment.likedBy?.includes(user?.id || '')
-                    ? 'text-blue-400'
-                    : 'text-gray-400 hover:text-blue-400'
-                }`}
+                className={`${styles.actionButton} ${hasLiked ? styles.liked : ''}`}
               >
                 {isLiking?.[comment.id] ? '⏳' : '👍'} {comment.likes || 0}
               </button>
               <button
                 onClick={() => setReplyTo(comment.id)}
-                className="text-gray-400 hover:text-blue-400"
+                className={styles.actionButton}
               >
                 Reply
               </button>
+              {isAuthor && (
+                <button
+                  onClick={() => setIsDeleteModalOpen(comment.id)}
+                  className={styles.deleteButton}
+                >
+                  Delete
+                </button>
+              )}
             </div>
             {replyTo === comment.id && (
-              <form onSubmit={(e) => handleSubmit(e, comment.id)} className="mt-4">
+              <form onSubmit={(e) => handleSubmit(e, comment.id)} className={styles.commentForm}>
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className={styles.textarea}
                   placeholder="Write a reply..."
-                  rows={3}
+                  rows={4}
                 />
-                <div className="flex justify-end gap-2 mt-2">
+                <div className={styles.formActions}>
                   <button
                     type="button"
                     onClick={() => setReplyTo(null)}
-                    className="px-3 py-1 text-gray-400 hover:text-white"
+                    className={styles.cancelButton}
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
+                  <button type="submit" className={styles.submitButton}>
                     Reply
                   </button>
                 </div>
               </form>
-            )}
-            {isAuthor && (
-              <button
-                onClick={() => setIsDeleteModalOpen(comment.id)}
-                className="text-red-400 hover:text-red-500"
-              >
-                Delete
-              </button>
             )}
           </div>
         </div>
         {comment.replies
           ?.filter(reply => reply.status !== 'deleted')
           ?.map((reply) => renderComment(reply, depth + 1))}
-        <DeleteConfirmationModal
-          isOpen={isDeleteModalOpen === comment.id}
-          onClose={() => setIsDeleteModalOpen(null)}
-          onConfirm={() => {
-            console.log('Delete triggered for comment:', comment.id);
-            onDeleteComment(comment.id);
-            setIsDeleteModalOpen(null);
-          }}
-          title="Delete Comment"
-          message="Are you sure you want to delete this comment? This action cannot be undone."
-        />
       </div>
     );
   };
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={(e) => handleSubmit(e)} className="mb-6">
+    <div className={styles.container}>
+      <form onSubmit={(e) => handleSubmit(e)} className={styles.commentForm}>
         <textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className={styles.textarea}
           placeholder="Write a comment..."
           rows={4}
         />
-        <div className="flex justify-end mt-2">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
+        <div className={styles.formActions}>
+          <button type="submit" className={styles.submitButton}>
             Post Comment
           </button>
         </div>
       </form>
-      <div className="divide-y divide-gray-700">
+      <div className={styles.commentThread}>
         {activeComments.map((comment) => renderComment(comment))}
       </div>
+      <DeleteConfirmationModal
+        isOpen={!!isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(null)}
+        onConfirm={() => {
+          if (isDeleteModalOpen) {
+            onDeleteComment(isDeleteModalOpen);
+            setIsDeleteModalOpen(null);
+          }
+        }}
+        title="Delete Comment"
+        message="Are you sure you want to delete this comment? This action cannot be undone."
+      />
     </div>
   );
 }; 

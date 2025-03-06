@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
+import styles from '@/styles/Settings.module.css';
 import { toast } from 'react-hot-toast';
 
 interface UserProfile {
@@ -155,191 +155,181 @@ export const Settings = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          {/* Profile Settings Section */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-white">Profile Settings</h2>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-              >
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </button>
-            </div>
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>Profile Settings</h2>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className={styles.editButton}
+            >
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
+          </div>
 
-            {isEditing ? (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-gray-300 mb-2">First Name</label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData?.firstName || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData?.lastName || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData?.username || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData?.email || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Phone</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData?.phone || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-gray-300 mb-2">Bio</label>
-                  <textarea
-                    name="bio"
-                    value={formData?.bio || ''}
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="firstName" className={styles.label}>First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    id="firstName"
+                    value={formData?.firstName || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                    rows={3}
+                    className={styles.input}
+                    required
+                    title="Your first name"
+                    placeholder="Enter your first name"
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-gray-300 mb-2">Location</label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData?.location || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 mb-2">Website</label>
-                    <input
-                      type="url"
-                      name="website"
-                      value={formData?.website || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="lastName" className={styles.label}>Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    id="lastName"
+                    value={formData?.lastName || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    required
+                    title="Your last name"
+                    placeholder="Enter your last name"
+                  />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >
-                  Save Changes
-                </button>
-              </form>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-gray-300 mb-1">First Name</h3>
-                  <p className="text-white text-lg">{profile?.firstName || 'Not set'}</p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="username" className={styles.label}>Username</label>
+                  <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    value={formData?.username || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    required
+                    title="Your username"
+                    placeholder="Enter your username"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Last Name</h3>
-                  <p className="text-white text-lg">{profile?.lastName || 'Not set'}</p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.label}>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    value={formData?.email || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    required
+                    title="Your email address"
+                    placeholder="Enter your email address"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Username</h3>
-                  <p className="text-white text-lg">{profile?.username || 'Not set'}</p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="phone" className={styles.label}>Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    value={formData?.phone || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    title="Your phone number"
+                    placeholder="Enter your phone number"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Email</h3>
-                  <p className="text-white text-lg">{profile?.email || 'Not set'}</p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="location" className={styles.label}>Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    value={formData?.location || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    title="Your location"
+                    placeholder="Enter your location"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Phone</h3>
-                  <p className="text-white text-lg">{profile?.phone || 'Not set'}</p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="website" className={styles.label}>Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    id="website"
+                    value={formData?.website || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    title="Your website URL"
+                    placeholder="Enter your website URL"
+                  />
                 </div>
-                <div className="col-span-2">
-                  <h3 className="text-gray-300 mb-1">Bio</h3>
-                  <p className="text-white">{profile?.bio || 'No bio added yet'}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Location</h3>
-                  <p className="text-white">{profile?.location || 'Not set'}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-300 mb-1">Website</h3>
-                  {profile?.website ? (
-                    <a 
-                      href={profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      {profile.website}
-                    </a>
-                  ) : (
-                    <p className="text-white">Not set</p>
-                  )}
+                <div className={styles.formGroup}>
+                  <label htmlFor="bio" className={styles.label}>Bio</label>
+                  <textarea
+                    name="bio"
+                    id="bio"
+                    value={formData?.bio || ''}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                    rows={4}
+                    title="Your bio"
+                    placeholder="Tell us about yourself"
+                  />
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Account Stats Section */}
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <div className="text-sm font-medium text-gray-400 mb-2">Account Status</div>
-              <div className="text-2xl font-bold text-white">Active</div>
+              <button type="submit" className={styles.submitButton}>
+                Save Changes
+              </button>
+            </form>
+          ) : (
+            <div className={styles.formGrid}>
+              <div>
+                <h3 className={styles.label}>First Name</h3>
+                <p className={styles.value}>{profile?.firstName || 'Not set'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Last Name</h3>
+                <p className={styles.value}>{profile?.lastName || 'Not set'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Username</h3>
+                <p className={styles.value}>{profile?.username || 'Not set'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Email</h3>
+                <p className={styles.value}>{profile?.email || 'Not set'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Phone</h3>
+                <p className={styles.value}>{profile?.phone || 'Not set'}</p>
+              </div>
+              <div className={styles.colSpan2}>
+                <h3 className={styles.label}>Bio</h3>
+                <p className={styles.value}>{profile?.bio || 'No bio added yet'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Location</h3>
+                <p className={styles.value}>{profile?.location || 'Not set'}</p>
+              </div>
+              <div>
+                <h3 className={styles.label}>Website</h3>
+                {profile?.website ? (
+                  <a 
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.value}
+                  >
+                    {profile.website}
+                  </a>
+                ) : (
+                  <p className={styles.value}>Not set</p>
+                )}
+              </div>
             </div>
-            <div className={styles.statCard}>
-              <div className="text-sm font-medium text-gray-400 mb-2">2FA Status</div>
-              <div className="text-2xl font-bold text-white">Disabled</div>
-            </div>
-            <div className={styles.statCard}>
-              <div className="text-sm font-medium text-gray-400 mb-2">Last Login</div>
-              <div className="text-2xl font-bold text-white">Today</div>
-            </div>
-            <div className={styles.statCard}>
-              <div className="text-sm font-medium text-gray-400 mb-2">Account Type</div>
-              <div className="text-2xl font-bold text-white">Standard</div>
-            </div>
-          </div>
-
-          {/* Account Settings Section */}
-          <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
-            {/* Your existing settings content */}
-          </div>
+          )}
         </div>
       </div>
     </MainLayout>

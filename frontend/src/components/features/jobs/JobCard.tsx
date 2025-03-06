@@ -1,4 +1,5 @@
-import React, {} from 'react';
+import React from 'react';
+import styles from '@/styles/JobCard.module.css';
 
 interface JobCardProps {
   job: {
@@ -25,20 +26,20 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onClick }) => {
 
   return (
     <div 
-      className="bg-gray-800 rounded-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors"
+      className={styles.card}
       onClick={() => onClick(job)}
     >
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-white">{job.title}</h3>
-        <span className="text-green-400 font-medium">${job.price}</span>
+      <div className={styles.header}>
+        <h3 className={styles.title}>{job.title}</h3>
+        <span className={styles.price}>${job.price}</span>
       </div>
       
-      <p className="text-gray-300 mb-4 line-clamp-2">{job.description}</p>
+      <p className={styles.description}>{job.description}</p>
       
-      <div className="flex justify-end">
+      <div className={styles.buttonContainer}>
         <button
           onClick={handleViewDetails}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+          className={styles.button}
         >
           View Details
         </button>

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import {} from '@/store/auth/Auth';
+import { NFTListingCard } from './NFTListingCard';
+import styles from '@/styles/NFTListings.module.css';
 
 interface NFT {
   id: string;
-  name?: string;
-  description?: string;
-  image_url?: string;
+  name: string;
+  description: string;
+  image_url: string;
 }
 
 interface NFTListing {
@@ -51,34 +52,16 @@ export const NFTListings = () => {
     loadListings();
   }, []);
 
-  if (loading) return <div>Loading listings...</div>;
-  if (error) return <div className="text-red-400">{error}</div>;
+  if (loading) return <div className={styles.loadingText}>Loading listings...</div>;
+  if (error) return <div className={styles.errorText}>{error}</div>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {listings.map((listing) => (
-        <div key={listing.id} className="bg-gray-800 rounded-lg p-6">
-          <img 
-            src={listing.nft?.image_url || '/placeholder-nft.png'}
-            alt={listing.nft?.name}
-            className="w-full aspect-square object-cover rounded-lg mb-4"
-          />
-          <h3 className="text-xl font-bold text-white mb-2">
-            {listing.nft?.name || 'Unnamed NFT'}
-          </h3>
-          <p className="text-gray-400 mb-4">
-            {listing.nft?.description || 'No description available'}
-          </p>
-          <div className="flex justify-between items-center">
-            <div className="text-blue-400 font-bold">
-              {listing.price} XRV
-            </div>
-            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white">
-              Purchase
-            </button>
-          </div>
-        </div>
-      ))}
+    <div className={styles.container}>
+      <div className={styles.grid}>
+        {listings.map((listing) => (
+          <NFTListingCard key={listing.id} listing={listing} />
+        ))}
+      </div>
     </div>
   );
 }; 

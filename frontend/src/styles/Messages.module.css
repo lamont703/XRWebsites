@@ -1,0 +1,120 @@
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+  padding-top: 5rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  color: white;
+  background: rgba(75, 85, 99, 0.5);
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: rgba(75, 85, 99, 0.7);
+}
+
+.messageCard {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.messagesContainer {
+  height: calc(100vh - 280px);
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.messageWrapper {
+  display: flex;
+}
+
+.messageWrapperSent {
+  justify-content: flex-end;
+}
+
+.messageWrapperReceived {
+  justify-content: flex-start;
+}
+
+.message {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.messageSent {
+  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+}
+
+.messageReceived {
+  background: rgba(55, 65, 81, 0.5);
+  color: rgb(209, 213, 219);
+}
+
+.inputContainer {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgba(55, 65, 81, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.input:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.sendButton {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  color: white;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(29, 78, 216), rgb(30, 64, 175));
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+    margin: 0 -1rem;
+    width: 100vw;
+  }
+
+  .messageCard {
+    border-radius: 0;
+  }
+} 

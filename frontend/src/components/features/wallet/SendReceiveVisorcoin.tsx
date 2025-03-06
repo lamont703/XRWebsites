@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '@/styles/SendReceiveVisorcoin.module.css';
 
 interface SendReceiveVisorcoinProps {
   onSend: (address: string, amount: number) => Promise<void>;
@@ -50,31 +51,19 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
   };
 
   return (
-    <div className={`bg-gray-800 rounded-lg p-6 ${className}`}>
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-white">Send/Receive XRV</h3>
-        <div className="flex space-x-2">
+    <div className={`${styles.container} ${className}`}>
+      <div className={styles.header}>
+        <h3 className={styles.title}>Send/Receive XRV</h3>
+        <div className={styles.buttonGroup}>
           <button
             onClick={() => setIsReceiveMode(false)}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              !isReceiveMode 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-            title="Switch to send mode"
-            aria-label="Switch to send mode"
+            className={`${styles.modeButton} ${!isReceiveMode ? styles.activeButton : styles.inactiveButton}`}
           >
             Send
           </button>
           <button
             onClick={() => setIsReceiveMode(true)}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              isReceiveMode 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-            title="Switch to receive mode"
-            aria-label="Switch to receive mode"
+            className={`${styles.modeButton} ${isReceiveMode ? styles.activeButton : styles.inactiveButton}`}
           >
             Receive
           </button>
@@ -82,40 +71,38 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
       </div>
 
       {isReceiveMode ? (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+        <div>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>
               Your Wallet Address
             </label>
-            <div className="flex items-center space-x-2">
+            <div className={styles.addressContainer}>
               <input
                 type="text"
                 value={walletAddress}
                 readOnly
-                className="bg-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                title="Your wallet address"
-                aria-label="Your wallet address"
+                className={styles.input}
+                title="Your Wallet Address"
+                placeholder="Your wallet address"
               />
               <button
                 onClick={copyToClipboard}
-                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-                title="Copy wallet address to clipboard"
-                aria-label="Copy wallet address"
+                className={styles.copyButton}
               >
                 Copy
               </button>
             </div>
           </div>
-          <div className="mt-4 p-4 bg-gray-700 rounded-lg">
-            <p className="text-sm text-gray-400">
+          <div className={styles.infoBox}>
+            <p className={styles.infoText}>
               Share this address to receive Visorcoin (XRV) from other users.
             </p>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="recipient" className="block text-sm font-medium text-gray-400 mb-2">
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="recipient" className={styles.label}>
               Recipient Address
             </label>
             <input
@@ -123,14 +110,12 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
               id="recipient"
               value={recipientAddress}
               onChange={(e) => setRecipientAddress(e.target.value)}
-              className="bg-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={styles.input}
               placeholder="Enter XRV address"
-              title="Recipient wallet address"
-              aria-label="Recipient wallet address"
             />
           </div>
-          <div>
-            <label htmlFor="sendAmount" className="block text-sm font-medium text-gray-400 mb-2">
+          <div className={styles.inputGroup}>
+            <label htmlFor="sendAmount" className={styles.label}>
               Amount (XRV)
             </label>
             <input
@@ -138,24 +123,19 @@ export const SendReceiveVisorcoin: React.FC<SendReceiveVisorcoinProps> = ({
               id="sendAmount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="bg-gray-700 text-white rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={styles.input}
               placeholder="0.00"
               step="0.01"
               min="0"
-              title="Amount of Visorcoin to send"
-              aria-label="Amount of Visorcoin to send"
             />
           </div>
           {error && (
-            <div className="text-red-400 text-sm">{error}</div>
+            <div className={styles.errorMessage}>{error}</div>
           )}
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 transition-colors
-              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title="Send Visorcoin to recipient"
-            aria-label="Send Visorcoin"
+            className={styles.submitButton}
           >
             {isLoading ? 'Processing...' : 'Send Visorcoin'}
           </button>

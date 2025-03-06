@@ -6,6 +6,7 @@ import { PostComments } from '@/components/features/forum/PostComments/PostComme
 import { useAuth } from '@/store/auth/Auth';
 import { toast } from 'react-hot-toast';
 import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
+import styles from '@/styles/PostDetail.module.css';
 
 interface Author {
   id: string;
@@ -250,10 +251,10 @@ export const PostDetail = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className={styles.container}>
         <button
           onClick={handleBackClick}
-          className="mb-6 flex items-center gap-2 text-blue-400 hover:text-blue-500"
+          className={styles.backButton}
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -270,25 +271,25 @@ export const PostDetail = () => {
           {location.state?.from === 'profile' ? 'Back to Profile' : 'Back to Forum'}
         </button>
 
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div className={styles.postCard}>
           <div className="flex items-center gap-4 mb-6">
             <div 
               onClick={() => handleUserClick(post.author?.id)}
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center cursor-pointer hover:opacity-80"
+              className={styles.avatar}
             >
               {post.author?.avatar ? (
-                <img src={post.author.avatar} alt={post.author.name} className="w-full h-full rounded-full" />
+                <img src={post.author.avatar} alt={post.author.name} className={styles.avatarImage} />
               ) : (
-                <span className="text-white font-bold">{post.author?.name?.charAt(0) || '?'}</span>
+                <span className={styles.avatarFallback}>{post.author?.name?.charAt(0) || '?'}</span>
               )}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">{post.title}</h1>
-              <div className="text-sm text-gray-400">
+              <h1 className={styles.title}>{post.title}</h1>
+              <div className={styles.metadata}>
                 Posted by{' '}
                 <button
                   onClick={() => handleUserClick(post.author?.id)}
-                  className="text-gray-400 hover:text-blue-400"
+                  className={styles.userLink}
                 >
                   {post.author?.name || 'Unknown'}
                 </button>
@@ -298,7 +299,7 @@ export const PostDetail = () => {
             </div>
           </div>
 
-          <p className="text-gray-300 mb-6">{post.content}</p>
+          <p className={styles.content}>{post.content}</p>
           
           <div className="flex gap-2 mb-8">
             {post.tags?.map((tag: string) => (
@@ -308,8 +309,8 @@ export const PostDetail = () => {
             ))}
           </div>
 
-          <div id="comments" className="border-t border-gray-700 pt-6">
-            <h2 className="text-xl font-bold text-white mb-4">Comments</h2>
+          <div id="comments" className={styles.commentsSection}>
+            <h2 className={styles.title}>Comments</h2>
             <PostComments
               comments={post.comments || []}
               onAddComment={handleAddComment}

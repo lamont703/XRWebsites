@@ -10,6 +10,7 @@ import { Dialog } from '@headlessui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
+import styles from '@/styles/Forum.module.css';
 
 interface ForumPost {
   id: string;
@@ -206,12 +207,12 @@ export const Forum = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-2 sm:px-4 py-8 pt-20 lg:pt-8 max-w-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-white">Forum</h1>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Forum</h1>
           <button
             onClick={() => setIsCreatePostOpen(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full sm:w-auto"
+            className={styles.createButton}
           >
             Create Post
           </button>
@@ -227,38 +228,36 @@ export const Forum = () => {
         />
 
         {isLoading ? (
-          <div className="flex justify-center py-8">
+          <div className={styles.loadingContainer}>
             <LoadingOverlay isLoading={true} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-            <div className="lg:col-span-2">
-              <div className="space-y-4">
-                {postsData?.data?.posts?.map((post: ForumPost) => (
-                  <ForumPost 
-                    key={post.id} 
-                    {...post} 
-                    likedBy={post.likedBy || []}
-                    onLike={async (postId) => {
-                      try {
-                        await likePostMutation.mutateAsync(postId);
-                      } catch (error) {
-                        // Error handling is now in the mutation
-                      }
-                    }}
-                    isLiking={likePostMutation.isPending}
-                    onDelete={async (postId) => {
-                      try {
-                        await deletePostMutation.mutateAsync(postId);
-                        toast.success('Post deleted successfully');
-                      } catch (error) {
-                        console.error('Failed to delete post:', error);
-                        toast.error('Failed to delete post');
-                      }
-                    }}
-                  />
-                ))}
-              </div>
+          <div className={styles.mainContent}>
+            <div className={styles.postsContainer}>
+              {postsData?.data?.posts?.map((post: ForumPost) => (
+                <ForumPost 
+                  key={post.id} 
+                  {...post} 
+                  likedBy={post.likedBy || []}
+                  onLike={async (postId) => {
+                    try {
+                      await likePostMutation.mutateAsync(postId);
+                    } catch (error) {
+                      // Error handling is in the mutation
+                    }
+                  }}
+                  isLiking={likePostMutation.isPending}
+                  onDelete={async (postId) => {
+                    try {
+                      await deletePostMutation.mutateAsync(postId);
+                      toast.success('Post deleted successfully');
+                    } catch (error) {
+                      console.error('Failed to delete post:', error);
+                      toast.error('Failed to delete post');
+                    }
+                  }}
+                />
+              ))}
             </div>
             <div className="hidden lg:block">
               <ForumSidebar />
@@ -270,12 +269,12 @@ export const Forum = () => {
       <Dialog
         open={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
-        className="relative z-50"
+        className={styles.dialog}
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-2xl w-full bg-gray-800 rounded-lg p-6">
-            <Dialog.Title className="text-xl font-bold text-white mb-6">
+        <div className={styles.dialogOverlay} aria-hidden="true" />
+        <div className={styles.dialogContainer}>
+          <Dialog.Panel className={styles.dialogPanel}>
+            <Dialog.Title className={styles.dialogTitle}>
               Create New Post
             </Dialog.Title>
             <CreatePostForm

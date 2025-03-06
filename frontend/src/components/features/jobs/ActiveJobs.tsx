@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/store/auth/Auth';
+import styles from '@/styles/ActiveJobs.module.css';
 
 interface ActiveJobsProps {
   onJobCancel?: (jobId: string) => Promise<void>;
@@ -135,40 +136,38 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-gray-800/50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-white mb-2">Active Jobs Posted</h3>
-          <p className="text-3xl font-bold text-white">{activeJobs.length}</p>
+    <div className={styles.container}>
+      <div className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <h3 className={styles.title}>Active Jobs Posted</h3>
+          <p className={styles.value}>{activeJobs.length}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-white mb-2">My Applications</h3>
-          <p className="text-3xl font-bold text-white">{applications.length}</p>
+        <div className={styles.statCard}>
+          <h3 className={styles.title}>My Applications</h3>
+          <p className={styles.value}>{applications.length}</p>
         </div>
-        <div className="bg-gray-800/50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-white mb-2">Average Rating</h3>
-          <p className="text-3xl font-bold text-white">0.0</p>
+        <div className={styles.statCard}>
+          <h3 className={styles.title}>Average Rating</h3>
+          <p className={styles.value}>0.0</p>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
-        <h2 className="text-xl font-bold text-white mb-4">My Posted Jobs</h2>
+      <div className={styles.jobsContainer}>
+        <h2 className={styles.title}>My Posted Jobs</h2>
         {activeJobs.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">
-            No active jobs found.
-          </div>
+          <div className={styles.emptyState}>No active jobs found.</div>
         ) : (
-          <div className="space-y-4">
+          <div className={styles.jobsList}>
             {activeJobs.map((job) => (
               <div 
                 key={job.id} 
-                className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors"
+                className={styles.jobCard}
                 onClick={() => handleJobClick(job.id)}
               >
-                <div className="flex justify-between items-start">
+                <div className={styles.jobHeader}>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">{job.title}</h3>
-                    <p className="text-sm text-gray-400">
+                    <h3 className={styles.jobTitle}>{job.title}</h3>
+                    <p className={styles.jobDate}>
                       Posted: {new Date(job.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -177,7 +176,7 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
                       e.stopPropagation();
                       handleCancelJob(job.id);
                     }}
-                    className="text-red-400 hover:text-red-300 text-sm"
+                    className={styles.cancelButton}
                   >
                     Cancel Job
                   </button>
@@ -188,35 +187,33 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
         )}
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
-        <h2 className="text-xl font-bold text-white mb-4">My Submitted Applications</h2>
+      <div className={styles.jobsContainer}>
+        <h2 className={styles.title}>My Submitted Applications</h2>
         {applications.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">
-            No applications submitted.
-          </div>
+          <div className={styles.emptyState}>No applications submitted.</div>
         ) : (
-          <div className="space-y-4">
+          <div className={styles.jobsList}>
             {applications.map((application) => (
-              <div key={application.id} className="bg-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-start">
+              <div key={application.id} className={styles.jobCard}>
+                <div className={styles.jobHeader}>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className={styles.jobTitle}>
                       Application for Job #{application.jobId}
                     </h3>
-                    <p className="text-sm text-gray-400">
+                    <p className={styles.jobDate}>
                       Submitted: {new Date(application.submittedAt).toLocaleDateString()}
                     </p>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className={styles.jobDate}>
                       Status: <span className="capitalize">{application.status}</span>
                     </p>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className={styles.jobDate}>
                       Proposed Rate: ${application.proposedRate}
                     </p>
                   </div>
                   {application.status === 'pending' && (
                     <button
                       onClick={() => onApplicationCancel?.(application.id)}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      className={styles.cancelButton}
                     >
                       Cancel Application
                     </button>
@@ -230,67 +227,59 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
 
       {/* Applications Modal */}
       {showApplicationsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Submitted Applications</h2>
-              <button
-                onClick={() => setShowApplicationsModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalTitle}>Submitted Applications</div>
+            <button
+              onClick={() => setShowApplicationsModal(false)}
+              className={styles.closeButton}
+            >
+              ✕
+            </button>
             
             {jobApplications.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No applications yet</p>
+              <p className={styles.emptyState}>No applications yet</p>
             ) : (
-              <div className="space-y-4">
+              <div className={styles.jobsList}>
                 {jobApplications.map((app) => (
-                  <div key={app.id} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">
-                            {app.applicant.name || 'Anonymous'}
-                          </h3>
-                          <p className="text-sm text-gray-400">
-                            Submitted: {new Date(app.submittedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          app.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
-                          app.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
-                          'bg-red-500/20 text-red-500'
-                        }`}>
-                          {app.status}
-                        </span>
+                  <div key={app.id} className={styles.jobCard}>
+                    <div className={styles.jobHeader}>
+                      <div>
+                        <h3 className={styles.jobTitle}>
+                          {app.applicant.name || 'Anonymous'}
+                        </h3>
+                        <p className={styles.jobDate}>
+                          Submitted: {new Date(app.submittedAt).toLocaleDateString()}
+                        </p>
                       </div>
-                      <div className="mt-2">
-                        <p><span className="text-gray-400">Proposed Rate:</span> ${app.proposedRate}</p>
-                        <p><span className="text-gray-400">Estimated Duration:</span> {app.estimatedDuration} days</p>
-                        {app.coverLetter && (
-                          <p className="mt-2">{app.coverLetter}</p>
-                        )}
-                      </div>
-
-                      {app.status === 'pending' && (
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => handleApplicationResponse(app.id, 'accepted')}
-                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleApplicationResponse(app.id, 'rejected')}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                          >
-                            Decline
-                          </button>
-                        </div>
+                      <span className={styles.statusBadge}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <div className={styles.jobDetails}>
+                      <p><span className={styles.label}>Proposed Rate:</span> ${app.proposedRate}</p>
+                      <p><span className={styles.label}>Estimated Duration:</span> {app.estimatedDuration} days</p>
+                      {app.coverLetter && (
+                        <p className={styles.jobDetails}>{app.coverLetter}</p>
                       )}
                     </div>
+
+                    {app.status === 'pending' && (
+                      <div className={styles.buttonGroup}>
+                        <button
+                          onClick={() => handleApplicationResponse(app.id, 'accepted')}
+                          className={styles.acceptButton}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleApplicationResponse(app.id, 'rejected')}
+                          className={styles.declineButton}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -300,7 +289,7 @@ export const ActiveJobs: React.FC<ActiveJobsProps> = ({ onJobCancel, onApplicati
       )}
 
       {error && (
-        <div className="text-red-500 text-sm mt-4">
+        <div className={styles.errorMessage}>
           {error}
         </div>
       )}

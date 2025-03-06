@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { MainLayout } from '../components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
+import styles from '@/styles/Assets.module.css';
 import { useLocation } from 'react-router-dom';
 import { NFTGallery } from '@/components/features/wallet/NFTGallery';
 import type { NFT } from '@/components/features/wallet/NFTGallery';
-import { FeaturedNFT } from '@/components/features/assets/FeaturedNFT';
-import { CreateNFT, NFTData } from '@/components/features/assets/CreateNFT';
+import { FeaturedNFT } from '../components/features/assets/FeaturedNFT';
+import { CreateNFT, NFTData } from '../components/features/assets/CreateNFT';
 
 export const Assets = () => {
   const {} = useAuth();
@@ -150,57 +150,52 @@ export const Assets = () => {
 
   return (
     <MainLayout>
-      <div className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">NFT Assets</h1>
-          <p className="text-gray-400">Manage your digital assets and NFT collection</p>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>NFT Assets</h1>
+          <p className={styles.subtitle}>Manage your digital assets and NFT collection</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm font-medium text-gray-400 mb-2">Total NFTs</div>
-            <div className="text-2xl font-bold text-white">{nfts.length}</div>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statLabel}>Total NFTs</div>
+            <div className={styles.statValue}>{nfts.length}</div>
           </div>
           <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Total Value</div>
-            <div className="text-2xl font-bold text-white">$0.00</div>
+            <div className={styles.statLabel}>Total Value</div>
+            <div className={styles.statValue}>$0.00</div>
           </div>
           <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Listed NFTs</div>
-            <div className="text-2xl font-bold text-white">0</div>
+            <div className={styles.statLabel}>Listed NFTs</div>
+            <div className={styles.statValue}>0</div>
           </div>
           <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Collections</div>
-            <div className="text-2xl font-bold text-white">0</div>
+            <div className={styles.statLabel}>Collections</div>
+            <div className={styles.statValue}>0</div>
           </div>
         </div>
 
-        {/* Featured NFT Section */}
         {selectedNft && (
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Featured NFT</h2>
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Featured NFT</h2>
               <button 
-                className="text-sm text-blue-400 hover:text-blue-300"
+                className={styles.actionButton}
                 onClick={() => setSelectedNft(nfts[Math.floor(Math.random() * nfts.length)])}
               >
                 Show Another
               </button>
             </div>
-            <div className="transform hover:scale-[1.01] transition-transform duration-200">
-              <FeaturedNFT nft={selectedNft} />
-            </div>
+            <FeaturedNFT nft={selectedNft} />
           </div>
         )}
 
-        {/* Create NFT Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">Create New NFT</h2>
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Create New NFT</h2>
             <button
               onClick={() => setShowCreateNFT(!showCreateNFT)}
-              className="text-sm text-blue-400 hover:text-blue-300"
+              className={styles.actionButton}
             >
               {showCreateNFT ? 'Cancel' : '+ Create NFT'}
             </button>
@@ -213,15 +208,14 @@ export const Assets = () => {
           )}
         </div>
 
-        {/* NFT Gallery Section */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-white">Your NFT Collection</h2>
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+        <div className={styles.galleryContainer}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Your NFT Collection</h2>
+            <div className={styles.filterBar}>
               <select 
-                title="Sort NFTs by"
-                className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm w-full sm:w-auto"
+                className={styles.select}
                 onChange={(e) => console.log('Sort by:', e.target.value)}
+                title="Sort NFTs by"
               >
                 <option value="recent">Recently Added</option>
                 <option value="value">Highest Value</option>
@@ -230,31 +224,25 @@ export const Assets = () => {
               <input
                 type="text"
                 placeholder="Search NFTs..."
-                className="bg-gray-700 text-white rounded-lg px-4 py-2 text-sm w-full sm:w-auto"
+                className={styles.input}
                 onChange={(e) => console.log('Search:', e.target.value)}
               />
             </div>
           </div>
-          <div className="min-h-[400px] max-h-[800px] overflow-y-auto">
-            <NFTGallery 
-              nfts={nfts} 
-              isLoading={isLoading} 
-              onViewDetails={handleNFTSelect}
-              compact={false}
-            />
-          </div>
+          <NFTGallery 
+            nfts={nfts} 
+            isLoading={isLoading} 
+            onViewDetails={handleNFTSelect}
+            compact={false}
+          />
         </div>
 
         {success && (
-          <div className="bg-green-500/10 border border-green-500/50 rounded-lg p-4 mb-6">
-            <p className="text-green-500">{success}</p>
-          </div>
+          <div className={styles.successMessage}>{success}</div>
         )}
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-6">
-            <p className="text-red-500">{error}</p>
-          </div>
+          <div className={styles.errorMessage}>{error}</div>
         )}
       </div>
     </MainLayout>

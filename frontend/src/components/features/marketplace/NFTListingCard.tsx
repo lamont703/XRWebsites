@@ -1,3 +1,5 @@
+import styles from '@/styles/NFTListingCard.module.css';
+
 interface NFTListingCardProps {
   listing: {
     id: string;
@@ -19,19 +21,19 @@ export const NFTListingCard = ({ listing }: NFTListingCardProps) => {
   const imageUrl = listing.nft?.image_url || listing.image_url || '/placeholder-nft.png';
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
+    <div className={styles.card}>
       <img 
         src={imageUrl}
         alt={name}
-        className="w-full aspect-square object-cover rounded-lg mb-4"
+        className={styles.image}
       />
-      <h3 className="text-xl font-bold text-white mb-2">{name}</h3>
-      <p className="text-gray-400 mb-4">{description}</p>
-      <div className="flex justify-between items-center">
-        <div className="text-blue-400 font-bold">
+      <h3 className={styles.title}>{name}</h3>
+      <p className={styles.description}>{description}</p>
+      <div className={styles.footer}>
+        <div className={styles.price}>
           {listing.price} XRV
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white">
+        <button className={styles.button}>
           Purchase
         </button>
       </div>

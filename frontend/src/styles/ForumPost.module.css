@@ -1,0 +1,172 @@
+.container {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.content {
+  padding: 1rem;
+  background: rgba(31, 41, 55, 0.7);
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.avatar:hover {
+  opacity: 0.8;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.avatarFallback {
+  color: white;
+  font-weight: bold;
+}
+
+.title {
+  color: white;
+  transition: color 0.2s;
+}
+
+.title:hover {
+  color: rgb(96, 165, 250);
+}
+
+.metadata {
+  font-size: 0.875rem;
+  color: rgb(156, 163, 175);
+}
+
+.userLink {
+  color: rgb(156, 163, 175);
+  transition: color 0.2s;
+}
+
+.userLink:hover {
+  color: rgb(96, 165, 250);
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pinnedBadge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(59, 130, 246, 0.2);
+  color: rgb(96, 165, 250);
+  font-size: 0.75rem;
+  border-radius: 9999px;
+}
+
+.deleteButton {
+  padding: 0.25rem 0.75rem;
+  background: rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.postContent {
+  margin-top: 0.75rem;
+  color: rgb(209, 213, 219);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.footer {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(55, 65, 81, 0.5);
+  color: rgb(209, 213, 219);
+  font-size: 0.75rem;
+  border-radius: 9999px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgb(156, 163, 175);
+  transition: color 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+  color: rgb(96, 165, 250);
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.liked {
+  color: rgb(96, 165, 250);
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 0 -1rem;
+    width: 100vw;
+    border-radius: 0;
+  }
+  
+  .content {
+    border-radius: 0;
+  }
+} 

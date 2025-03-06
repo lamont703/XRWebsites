@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/auth/Auth';
+import styles from '@/styles/JobApplication.module.css';
 
 interface JobApplicationProps {
   jobId: string;
@@ -65,19 +66,17 @@ export const JobApplication: React.FC<JobApplicationProps> = ({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h2 className="text-2xl font-bold text-white mb-6">Apply for {jobTitle}</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Apply for {jobTitle}</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Cover Letter */}
-        <div>
-          <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-400 mb-2">
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.formGroup}>
+          <label htmlFor="coverLetter" className={styles.label}>
             Cover Letter
           </label>
           <textarea
             id="coverLetter"
-            rows={6}
-            className="w-full bg-gray-700 text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+            className={styles.textarea}
             placeholder="Introduce yourself and explain why you're the best fit for this job..."
             value={formData.coverLetter}
             onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
@@ -85,32 +84,32 @@ export const JobApplication: React.FC<JobApplicationProps> = ({
           />
         </div>
 
-        {/* Rate and Duration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="proposedRate" className="block text-sm font-medium text-gray-400 mb-2">
+        <div className={styles.gridContainer}>
+          <div className={styles.formGroup}>
+            <label htmlFor="proposedRate" className={styles.label}>
               Proposed Rate (XRV)
             </label>
             <input
               type="number"
               id="proposedRate"
+              className={styles.input}
               min="0"
               step="0.01"
-              className="w-full bg-gray-700 text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
               value={formData.proposedRate}
               onChange={(e) => setFormData({ ...formData, proposedRate: parseFloat(e.target.value) })}
               required
             />
           </div>
-          <div>
-            <label htmlFor="estimatedDuration" className="block text-sm font-medium text-gray-400 mb-2">
+          
+          <div className={styles.formGroup}>
+            <label htmlFor="estimatedDuration" className={styles.label}>
               Estimated Duration (days)
             </label>
             <input
               type="number"
               id="estimatedDuration"
+              className={styles.input}
               min="1"
-              className="w-full bg-gray-700 text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
               value={formData.estimatedDuration}
               onChange={(e) => setFormData({ ...formData, estimatedDuration: parseInt(e.target.value) })}
               required
@@ -118,57 +117,57 @@ export const JobApplication: React.FC<JobApplicationProps> = ({
           </div>
         </div>
 
-        {/* Portfolio Links */}
-        <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+        <div className={styles.formGroup}>
+          <label className={styles.label}>
             Portfolio Links
           </label>
-          {portfolioLinks.map((link, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                type="url"
-                className="flex-1 bg-gray-700 text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
-                placeholder="https://..."
-                value={link}
-                onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
-              />
-              {index > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemovePortfolioLink(index)}
-                  className="text-red-400 hover:text-red-300"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={handleAddPortfolioLink}
-            className="text-blue-400 hover:text-blue-300 text-sm"
-          >
-            + Add Portfolio Link
-          </button>
+          <div className={styles.portfolioContainer}>
+            {portfolioLinks.map((link, index) => (
+              <div key={index} className={styles.portfolioItem}>
+                <input
+                  type="url"
+                  className={styles.input}
+                  placeholder="https://..."
+                  value={link}
+                  onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
+                />
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePortfolioLink(index)}
+                    className={styles.removeButton}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddPortfolioLink}
+              className={styles.addButton}
+            >
+              + Add Portfolio Link
+            </button>
+          </div>
         </div>
 
         {error && (
-          <div className="text-red-400 text-sm">{error}</div>
+          <div className={styles.errorMessage}>{error}</div>
         )}
 
-        <div className="flex gap-4">
+        <div className={styles.buttonContainer}>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 font-medium
-              transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={styles.submitButton}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Application'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg px-4 py-3 font-medium transition-colors"
+            className={styles.cancelButton}
           >
             Cancel
           </button>

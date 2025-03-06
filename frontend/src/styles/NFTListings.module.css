@@ -1,0 +1,44 @@
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+
+.loadingText {
+  color: rgb(156, 163, 175);
+  text-align: center;
+  padding: 2rem;
+}
+
+.errorText {
+  color: rgb(239, 68, 68);
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+    margin: 0 -1rem;
+    width: 100vw;
+  }
+} 

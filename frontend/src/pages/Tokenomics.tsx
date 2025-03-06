@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LineChart } from '@/components/charts/LineChart';
 import { BarChart } from '@/components/charts/BarChart';
+import styles from '@/styles/Tokenomics.module.css';
 import {} from '@/store/auth/Auth';
 import {} from '../styles/Dashboard.module.css';
 
@@ -61,111 +62,120 @@ export const Tokenomics = () => {
 
   return (
     <MainLayout>
-      <div className="w-full max-w-[100vw] overflow-x-hidden px-4 md:px-6 lg:px-8 py-6">
+      <div className={styles.container}>
         {isLoading ? (
-          <div className="flex items-center justify-center h-[50vh]">
-            <span className="text-gray-400">Loading token metrics...</span>
+          <div className={styles.loadingState}>
+            Loading token metrics...
           </div>
         ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-            <p className="text-red-500">{error}</p>
-          </div>
+          <div className={styles.errorMessage}>{error}</div>
         ) : (
           <>
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white mb-2">Token Analytics</h1>
-              <p className="text-gray-400">Comprehensive analytics for your token</p>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Token Analytics</h1>
+              <p className={styles.subtitle}>Comprehensive analytics for your token</p>
             </div>
 
-            {/* Key Metrics Grid - Similar to Assets.tsx styling */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-                <div className="text-sm font-medium text-gray-400 mb-2">Current Price</div>
-                <div className="text-2xl font-bold text-white">${metrics.price.toFixed(4)}</div>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Current Price</div>
+                <div className={styles.statValue}>
+                  ${metrics?.price ? metrics.price.toFixed(4) : '0.00'}
+                </div>
               </div>
-              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-                <div className="text-sm font-medium text-gray-400 mb-2">Market Cap</div>
-                <div className="text-2xl font-bold text-white">${formatNumber(metrics.marketCap)}</div>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Market Cap</div>
+                <div className={styles.statValue}>
+                  ${metrics?.marketCap ? formatNumber(metrics.marketCap) : '0.00'}
+                </div>
               </div>
-              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-                <div className="text-sm font-medium text-gray-400 mb-2">24h Volume</div>
-                <div className="text-2xl font-bold text-white">${formatNumber(metrics.volume24h)}</div>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>24h Volume</div>
+                <div className={styles.statValue}>
+                  ${metrics?.volume24h ? formatNumber(metrics.volume24h) : '0.00'}
+                </div>
               </div>
-              <div className="bg-gray-800 p-4 md:p-6 rounded-lg">
-                <div className="text-sm font-medium text-gray-400 mb-2">Holders</div>
-                <div className="text-2xl font-bold text-white">{metrics.holders.toLocaleString()}</div>
+              <div className={styles.statCard}>
+                <div className={styles.statLabel}>Holders</div>
+                <div className={styles.statValue}>
+                  {metrics?.holders ? metrics.holders.toLocaleString() : '0'}
+                </div>
               </div>
             </div>
 
-            {/* Supply Metrics - Using Dashboard.tsx card styling */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-bold text-white mb-6">Supply Metrics</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={styles.metricsCard}>
+              <h2 className={styles.chartTitle}>Supply Metrics</h2>
+              <div className={styles.metricsGrid}>
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Circulating Supply</div>
-                  <div className="text-lg font-bold text-white">
-                    {formatNumber(metrics.circulatingSupply)} tokens
+                  <div className={styles.statLabel}>Circulating Supply</div>
+                  <div className={styles.statValue}>
+                    {metrics?.circulatingSupply ? formatNumber(metrics.circulatingSupply) : '0'} tokens
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Total Supply</div>
-                  <div className="text-lg font-bold text-white">
-                    {formatNumber(metrics.totalSupply)} tokens
+                  <div className={styles.statLabel}>Total Supply</div>
+                  <div className={styles.statValue}>
+                    {metrics?.totalSupply ? formatNumber(metrics.totalSupply) : '0'} tokens
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Staking Ratio</div>
-                  <div className="text-lg font-bold text-white">
-                    {metrics.stakingRatio.toFixed(2)}%
+                  <div className={styles.statLabel}>Staking Ratio</div>
+                  <div className={styles.statValue}>
+                    {metrics?.stakingRatio ? metrics.stakingRatio.toFixed(2) : '0.00'}%
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Market Activity Chart - Similar to Dashboard transaction styling */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-bold text-white mb-6">Price History</h2>
-              <div className="h-[400px]">
-                <LineChart data={[]} /> {/* Implement chart component */}
+            <div className={styles.chartContainer}>
+              <h2 className={styles.chartTitle}>Price History</h2>
+              <div className={styles.chart}>
+                <LineChart data={[]} />
               </div>
             </div>
 
-            {/* Token Distribution */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-bold text-white mb-6">Token Distribution</h2>
-              <div className="h-[300px]">
-                <BarChart data={[]} /> {/* Implement chart component */}
+            <div className={styles.chartContainer}>
+              <h2 className={styles.chartTitle}>Token Distribution</h2>
+              <div className={styles.chart}>
+                <BarChart data={[]} />
               </div>
             </div>
 
-            {/* Activity Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Network Activity</h2>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Active Addresses (24h)</span>
-                    <span className="text-white font-bold">{metrics.activeAddresses}</span>
+            <div className={styles.activityGrid}>
+              <div className={styles.card}>
+                <h2 className={styles.chartTitle}>Network Activity</h2>
+                <div>
+                  <div className={styles.metricRow}>
+                    <span className={styles.metricLabel}>Active Addresses (24h)</span>
+                    <span className={styles.metricValue}>
+                      {metrics?.activeAddresses?.toLocaleString() || '0'}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Transactions (24h)</span>
-                    <span className="text-white font-bold">{metrics.transactions24h}</span>
+                  <div className={styles.metricRow}>
+                    <span className={styles.metricLabel}>Transactions (24h)</span>
+                    <span className={styles.metricValue}>
+                      {metrics?.transactions24h?.toLocaleString() || '0'}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-800 rounded-lg p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Holder Statistics</h2>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Total Holders</span>
-                    <span className="text-white font-bold">{metrics.holders}</span>
+              <div className={styles.card}>
+                <h2 className={styles.chartTitle}>Holder Statistics</h2>
+                <div>
+                  <div className={styles.metricRow}>
+                    <span className={styles.metricLabel}>Total Holders</span>
+                    <span className={styles.metricValue}>
+                      {metrics?.holders?.toLocaleString() || '0'}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Staking Participants</span>
-                    <span className="text-white font-bold">
-                      {Math.floor(metrics.holders * (metrics.stakingRatio / 100))}
+                  <div className={styles.metricRow}>
+                    <span className={styles.metricLabel}>Staking Participants</span>
+                    <span className={styles.metricValue}>
+                      {metrics?.holders && metrics?.stakingRatio 
+                        ? Math.round(metrics.holders * (metrics.stakingRatio / 100)).toLocaleString()
+                        : '0'
+                      }
                     </span>
                   </div>
                 </div>

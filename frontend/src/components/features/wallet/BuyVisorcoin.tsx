@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '@/styles/BuyVisorcoin.module.css';
 
 interface BuyVisorcoinProps {
   onPurchase: (amount: number) => Promise<void>;
@@ -45,43 +46,42 @@ export const BuyVisorcoin: React.FC<BuyVisorcoinProps> = ({ onPurchase, classNam
   };
 
   return (
-    <div className={`bg-gray-800 rounded-lg p-6 ${className}`}>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-white">Buy Visorcoin (XRV)</h3>
-        <div className="text-sm text-gray-400">1 XRV = ${XRV_RATE}</div>
+    <div className={`${styles.buyContainer} ${className}`}>
+      <div className={styles.header}>
+        <h3 className={styles.title}>Buy Visorcoin (XRV)</h3>
+        <div className={styles.rate}>1 XRV = ${XRV_RATE}</div>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-400 mb-2">
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.inputGroup}>
+          <label htmlFor="amount" className={styles.label}>
             Amount (USD)
           </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
+          <div className={styles.inputWrapper}>
+            <span className={styles.currencySymbol}>$</span>
             <input
               type="number"
               id="amount"
               value={amount}
               onChange={(e) => handleAmountChange(e.target.value)}
-              className="bg-gray-700 text-white rounded-lg pl-8 pr-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={styles.input}
               placeholder="0.00"
               step="0.01"
               min="0"
             />
           </div>
           {estimatedXRV > 0 && (
-            <div className="mt-2 text-sm text-gray-400">
+            <div className={styles.estimatedAmount}>
               Estimated XRV: {estimatedXRV.toFixed(2)} XRV
             </div>
           )}
         </div>
         {error && (
-          <div className="text-red-400 text-sm">{error}</div>
+          <div className={styles.errorMessage}>{error}</div>
         )}
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 transition-colors
-            ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={styles.button}
         >
           {isLoading ? 'Processing...' : 'Buy Visorcoin'}
         </button>

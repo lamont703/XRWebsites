@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/store/auth/Auth';
 import { MainLayout } from '@/components/layout/MainLayout';
 import LoadingOverlay from '@/components/layout/LoadingOverlay/LoadingOverlay';
+import styles from '@/styles/MessageInbox.module.css';
 
 interface MessagePreview {
   id: string;
@@ -45,53 +46,54 @@ export const MessageInbox = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8 pt-10 lg:pt-8">
+      <div className={styles.container}>
         <button
           onClick={handleBackClick}
-          className="mb-4 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700"
+          className={styles.backButton}
         >
           Back to Profile
         </button>
-        <div className="space-y-4">
+        <div className={styles.conversationsList}>
           {conversations?.map((conversation: MessagePreview) => (
             <div
               key={conversation.id}
               onClick={() => handleConversationClick(conversation.senderId)}
-              className={`bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-colors
-                ${conversation.unread ? 'border-l-4 border-blue-500' : ''}`}
+              className={`${styles.conversationCard} ${
+                conversation.unread ? styles.unreadCard : ''
+              }`}
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <div className={styles.cardContent}>
+                <div className={styles.avatar}>
                   {conversation.senderAvatar ? (
                     <img 
                       src={conversation.senderAvatar} 
                       alt={conversation.senderName} 
-                      className="w-full h-full rounded-full"
+                      className={styles.avatarImage}
                     />
                   ) : (
-                    <span className="text-white font-bold">
+                    <span className={styles.avatarFallback}>
                       {conversation.senderName.charAt(0)}
                     </span>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
+                <div className={styles.messageInfo}>
+                  <div className={styles.messageHeader}>
                     <div>
-                      <h3 className="text-white font-medium">{conversation.senderName}</h3>
-                      <p className="text-sm text-gray-400">@{conversation.senderUsername}</p>
+                      <h3 className={styles.userName}>{conversation.senderName}</h3>
+                      <p className={styles.userHandle}>@{conversation.senderUsername}</p>
                     </div>
-                    <span className="text-sm text-gray-400">
+                    <span className={styles.timestamp}>
                       {new Date(conversation.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-gray-300 mt-2 line-clamp-1">{conversation.lastMessage}</p>
+                  <p className={styles.lastMessage}>{conversation.lastMessage}</p>
                 </div>
               </div>
             </div>
           ))}
           
           {conversations?.length === 0 && (
-            <div className="text-center py-8 text-gray-400">
+            <div className={styles.emptyState}>
               No messages yet
             </div>
           )}

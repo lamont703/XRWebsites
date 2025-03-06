@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { 
   getMint,
   TOKEN_PROGRAM_ID,
@@ -598,176 +599,191 @@ export const TokenCreator = () => {
     }
   };
 
+  const handleWalletConnect = async (address: string) => {
+    console.log('Wallet connected:', address);
+    // Add any additional wallet connection logic here
+  };
+
   return (
     <MainLayout>
       <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.formGrid}>
-            {/* Token Name and Symbol */}
-            <div>
-              <label className={styles.label}>Token Name</label>
-              <input
-                type="text"
-                value={tokenConfig.name}
-                onChange={(e) => setTokenConfig(prev => ({ ...prev, name: e.target.value }))}
-                className={styles.input}
-                placeholder="Example Token"
-              />
-            </div>
-            
-            <div>
-              <label className={styles.label}>Token Symbol</label>
-              <input
-                type="text"
-                value={tokenConfig.symbol}
-                onChange={(e) => setTokenConfig(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
-                className={styles.input}
-                placeholder="EXM"
-                maxLength={5}
-              />
-            </div>
+        <div className={styles.connectWalletContainer}>
+          <h1 className={styles.title}>Create Your Token</h1>
+          <p className={styles.subtitle}>Connect your wallet to start creating your token</p>
+          <ConnectWallet onConnect={handleWalletConnect} />
+        </div>
 
-            {/* Supply and Decimals */}
-            <div>
-              <label className={styles.label}>Total Supply</label>
-              <input
-                type="number"
-                value={tokenConfig.totalSupply}
-                onChange={(e) => setTokenConfig(prev => ({ ...prev, totalSupply: Number(e.target.value) }))}
-                className={styles.input}
-                min="0"
-                placeholder="Enter total supply"
-              />
-            </div>
-            
-            <div>
-              <label className={styles.label}>Decimals</label>
-              <input
-                type="number"
-                value={tokenConfig.decimals}
-                onChange={(e) => setTokenConfig(prev => ({ ...prev, decimals: Number(e.target.value) }))}
-                className={styles.input}
-                min="0"
-                max="9"
-                placeholder="Enter number of decimals (0-9)"
-              />
-            </div>
-
-            {/* Token Features */}
-            <div className={styles.checkboxGroup}>
-              {Object.entries(tokenConfig.features).map(([key, value]) => (
-                <label key={key} className={styles.checkboxLabel}>
+        {wallet.connected && (
+          <div className={styles.formContainer}>
+            <div className={styles.card}>
+              <div className={styles.formGrid}>
+                {/* Token Name and Symbol */}
+                <div>
+                  <label className={styles.label}>Token Name</label>
                   <input
-                    type="checkbox"
-                    checked={value}
-                    onChange={(e) => setTokenConfig(prev => ({
-                      ...prev,
-                      features: { ...prev.features, [key]: e.target.checked }
-                    }))}
-                    className={styles.checkbox}
+                    type="text"
+                    value={tokenConfig.name}
+                    onChange={(e) => setTokenConfig(prev => ({ ...prev, name: e.target.value }))}
+                    className={styles.input}
+                    placeholder="Example Token"
                   />
-                  <span>{key}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className={styles.label}>Description</label>
-              <textarea
-                value={tokenConfig.metadata.description}
-                onChange={(e) => setTokenConfig(prev => ({
-                  ...prev,
-                  metadata: { ...prev.metadata, description: e.target.value }
-                }))}
-                className={styles.textarea}
-                rows={4}
-                placeholder="Describe your token's purpose and features..."
-              />
-            </div>
-          </div>
-        </div>
-
-        {error && <div className={styles.errorMessage}>{error}</div>}
-
-        <div className={styles.buttonContainer}>
-          <button
-            onClick={testTokenCreation}
-            disabled={!wallet.connected}
-            className={styles.secondaryButton}
-          >
-            Test Token
-          </button>
-          <button
-            onClick={() => setShowConfirmation(true)}
-            disabled={!wallet.connected}
-            className={styles.primaryButton}
-          >
-            Create Token
-          </button>
-        </div>
-
-        {/* Confirmation Modal */}
-        {showConfirmation && (
-          <div className={styles.modal}>
-            <div className={styles.modalContent}>
-              <h3 className={styles.modalTitle}>Confirm Token Details</h3>
-              
-              <div className={styles.confirmationGrid}>
-                <div>
-                  <span className={styles.confirmationLabel}>Token Name:</span>
-                  <p className={styles.confirmationValue}>{tokenConfig.name}</p>
                 </div>
+                
                 <div>
-                  <span className={styles.confirmationLabel}>Symbol:</span>
-                  <p className={styles.confirmationValue}>{tokenConfig.symbol}</p>
+                  <label className={styles.label}>Token Symbol</label>
+                  <input
+                    type="text"
+                    value={tokenConfig.symbol}
+                    onChange={(e) => setTokenConfig(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+                    className={styles.input}
+                    placeholder="EXM"
+                    maxLength={5}
+                  />
                 </div>
-                <div>
-                  <span className={styles.confirmationLabel}>Total Supply:</span>
-                  <p className={styles.confirmationValue}>{tokenConfig.totalSupply}</p>
-                </div>
-                <div>
-                  <span className={styles.confirmationLabel}>Decimals:</span>
-                  <p className={styles.confirmationValue}>{tokenConfig.decimals}</p>
-                </div>
-              </div>
 
-              <div>
-                <span className={styles.confirmationLabel}>Features:</span>
+                {/* Supply and Decimals */}
                 <div>
+                  <label className={styles.label}>Total Supply</label>
+                  <input
+                    type="number"
+                    value={tokenConfig.totalSupply}
+                    onChange={(e) => setTokenConfig(prev => ({ ...prev, totalSupply: Number(e.target.value) }))}
+                    className={styles.input}
+                    min="0"
+                    placeholder="Enter total supply"
+                  />
+                </div>
+                
+                <div>
+                  <label className={styles.label}>Decimals</label>
+                  <input
+                    type="number"
+                    value={tokenConfig.decimals}
+                    onChange={(e) => setTokenConfig(prev => ({ ...prev, decimals: Number(e.target.value) }))}
+                    className={styles.input}
+                    min="0"
+                    max="9"
+                    placeholder="Enter number of decimals (0-9)"
+                  />
+                </div>
+
+                {/* Token Features */}
+                <div className={styles.checkboxGroup}>
                   {Object.entries(tokenConfig.features).map(([key, value]) => (
-                    value && (
-                      <span key={key} className={styles.featureTag}>
-                        {key}
-                      </span>
-                    )
+                    <label key={key} className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={value}
+                        onChange={(e) => setTokenConfig(prev => ({
+                          ...prev,
+                          features: { ...prev.features, [key]: e.target.checked }
+                        }))}
+                        className={styles.checkbox}
+                      />
+                      <span>{key}</span>
+                    </label>
                   ))}
                 </div>
-              </div>
 
-              {tokenConfig.metadata.description && (
+                {/* Description */}
                 <div>
-                  <span className={styles.confirmationLabel}>Description:</span>
-                  <p className={styles.confirmationValue}>{tokenConfig.metadata.description}</p>
+                  <label className={styles.label}>Description</label>
+                  <textarea
+                    value={tokenConfig.metadata.description}
+                    onChange={(e) => setTokenConfig(prev => ({
+                      ...prev,
+                      metadata: { ...prev.metadata, description: e.target.value }
+                    }))}
+                    className={styles.textarea}
+                    rows={4}
+                    placeholder="Describe your token's purpose and features..."
+                  />
                 </div>
-              )}
-
-              <div className={styles.buttonContainer}>
-                <button
-                  onClick={() => setShowConfirmation(false)}
-                  className={styles.secondaryButton}
-                >
-                  Edit Details
-                </button>
-                <button
-                  onClick={handleCreateToken}
-                  disabled={isLoading}
-                  className={styles.primaryButton}
-                >
-                  {isLoading ? 'Creating...' : 'Create Token'}
-                </button>
               </div>
             </div>
+
+            {error && <div className={styles.errorMessage}>{error}</div>}
+
+            <div className={styles.buttonContainer}>
+              <button
+                onClick={testTokenCreation}
+                disabled={!wallet.connected}
+                className={styles.secondaryButton}
+              >
+                Test Token
+              </button>
+              <button
+                onClick={() => setShowConfirmation(true)}
+                disabled={!wallet.connected}
+                className={styles.primaryButton}
+              >
+                Create Token
+              </button>
+            </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmation && (
+              <div className={styles.modal}>
+                <div className={styles.modalContent}>
+                  <h3 className={styles.modalTitle}>Confirm Token Details</h3>
+                  
+                  <div className={styles.confirmationGrid}>
+                    <div>
+                      <span className={styles.confirmationLabel}>Token Name:</span>
+                      <p className={styles.confirmationValue}>{tokenConfig.name}</p>
+                    </div>
+                    <div>
+                      <span className={styles.confirmationLabel}>Symbol:</span>
+                      <p className={styles.confirmationValue}>{tokenConfig.symbol}</p>
+                    </div>
+                    <div>
+                      <span className={styles.confirmationLabel}>Total Supply:</span>
+                      <p className={styles.confirmationValue}>{tokenConfig.totalSupply}</p>
+                    </div>
+                    <div>
+                      <span className={styles.confirmationLabel}>Decimals:</span>
+                      <p className={styles.confirmationValue}>{tokenConfig.decimals}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className={styles.confirmationLabel}>Features:</span>
+                    <div>
+                      {Object.entries(tokenConfig.features).map(([key, value]) => (
+                        value && (
+                          <span key={key} className={styles.featureTag}>
+                            {key}
+                          </span>
+                        )
+                      ))}
+                    </div>
+                  </div>
+
+                  {tokenConfig.metadata.description && (
+                    <div>
+                      <span className={styles.confirmationLabel}>Description:</span>
+                      <p className={styles.confirmationValue}>{tokenConfig.metadata.description}</p>
+                    </div>
+                  )}
+
+                  <div className={styles.buttonContainer}>
+                    <button
+                      onClick={() => setShowConfirmation(false)}
+                      className={styles.secondaryButton}
+                    >
+                      Edit Details
+                    </button>
+                    <button
+                      onClick={handleCreateToken}
+                      disabled={isLoading}
+                      className={styles.primaryButton}
+                    >
+                      {isLoading ? 'Creating...' : 'Create Token'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

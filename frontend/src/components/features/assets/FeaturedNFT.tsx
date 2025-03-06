@@ -126,6 +126,8 @@ export const FeaturedNFT = ({ nft, onListingSuccess }: FeaturedNFTProps) => {
                       value={listingData.price}
                       onChange={(e) => setListingData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
                       className="w-full bg-gray-700 rounded-lg p-2 text-white"
+                      title="NFT listing price"
+                      placeholder="Enter price"
                     />
                   </div>
                   <div>
@@ -139,6 +141,8 @@ export const FeaturedNFT = ({ nft, onListingSuccess }: FeaturedNFTProps) => {
                       value={listingData.duration}
                       onChange={(e) => setListingData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
                       className="w-full bg-gray-700 rounded-lg p-2 text-white"
+                      title="Listing duration in days"
+                      placeholder="Enter number of days"
                     />
                   </div>
                   {error && (

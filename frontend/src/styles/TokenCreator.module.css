@@ -9,20 +9,18 @@
 }
 
 .card {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(17, 24, 39, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .formGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .inputGroup {
@@ -32,85 +30,115 @@
 }
 
 .label {
-  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 500;
-  color: rgb(209, 213, 219);
+  margin-bottom: 0.5rem;
+  color: #e2e8f0;
 }
 
 .input {
-  max-width: 100%;
+  width: 100%;
+  padding: 0.75rem;
   background: rgba(31, 41, 55, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s;
   color: white;
-  transition: all 0.2s ease;
-  margin-left: 1rem;
 }
 
 .input:focus {
   outline: none;
-  border-color: rgb(59, 130, 246);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.textarea {
-  composes: input;
-  min-height: 6rem;
-  resize: vertical;
+.input::placeholder {
+  color: #9ca3af;
 }
 
-.checkboxGroup {
+.inputError {
+  border-color: #ef4444;
+}
+
+.inputError:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.errorText {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.features {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.features h3 {
+  margin-bottom: 1rem;
+  color: #e2e8f0;
+}
+
+.featureGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
-  margin-top: 0.5rem;
 }
 
-.checkboxLabel {
+.featureLabel {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgb(209, 213, 219);
   font-size: 0.875rem;
+  color: #e2e8f0;
   cursor: pointer;
 }
 
 .checkbox {
   width: 1rem;
   height: 1rem;
-  border-radius: 0.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   background: rgba(31, 41, 55, 0.5);
   cursor: pointer;
+  accent-color: #3b82f6;
 }
 
-.checkbox:checked {
-  background: rgb(59, 130, 246);
-  border-color: rgb(59, 130, 246);
+.tooltip {
+  cursor: help;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover {
+  opacity: 1;
 }
 
 .buttonContainer {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
-.button {
+.primaryButton, .secondaryButton {
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   font-weight: 500;
-  font-size: 0.875rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   cursor: pointer;
-  border: none;
 }
 
 .primaryButton {
-  composes: button;
   background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
   color: white;
+  border: none;
 }
 
 .primaryButton:hover:not(:disabled) {
@@ -119,10 +147,9 @@
 }
 
 .secondaryButton {
-  composes: button;
   background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .secondaryButton:hover:not(:disabled) {
@@ -130,18 +157,18 @@
   transform: translateY(-1px);
 }
 
-.button:disabled {
+.primaryButton:disabled, .secondaryButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 .errorMessage {
+  margin-top: 1rem;
+  padding: 1rem;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  color: rgb(239, 68, 68);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
+  border-radius: 6px;
+  color: #f87171;
 }
 
 .modal {
@@ -276,6 +303,7 @@
 }
 
 .formContainer {
-  margin-top: 2rem;
-  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
 } 

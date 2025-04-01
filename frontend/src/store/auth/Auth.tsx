@@ -106,14 +106,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('Attempting login with URL:', import.meta.env.VITE_BACKEND_API_URL);
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
+        body: JSON.stringify({ email, password })
       });
 
       if (!response.ok) {
@@ -122,13 +120,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       const { data } = await response.json();
-      
-      // Store the token
       localStorage.setItem('accessToken', data.accessToken);
-      
-      // Load user data immediately after login
       await loadUserData();
-      
       return data;
     } catch (error) {
       console.error('Login error:', error);

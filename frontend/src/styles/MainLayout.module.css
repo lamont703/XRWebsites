@@ -19,11 +19,21 @@
   border-radius: 0.5rem;
   background-color: rgba(55, 65, 81, 0.8);
   color: white;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
 .menuButton:hover {
   background-color: rgba(75, 85, 99, 0.8);
+}
+
+.menuButton svg {
+  width: 24px;
+  height: 24px;
 }
 
 .overlay {

@@ -1,0 +1,27 @@
+.networkSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(31, 41, 55, 0.8);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.indicator.mainnet {
+  background-color: #22c55e;
+}
+
+.indicator.devnet {
+  background-color: #eab308;
+} 

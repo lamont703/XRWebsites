@@ -17,6 +17,12 @@ interface WalletData {
   balance: string;
   totalTokens: number;
   transactions: Transaction[];
+  stats?: {
+    total: number;
+    purchases: number;
+    sales: number;
+    transfers: number;
+  };
 }
 
 interface DashboardStats {
@@ -76,12 +82,26 @@ export const Dashboard = () => {
     forumActivity: [],
     reviews: []
   });
+  const [error, setError] = useState<string | null>(null);
+
+  // Add safe default stats
+  const defaultStats = {
+    total: 0,
+    purchases: 0,
+    sales: 0,
+    transfers: 0
+  };
+
+  // Ensure stats object exists before using Object.entries
+  const walletStats = walletData?.stats || defaultStats;
+  const statEntries = Object.entries(walletStats);
 
   const loadWalletData = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         },
         credentials: 'include'
@@ -92,15 +112,30 @@ export const Dashboard = () => {
       }
 
       const { data } = await response.json();
-      setWalletData({ 
-        id: data.id,
-        balance: data.balance || '0.00',
+      
+      // Ensure data exists and has required properties
+      if (!data || typeof data.balance === 'undefined') {
+        throw new Error('Invalid wallet data received');
+      }
+
+      // Update wallet data with safe defaults
+      setWalletData({
+        id: data.id || '',
+        balance: (data.balance || 0).toString(),
         totalTokens: data.linked_accounts?.length || 0,
-        transactions: data.transactions || []
+        transactions: data.transactions || [],
+        stats: data.stats || {
+          total: 0,
+          purchases: 0,
+          sales: 0,
+          transfers: 0
+        }
       });
+
       return data.id;
     } catch (err) {
       console.error('Error loading wallet:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load wallet data');
       return null;
     }
   };
@@ -227,8 +262,8 @@ export const Dashboard = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {Object.entries(recentActivity).map(([category, items]) => (
-                items.length > 0 && (
+              {Object.entries(recentActivity || {}).map(([category, items]) => (
+                Array.isArray(items) && items.length > 0 && (
                   <div key={category} className="space-y-4">
                     <h3 className="text-lg font-semibold text-white capitalize">
                       {category.replace(/([A-Z])/g, ' $1').trim()}
@@ -236,18 +271,18 @@ export const Dashboard = () => {
                     <div className="space-y-2">
                       {items.map((item: any) => (
                         <div 
-                          key={item.id} 
+                          key={item?.id || Math.random()} 
                           className={styles.card}
                         >
                           <div>
                             <div className="text-white">
-                              {item.title || item.name || `${category} Activity`}
+                              {item?.title || item?.name || `${category} Activity`}
                             </div>
                             <div className="text-sm text-gray-400">
-                              {new Date(item.createdAt).toLocaleDateString()}
+                              {item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'No date'}
                             </div>
                           </div>
-                          {item.status && (
+                          {item?.status && (
                             <span className={`px-3 py-1 rounded-full text-sm ${
                               item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                               item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -262,7 +297,7 @@ export const Dashboard = () => {
                   </div>
                 )
               ))}
-              {Object.values(recentActivity).every(items => items.length === 0) && (
+              {(!recentActivity || Object.values(recentActivity).every(items => !Array.isArray(items) || items.length === 0)) && (
                 <div className={styles.emptyState}>
                   No recent activity to show.
                 </div>

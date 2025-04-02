@@ -1,9 +1,18 @@
 import { publicKey } from '@metaplex-foundation/umi';
-import { createMetadataAccountV3 } from '@metaplex-foundation/mpl-token-metadata';
+import { createMetadataAccountV3, CreateMetadataAccountV3InstructionAccounts } from '@metaplex-foundation/mpl-token-metadata';
 import { createUmiClient } from './umi';
 import { uploadMetadata } from './uploadMetadata';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
+
+interface MetadataParams {
+  name: string;
+  symbol: string;
+  uri?: string;
+  description?: string;
+  image?: string;
+  sellerFeeBasisPoints?: number;
+}
 
 export async function createTokenMetadata(
   connection: Connection,
@@ -16,65 +25,58 @@ export async function createTokenMetadata(
     description,
     image,
     sellerFeeBasisPoints = 0
-  }: {
-    name: string;
-    symbol: string;
-    uri?: string;
-    description?: string;
-    image?: string;
-    sellerFeeBasisPoints?: number;
-  }
+  }: MetadataParams
 ) {
-  const MAX_RETRIES = 3;
-  let attempt = 0;
+  if (!wallet.publicKey) throw new Error('Wallet not connected');
 
-  while (attempt < MAX_RETRIES) {
-    try {
-      const umi = createUmiClient(connection, wallet);
+  try {
+    const umi = createUmiClient(connection, wallet);
 
-      // Upload metadata if URI not provided
-      let finalUri = uri;
-      if (!finalUri) {
-        finalUri = await uploadMetadata(connection, wallet, {
-          name,
-          symbol,
-          description,
-          image,
-          sellerFeeBasisPoints
-        });
-      }
-
-      const metadata = await createMetadataAccountV3(umi, {
-        mint: publicKey(mint.toBase58()),
-        mintAuthority: umi.identity,
-        updateAuthority: publicKey(umi.identity.publicKey.toString()),
-        data: {
-          name,
-          symbol,
-          uri: finalUri,
-          sellerFeeBasisPoints,
-          creators: null,
-          collection: null,
-          uses: null,
-        },
-        isMutable: true,
-        collectionDetails: null,
-      }).sendAndConfirm(umi);
-
-      return metadata;
-    } catch (error) {
-      attempt++;
-      if (
-        error instanceof Error &&
-        error.message?.includes('block height exceeded') &&
-        attempt < MAX_RETRIES
-      ) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
-        continue;
-      }
-      throw error;
+    // Upload metadata if URI not provided
+    let finalUri = uri;
+    if (!finalUri) {
+      finalUri = await uploadMetadata(connection, wallet, {
+        name,
+        symbol,
+        description,
+        image,
+        sellerFeeBasisPoints
+      });
+      return finalUri;
     }
-  }
 
-  throw new Error('Failed to create metadata after maximum retries');
+    console.log('Creating metadata with URI:', finalUri);
+
+    // Create metadata with explicit accounts
+    const accounts: CreateMetadataAccountV3InstructionAccounts = {
+      mint: publicKey(mint.toBase58()),
+      mintAuthority: umi.identity,
+      payer: umi.identity,
+    };
+
+    if (!finalUri || finalUri.length === 0 || finalUri.length > 200) {
+            console.log(`Invalid URI provided. It must be a non-empty string and < 200 characters. URI: ${finalUri}`);
+    } else {
+        console.log('Creating metadata with URI:', finalUri);
+        const metadata = await createMetadataAccountV3(umi, {
+      ...accounts,
+      data: {
+        name,
+        symbol,
+        uri: finalUri,
+        sellerFeeBasisPoints,
+        creators: null,
+        collection: null,
+        uses: null,
+      },
+      isMutable: true,
+      collectionDetails: null,
+    }).sendAndConfirm(umi);
+    console.log('Metadata created:', metadata);
+    return metadata;
+    }
+  } catch (error) {
+    console.error('Failed to create metadata:', error);
+    throw error;
+  }
 }

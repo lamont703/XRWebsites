@@ -18,7 +18,7 @@ const router = Router();
 // Authentication routes to register, login, refresh token, and logout.
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/refresh-token", refreshAccessToken);
+router.route("/refresh").post(refreshAccessToken);
 router.post("/logout", verifyJWT, logoutUser);
 
 // Protected routes to get user dashboard, current user, user profile, update user profile, and delete user.

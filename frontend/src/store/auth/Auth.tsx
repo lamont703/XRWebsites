@@ -34,9 +34,9 @@ interface RegisterData {
   username: string;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   console.log('Build ENV:', import.meta.env.MODE);
   console.log('Backend URL at load:', import.meta.env.VITE_BACKEND_API_URL);
 
@@ -50,33 +50,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(userData);
   };
 
+  const refreshToken = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Token refresh failed');
+      }
+
+      const { data } = await response.json();
+      localStorage.setItem('accessToken', data.accessToken);
+      return data.accessToken;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userEmail');
+      setIsAuthenticated(false);
+      setUser(null);
+      throw error;
+    }
+  };
+
   const loadUserData = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+      console.log('🔑 Current access token:', token ? `${token.substring(0, 15)}...` : 'No token');
+      
       if (!token) {
-        console.log('No token found');
+        console.log('❌ No token found in localStorage');
         setIsAuthenticated(false);
         setUser(null);
         return;
       }
 
-      const url = `${import.meta.env.VITE_BACKEND_API_URL}/users/me`;
-      console.log('Making request to:', url);
-      console.log('URL starts with http:', url.startsWith('http'));
-      console.log('URL starts with https:', url.startsWith('https'));
-
-      const response = await fetch(url, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       });
+
+      console.log('👤 User data response status:', response.status);
       
+      if (response.status === 401) {
+        console.log('🔄 Token expired, attempting refresh...');
+        await refreshToken();
+        return loadUserData();
+      }
+
       if (!response.ok) {
         throw new Error('Failed to load user data');
       }
 
       const { data } = await response.json();
+      console.log('Received user data:', data); // Debug log
       
+      if (!data || !data.user) {
+        throw new Error('Invalid user data received');
+      }
+
       // Store the email in localStorage for login reference
       localStorage.setItem('userEmail', data.user.email);
       

@@ -11,6 +11,7 @@ export interface TokenConfig {
   };
   description?: string;
   image?: string;
+  uri?: string;
 }
 
 
@@ -27,5 +28,6 @@ export const defaultTokenConfig: TokenConfig = {
     pausable: false
   },
   description: "",
-  image: ""
+  image: "",
+  uri: ""
 };

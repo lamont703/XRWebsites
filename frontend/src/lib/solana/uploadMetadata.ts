@@ -1,7 +1,5 @@
-import { createUmiClient } from './umi';
 import { Connection } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
-import { createGenericFile } from '@metaplex-foundation/umi';
 
 interface MetadataArgs {
   name: string;
@@ -21,9 +19,6 @@ export async function uploadMetadata(
   if (!wallet.publicKey) throw new Error('Wallet not connected');
 
   try {
-    const umi = createUmiClient(connection, wallet, options.network);
-    console.log("This is the network options if anything...", options.network);
-
     const metadataJson = {
       name: metadata.name,
       symbol: metadata.symbol,
@@ -38,16 +33,32 @@ export async function uploadMetadata(
       }
     };
 
-    const file = createGenericFile(
-      JSON.stringify(metadataJson),
-      'metadata.json',
-      { contentType: 'application/json' }
-    );
+    console.log('Sending metadata to backend for upload...', metadataJson);
+    
+    // Send metadata to backend for upload
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/metadata/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        metadataJson: metadataJson,
+        network: options.network
+      }),
+      credentials: 'include'
+    });
 
-    console.log("This is the file if anything...", file);
+    if (!response.ok) {
+      throw new Error(`Failed to upload metadata: ${response.statusText}`);
+    }
 
-    console.log('Uploading metadata to Arweave...', metadataJson);
-    const [uri] = await umi.uploader.upload([file]);
+    //console.log('Response:', await response.json());
+
+
+    const data = await response.json();
+    const uri = data?.data?.uri;
     console.log('Metadata uploaded:', uri);
     
     return uri;

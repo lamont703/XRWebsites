@@ -219,60 +219,45 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // Login a user.
 const loginUser = asyncHandler(async (req, res) => {
-
-    // Get the email and password from the request body. 
     const { email, password } = req.body;
-        console.log('Login attempt for email:', email); // Debug log
-
 
     if (!email || !password) {
         throw new ApiError(400, "Email and password are required");
     }
 
-    // Find the user by email.
     const user = await User.findOne({ email });
-        console.log('Found user:', user); // Debug log
-
-
     if (!user) {
-        throw new ApiError(404, "User does not exist");
+        throw new ApiError(401, "Invalid credentials");
     }
 
-    // Check if the password is valid using bcrypt. 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Password valid:', isPasswordValid); // Debug log
-
-
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credentials");
     }
 
-    // Generate access and refresh tokens for the user.
-    const { accessToken, refreshToken } = generateTokens(user);
+    const tokens = generateTokens(user);
 
-    // Update the user's refresh token in the database.
-    await User.updateRefreshToken(user.id, refreshToken);
-
-    // Set the options for the cookies.
-    const options = {
+    // Set refresh token in cookie
+    res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production"
-    };
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
-    // Remove sensitive information from the user object.
-    const { password: _, refreshToken: __, ...userWithoutSensitiveInfo } = user;
-
-    // Return the response with the user, access token, and refresh token.
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
-        .json(
-            new ApiResponse(200, "User logged in successfully", {
-                user: userWithoutSensitiveInfo,
-                accessToken
-            })
-        );
+    // Return access token and user data
+    return res.status(200).json(
+        new ApiResponse(200, {
+            accessToken: tokens.accessToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName,
+                username: user.username,
+                avatar: user.avatar
+            }
+        }, "Login successful")
+    );
 });
 
 // Logout a user.
@@ -381,51 +366,43 @@ const getUserDashboard = asyncHandler(async (req, res) => {
 
 // Refresh access token.
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
-
-    if (!incomingRefreshToken) {
-        throw new ApiError(401, "Unauthorized request");
-    }
-
     try {
-        const decodedToken = jwt.verify(
-            incomingRefreshToken,
-            process.env.REFRESH_TOKEN_SECRET
-        );
+        const refreshToken = req.cookies.refreshToken;
+        
+        if (!refreshToken) {
+            throw new ApiError(401, "Refresh token not found");
+        }
 
-        const user = await User.findById(decodedToken?.id);
-
+        // Verify refresh token
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        
+        // Get user from database
+        const user = await User.findById(decoded.id);
         if (!user) {
-            throw new ApiError(401, "Invalid refresh token");
+            throw new ApiError(404, "User not found");
         }
 
-        if (incomingRefreshToken !== user?.refreshToken) {
-            throw new ApiError(401, "Refresh token is expired or used");
-        }
+        // Generate new tokens
+        const tokens = generateTokens(user);
 
-        const accessToken = await User.generateAccessToken(user.id);
-        const newRefreshToken = await User.generateRefreshToken(user.id);
-
-        await User.updateRefreshToken(user.id, newRefreshToken);
-
-        const options = {
+        // Set refresh token in cookie
+        res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production"
-        };
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
-            .json(
-                new ApiResponse(
-                    200,
-                    "Access token refreshed",
-                    { accessToken }
-                )
-            );
+        return res.status(200).json(
+            new ApiResponse(200, {
+                accessToken: tokens.accessToken
+            }, "Access token refreshed")
+        );
     } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid refresh token");
+        if (error.name === 'TokenExpiredError') {
+            throw new ApiError(401, "Refresh token expired");
+        }
+        throw new ApiError(401, "Invalid refresh token");
     }
 });
 
@@ -439,7 +416,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, "User fetched successfully", {
+        .json(new ApiResponse(200, {
             user: {
                 id: user.id,
                 fullName: user.fullName,
@@ -449,9 +426,10 @@ const getCurrentUser = asyncHandler(async (req, res) => {
                 bio: user.bio,
                 location: user.location,
                 website: user.website,
+                walletId: user.walletId,
                 createdAt: user.createdAt
             }
-        }));
+        }, "User fetched successfully"));
 });
 
 // Update user profile.

@@ -4,16 +4,23 @@ import { getContainer } from '../database.js';
 
 export const verifyJWT = async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+        const authHeader = req.header("Authorization");
+        console.log('🔒 Full Authorization header:', authHeader);
         
-        if (!token) {
-            throw new ApiError(401, "Unauthorized request");
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.log('❌ No valid Authorization header');
+            throw new ApiError(401, "No token provided");
         }
-    
+
+        const token = authHeader.split(' ')[1];
+        console.log('🔑 Extracted token:', token ? `${token.substring(0, 15)}...` : 'No token');
+        console.log('🔐 JWT Secret available:', !!process.env.JWT_SECRET);
+        
         try {
+            console.log('🔄 Attempting to verify token...');
             const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+            console.log('✅ Token verified successfully for user:', decodedToken.id);
             
-            // Get full user data from database
             const container = await getContainer();
             const querySpec = {
                 query: "SELECT * FROM c WHERE c.type = 'user' AND c.id = @id",
@@ -27,7 +34,6 @@ export const verifyJWT = async (req, res, next) => {
                 throw new ApiError(404, "User not found");
             }
 
-            // Combine token data with database user data
             req.user = {
                 ...decodedToken,
                 name: userData.fullName,
@@ -37,13 +43,13 @@ export const verifyJWT = async (req, res, next) => {
 
             next();
         } catch (error) {
+            console.error('🚫 Token verification failed:', error);
             if (error.name === 'TokenExpiredError') {
                 throw new ApiError(401, "Token has expired");
             }
             throw new ApiError(401, "Invalid access token");
         }
     } catch (error) {
-        // Pass the error to the error handling middleware
         next(error);
     }
 };

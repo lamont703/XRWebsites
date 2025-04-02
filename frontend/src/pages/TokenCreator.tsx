@@ -5,6 +5,7 @@ import { TokenForm } from '@/components/features/tokens/TokenForm';
 import { ConfirmationModal } from '@/components/features/tokens/ConfirmationModal';
 import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 import { createTokenMint, mintTokens } from '@/lib/solana/mint';
+import { createTokenMetadata } from '@/lib/solana/metadata';
 import { createAssociatedTokenAccount } from '@/lib/solana/account';
 import styles from '@/styles/TokenCreator.module.css';
 import { useNetwork } from '@/lib/solana/config';
@@ -13,7 +14,7 @@ import { TokenConfig, defaultTokenConfig } from '@/types/token';
 import { MINT_SIZE } from '@solana/spl-token';
 import { useNavigate } from 'react-router-dom';
 import { TokenSuccessModal } from '@/components/features/tokens/TokenSuccessModal';
-import { createTokenMetadata } from '@/lib/solana/metadata';
+
 
 export const TokenCreator = () => {
   const { network, setNetwork, connection } = useNetwork();
@@ -65,7 +66,7 @@ export const TokenCreator = () => {
       setCurrentStep('Creating token metadata...');
       console.log('Creating token metadata...');
       try {
-        await createTokenMetadata(
+        let metadata = await createTokenMetadata(
             connection,
             wallet,
             mintKeypair.publicKey,
@@ -74,9 +75,11 @@ export const TokenCreator = () => {
               symbol: tokenConfig.symbol,
               description: tokenConfig.description, // optional
               image: tokenConfig.image,             // optional
+              uri: tokenConfig.uri,
               sellerFeeBasisPoints: 0
             }
           );
+          console.log('Metadata created:', metadata);
       } catch (error) {
         console.error('Metadata creation failed:', error);
         if (error instanceof Error && error.message?.includes('block height exceeded')) {

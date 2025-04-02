@@ -12,7 +12,11 @@ import { Toaster } from 'react-hot-toast';
 import { debounce } from 'lodash';
 import styles from '@/styles/MainLayout.module.css';
 
-export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+export function MainLayout({ children }: MainLayoutProps) {
   // Initialize states with window check to prevent hydration mismatch
   const [isMobileView, setIsMobileView] = useState(true); // Default to mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed
@@ -102,4 +106,4 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
       </main>
     </div>
   );
-}; 
+} 

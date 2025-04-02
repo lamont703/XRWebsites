@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './store/auth/Auth';
 import { AuthGuard } from './store/auth/Auth';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { WalletProvider, ConnectionProvider } from '@solana/wallet-adapter-react';
+import { WalletProvider, ConnectionProvider as SolanaConnectionProvider } from '@solana/wallet-adapter-react';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
@@ -70,7 +70,7 @@ function App() {
 
   return (
     <NetworkProvider>
-      <ConnectionProvider endpoint={endpoint}>
+      <SolanaConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
             <BrowserRouter>
@@ -200,7 +200,7 @@ function App() {
             </BrowserRouter>
           </WalletModalProvider>
         </WalletProvider>
-      </ConnectionProvider>
+      </SolanaConnectionProvider>
     </NetworkProvider>
   );
 }

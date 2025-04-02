@@ -7,32 +7,36 @@ import NFTAsset from "../models/nftAsset.models.js";
 
 const getWallet = asyncHandler(async (req, res) => {
     try {
-        // Get user_id from authenticated user
+        console.log('👤 User from request:', req.user);
         const user_id = req.user.id;
+        console.log('🔍 Looking up wallet for user:', user_id);
         
-        // Find wallet by user ID
         const wallet = await Wallet.findOne({ user_id });
+        console.log('💰 Found wallet:', wallet ? 'Yes' : 'No');
         
         if (!wallet) {
             throw new ApiError(404, "No wallet found for this user");
         }
 
-        // Format wallet data for frontend
+        // Format wallet data with guaranteed structure
         const walletData = {
             id: wallet.id,
             balance: wallet.balance || 0,
             currency: wallet.currency || 'USD',
             status: wallet.status || 'active',
-            linked_accounts: wallet.linked_accounts || []
+            linked_accounts: wallet.linked_accounts || [],
+            transactions: [],
+            stats: {
+                total: wallet.stats?.total || 0,
+                purchases: wallet.stats?.purchases || 0,
+                sales: wallet.stats?.sales || 0,
+                transfers: wallet.stats?.transfers || 0
+            }
         };
 
         return res
             .status(200)
-            .json(new ApiResponse(
-                200,
-                "Wallet retrieved successfully",
-                walletData
-            ));
+            .json(new ApiResponse(200, walletData, "Wallet retrieved successfully"));
     } catch (error) {
         throw new ApiError(
             error.statusCode || 500,

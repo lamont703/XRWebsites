@@ -19,7 +19,8 @@ import { confirmTransaction } from './confirm';
 export async function createAssociatedTokenAccount(
   connection: Connection,
   wallet: WalletContextState,
-  mintPubkey: PublicKey
+  mintPubkey: PublicKey,
+  network: 'devnet' | 'mainnet-beta' = 'devnet'
 ) {
   try {
     // Get the ATA address first
@@ -125,7 +126,7 @@ export async function createAssociatedTokenAccount(
     });
     
     console.log('Confirming ATA creation...');
-    const confirmed = await confirmTransaction(connection, signature);
+    const confirmed = await confirmTransaction(connection, signature, network);
     if (!confirmed) {
       throw new Error('Failed to confirm ATA creation');
     }

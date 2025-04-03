@@ -1,54 +1,43 @@
-import { Connection, TransactionSignature, Commitment } from '@solana/web3.js';
-
-const TIMEOUT_MS = 30000; // 30 seconds timeout
-const CONFIRMATION_COMMITMENT: Commitment = 'confirmed';
-const MAX_RETRIES = 5;
-const INITIAL_INTERVAL = 1000; // Start with 1 second
+import { Connection, TransactionSignature } from '@solana/web3.js';
 
 export async function confirmTransaction(
   connection: Connection,
   signature: TransactionSignature,
-  commitment = CONFIRMATION_COMMITMENT,
-  timeoutMs = TIMEOUT_MS
+  network: 'devnet' | 'mainnet-beta' = 'devnet'
 ): Promise<boolean> {
-  const startTime = Date.now();
-  let currentInterval = INITIAL_INTERVAL;
+  const commitment = network === 'mainnet-beta' ? 'confirmed' : 'processed';
+  
+  try {
+    const latestBlockhash = await connection.getLatestBlockhash();
+    
+    // Increase timeout for mainnet
+    const timeout = network === 'mainnet-beta' ? 90000 : 60000; // 90 seconds for mainnet
+    
+    // Use more robust confirmation strategy
+    const confirmation = await connection.confirmTransaction({
+      signature,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+    }, commitment);
 
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    if (Date.now() - startTime > timeoutMs) {
-      console.log('Transaction confirmation timed out');
+    // Check for various error conditions
+    if (confirmation.value.err) {
+      // If block height exceeded, suggest retry
+      if (confirmation.value.err.toString().includes('block height exceeded')) {
+        throw new Error('Transaction expired due to network congestion. Please try again.');
+      }
+      console.error('Transaction failed:', confirmation.value.err);
       return false;
     }
 
-    try {
-      // Wait with exponential backoff
-      await new Promise(resolve => setTimeout(resolve, currentInterval));
-      currentInterval *= 2; // Double the wait time for next attempt
-
-      // Check transaction status
-      const response = await connection.getSignatureStatus(signature);
-      const status = response?.value;
-
-      if (!status) {
-        continue; // Transaction not found yet, try again
-      }
-
-      if (status.err) {
-        console.error('Transaction failed:', status.err);
-        return false;
-      }
-
-      if (status.confirmationStatus === commitment) {
-        return true;
-      }
-
-    } catch (error) {
-      console.warn('Error checking transaction status:', error);
-      // Continue to next retry
+    return true;
+  } catch (error) {
+    console.error('Confirmation failed:', error);
+    // Specific error handling for block height exceeded
+    if (error instanceof Error && error.message.includes('block height exceeded')) {
+      throw new Error('Transaction expired due to network congestion. Please try again.');
     }
+    return false;
   }
-
-  console.log('Max retries reached without confirmation');
-  return false;
 }
 

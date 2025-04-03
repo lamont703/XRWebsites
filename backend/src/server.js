@@ -36,6 +36,8 @@ const corsOptions = {
         'Content-Type',
         'Authorization',
         'X-Requested-With',
+        'X-User-Signature',
+        'X-Wallet-Public-Key',
         'Accept',
         'Origin'
     ]

@@ -1,5 +1,8 @@
 import { Connection } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
+import { createUmiClient } from './umi';
+import { createMetadataAccountV3 } from '@metaplex-foundation/mpl-token-metadata';
+import { publicKey } from '@metaplex-foundation/umi';
 
 interface MetadataArgs {
   name: string;
@@ -11,14 +14,22 @@ interface MetadataArgs {
 }
 
 export async function uploadMetadata(
-  connection: Connection,
+  _connection: Connection,
   wallet: WalletContextState,
   metadata: MetadataArgs,
-  options = { network: 'devnet' as 'devnet' | 'mainnet-beta' }
+  mintAddress: string,
+  options: { network: 'devnet' | 'mainnet-beta' }
 ): Promise<string> {
-  if (!wallet.publicKey) throw new Error('Wallet not connected');
+  if (!wallet.publicKey || !wallet.signMessage) throw new Error('Wallet not connected or cannot sign');
 
   try {
+    // Create and sign authorization message
+    const message = new TextEncoder().encode(
+      `Authorize metadata creation for token: ${mintAddress}`
+    );
+    const signature = await wallet.signMessage(message);
+    const userSignature = Buffer.from(signature).toString('base64');
+
     const metadataJson = {
       name: metadata.name,
       symbol: metadata.symbol,
@@ -41,11 +52,14 @@ export async function uploadMetadata(
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-User-Signature': userSignature,
+        'X-Wallet-Public-Key': wallet.publicKey.toString()
       },
       body: JSON.stringify({
-        metadataJson: metadataJson,
-        network: options.network
+        metadataJson,
+        network: options.network,
+        mintAddress
       }),
       credentials: 'include'
     });
@@ -58,7 +72,10 @@ export async function uploadMetadata(
 
 
     const data = await response.json();
-    const uri = data?.data?.uri;
+    if (!data?.data?.uri) {
+      throw new Error('Invalid response from metadata upload');
+    }
+    const uri = data.data.uri;
     console.log('Metadata uploaded:', uri);
     
     return uri;
@@ -66,4 +83,35 @@ export async function uploadMetadata(
     console.error('Error uploading metadata:', error);
     throw error;
   }
+}
+
+export async function createMetadata(
+  connection: Connection,
+  wallet: WalletContextState,
+  { uri, mintAddress, metadata }: { 
+    uri: string, 
+    mintAddress: string, 
+    metadata: any 
+  }
+) {
+  const umi = createUmiClient(connection, wallet);
+  
+  const tx = await createMetadataAccountV3(umi, {
+    mint: publicKey(mintAddress),
+    mintAuthority: umi.identity,
+    payer: umi.identity,
+    data: {
+      name: metadata.name,
+      symbol: metadata.symbol,
+      uri,
+      sellerFeeBasisPoints: metadata.sellerFeeBasisPoints || 0,
+      creators: null,
+      collection: null,
+      uses: null,
+    },
+    isMutable: true,
+    collectionDetails: null,
+  }).sendAndConfirm(umi);
+
+  return tx.signature;
 } 

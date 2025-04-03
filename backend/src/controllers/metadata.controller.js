@@ -4,42 +4,40 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { getContainer } from "../database.js";
 import { uploadToArweave } from '../utils/arweaveUploader.js'; // 👈 your uploader
 
-
 const uploadMetadata = asyncHandler(async (req, res) => {
     try {
-        const { metadataJson, network } = req.body;
-
-        if (!metadataJson || !network) {
-            throw new ApiError(400, "MetadataJson and network are required");
+        const { metadataJson, network: requestedNetwork, mintAddress } = req.body;
+        const userSignature = req.headers['x-user-signature'];
+        const walletPublicKey = req.headers['x-wallet-public-key'];
+        
+        // Define network BEFORE using it in the validation
+        const network = requestedNetwork?.network || requestedNetwork;
+        
+        if (!metadataJson || !network || !mintAddress || !userSignature || !walletPublicKey) {
+            throw new ApiError(400, "Missing required parameters");
         }
 
-        // Get database container
-        //const container = await getContainer();
-
-        // Create a new metadata document
-        const metadataDoc = {
-            id: `metadata-${Date.now()}`,
-            type: 'metadata',
-            metadataJson,
-            network,
-            userId: req.user.id,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        // Upload metadata to Arweave using UMI + Bundlr
-        const arweaveUri = await uploadToArweave(metadataJson, network);
-        console.log('Arweave URI:', arweaveUri);
+        // Upload metadata to Arweave and attach to token
+        const { uri, signature } = await uploadToArweave(
+            metadataJson, 
+            network, 
+            mintAddress,
+            userSignature,
+            walletPublicKey
+        );
+        console.log('Arweave URI:', uri);
+        console.log('Transaction Signature:', signature);
 
         // Store in database
         //const { resource } = await container.items.create(metadataDoc);
 
-        // Return success response with URI for frontend
-        return res.status(201).json(
-            new ApiResponse(201, {
-                uri: arweaveUri
-            }, "Metadata uploaded successfully")
-        );
+        // Return success response with URI and signature
+        return res.status(201).json({
+            data: {
+                uri: uri,
+                signature: signature
+            }
+        });
     } catch (error) {
         console.error("Metadata upload error:", error);
         throw new ApiError(

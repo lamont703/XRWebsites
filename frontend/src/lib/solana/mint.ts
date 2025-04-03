@@ -22,7 +22,8 @@ import { TokenConfig } from '@/types/token';
 export async function createTokenMint(
   connection: Connection,
   wallet: WalletContextState,
-  tokenConfig: TokenConfig
+  tokenConfig: TokenConfig,
+  network: 'devnet' | 'mainnet-beta' = 'devnet'
 ) {
   try {
     const mintKeypair = Keypair.generate();
@@ -120,7 +121,7 @@ export async function createTokenMint(
     });
     
     console.log('Confirming mint account creation...');
-    const confirmed = await confirmTransaction(connection, signature);
+    const confirmed = await confirmTransaction(connection, signature, network);
     if (!confirmed) {
       throw new Error('Failed to confirm mint account creation');
     }

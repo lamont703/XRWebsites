@@ -59,7 +59,8 @@ export const TokenCreator = () => {
       const { mintKeypair, mintAccount } = await createTokenMint(
         connection,
         wallet,
-        tokenConfig
+        tokenConfig,
+        network === 'mainnet' ? 'mainnet-beta' : 'devnet'
       );
 
       // Add metadata creation step
@@ -67,19 +68,20 @@ export const TokenCreator = () => {
       console.log('Creating token metadata...');
       try {
         let metadata = await createTokenMetadata(
-            connection,
-            wallet,
-            mintKeypair.publicKey,
-            {
-              name: tokenConfig.name,
-              symbol: tokenConfig.symbol,
-              description: tokenConfig.description, // optional
-              image: tokenConfig.image,             // optional
-              uri: tokenConfig.uri,
-              sellerFeeBasisPoints: 0
-            }
-          );
-          console.log('Metadata created:', metadata);
+          connection,
+          wallet,
+          mintKeypair.publicKey,
+          {
+            name: tokenConfig.name,
+            symbol: tokenConfig.symbol,
+            description: tokenConfig.description,
+            image: tokenConfig.image,
+            uri: tokenConfig.uri,
+            sellerFeeBasisPoints: 0
+          },
+          network === 'mainnet' ? 'mainnet-beta' : 'devnet'
+        );
+        console.log('Metadata created:', metadata);
       } catch (error) {
         console.error('Metadata creation failed:', error);
         if (error instanceof Error && error.message?.includes('block height exceeded')) {
@@ -169,7 +171,18 @@ export const TokenCreator = () => {
       }
     } catch (error) {
       console.error('Token creation failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create token');
+      if (error instanceof Error) {
+        if (error.message.includes('block height exceeded') || 
+            error.message.includes('network congestion')) {
+          setError('Transaction expired due to network congestion. Please try again.');
+        } else if (error.message.includes('insufficient funds')) {
+          setError('Insufficient SOL for transaction fees. Please add more SOL to your wallet.');
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError('Failed to create token');
+      }
     } finally {
       setIsLoading(false);
       setCurrentStep('');

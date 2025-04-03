@@ -134,6 +134,34 @@ export const TokenForm = ({
               <span className={styles.errorText}>{validationErrors.totalSupply}</span>
             )}
           </div>
+
+          <div>
+            <label className={styles.label}>
+              Token Image URL
+              <span className={styles.tooltip} title="URL to your token's image (PNG, JPG recommended)">ℹ️</span>
+            </label>
+            <input
+              type="url"
+              value={tokenConfig.image}
+              onChange={(e) => onChange({ ...tokenConfig, image: e.target.value })}
+              className={styles.input}
+              placeholder="https://example.com/token-image.png"
+            />
+          </div>
+
+          <div>
+            <label className={styles.label}>
+              Description
+              <span className={styles.tooltip} title="A brief description of your token">ℹ️</span>
+            </label>
+            <textarea
+              value={tokenConfig.description}
+              onChange={(e) => onChange({ ...tokenConfig, description: e.target.value })}
+              className={styles.input}
+              placeholder="Describe your token..."
+              rows={3}
+            />
+          </div>
         </div>
 
         <div className={styles.features}>

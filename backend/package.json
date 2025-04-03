@@ -26,6 +26,9 @@
   "dependencies": {
     "@azure/cosmos": "^4.2.0",
     "@azure/storage-blob": "^12.26.0",
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi": "^1.1.1",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.1.1",
     "@metaplex-foundation/umi-storage-mock": "^0.9.2",
     "@metaplex-foundation/umi-uploader-bundlr": "^0.9.2",
     "@reduxjs/toolkit": "^2.5.1",
@@ -42,7 +45,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "rollup-plugin-visualizer": "^5.14.0",
-    "stripe": "^17.6.0"
+    "stripe": "^17.6.0",
+    "tweetnacl": "^1.0.3"
   },
   "engines": {
     "node": ">=20.0.0"

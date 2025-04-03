@@ -3,107 +3,108 @@ import {
   createGenericFile,
   createSignerFromKeypair,
   keypairIdentity,
+  publicKey,
 } from '@metaplex-foundation/umi';
-import {
-  createUmi,
-} from '@metaplex-foundation/umi-bundle-defaults';
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { bundlrUploader } from '@metaplex-foundation/umi-uploader-bundlr';
-import { mockStorage } from '@metaplex-foundation/umi-storage-mock';
-import { Keypair } from '@solana/web3.js';
+import { createMetadataAccountV3, mplTokenMetadata } from '@metaplex-foundation/mpl-token-metadata';
+import { PublicKey, Keypair } from '@solana/web3.js';
+import nacl from 'tweetnacl';
 import base58 from 'bs58';
 import dotenv from 'dotenv';
+import { fromWeb3JsKeypair } from '@metaplex-foundation/umi-web3js-adapters';
 
 dotenv.config();
 
 /**
- * Uploads metadata JSON to Arweave using UMI + Bundlr
+ * Uploads metadata JSON to Arweave and attaches it to the token
  * @param {Object} metadata - The NFT metadata to upload
  * @param {string} network - 'devnet' or 'mainnet-beta'
- * @returns {Promise<string>} Arweave URI
+ * @param {string} mintAddress - The token's mint address
+ * @param {string} userSignature - The user's signature for signature verification
+ * @param {string} walletPublicKey - The wallet's public key for signature verification
+ * @returns {Promise<{uri: string, signature: string}>} Arweave URI and transaction signature
  */
-export const uploadToArweave = async (metadataJson, network = 'devnet') => {
+export const uploadToArweave = async (
+  metadataJson, 
+  network, 
+  mintAddress,
+  userSignature,
+  walletPublicKey
+) => {
   try {
-    console.log('Uploading metadataJson to Arweave:', metadataJson);
-    // For devnet, use mock storage
-    if (network === 'devnet') {
-      // Generate a fixed-length mock transaction ID (43 characters)
-      //const mockTxId = Buffer.from(JSON.stringify(metadataJson))
-      //  .toString('base64')
-      //  .replace(/[^a-zA-Z0-9]/g, '')
-      //  .slice(0, 43);
-      //const mockTxId = 'mockTxId';
-      const mockTxId = 'BNttzDav3jHVnNiV7nYbQv-GY0HQ-4XXsdkE5K9ylHQ';
-      
-      const mockUri = `https://arweave.net/tx/${mockTxId}`;
-      console.log('📝 Mock metadata upload (devnet):', mockUri);
-      
-      // Validate URI length (should be exactly https://arweave.net/ + 43 chars)
-      //if (mockUri.length !== 'https://arweave.net/'.length + 43) {
-      //  throw new Error('Invalid mock URI length generated');
-      //}
-      
-      return mockUri;
-      //  upload for DEVnnet
-    //const secretKey = process.env.BUNDLR_PRIVATE_KEY;
-    //if (!secretKey) {
-    //  throw new Error('BUNDLR_PRIVATE_KEY not set in .env');
-    //}
+    // Verify the user's signature first
+    const message = new TextEncoder().encode(
+      `Authorize metadata creation for token: ${mintAddress}`
+    );
+    const signatureBytes = Buffer.from(userSignature, 'base64');
+    const pubKey = new PublicKey(walletPublicKey);
+    
+    const isValid = nacl.sign.detached.verify(
+      message,
+      signatureBytes,
+      pubKey.toBytes()
+    );
 
-    //const keypair = Keypair.fromSecretKey(base58.decode(secretKey));
-    //const umi = createUmi('https://solana-mainnet.core.chainstack.com/4d36293a8e6eef86281f61a73c33af5c')
-    //  .use(keypairIdentity(keypair))
-      //.use(bundlrUploader({
-        //address: 'https://node1.bundlr.network',
-    //    providerUrl: 'https://solana-mainnet.core.chainstack.com/4d36293a8e6eef86281f61a73c33af5c',
-    //    timeout: 60000,
-    //    }));
-
-      //const file = createGenericFile(
-      //JSON.stringify(metadataJson),
-      //'metadata.json',
-      //{ contentType: 'application/json' }
-    //);
-
-    //const [uri] = await umi.uploader.upload([file]);
-    //console.log('✅ Metadata uploaded to Arweave:', uri);
-    //return uri;
+    if (!isValid) {
+      throw new Error('Invalid signature - unauthorized to create metadata');
     }
 
-    // Real upload for mainnet
+    console.log(`Uploading metadataJson with ${network} to Arweave:`, metadataJson);
+    
     const secretKey = process.env.BUNDLR_PRIVATE_KEY;
     if (!secretKey) {
       throw new Error('BUNDLR_PRIVATE_KEY not set in .env');
     }
 
+    let uri;
     const keypair = Keypair.fromSecretKey(base58.decode(secretKey));
-    const umi = createUmi('https://solana-mainnet.core.chainstack.com/4d36293a8e6eef86281f61a73c33af5c')
-      .use(keypairIdentity(keypair))
-      .use(bundlrUploader({
+    const endpoint = getRpcEndpoint(network);
+    
+    // Create UMI instance with backend wallet
+    const umi = createUmi(endpoint);
+    const signer = createSignerFromKeypair(umi, fromWeb3JsKeypair(keypair));
+    umi.use(keypairIdentity(signer))
+       .use(mplTokenMetadata());
+
+    // Upload to Arweave first
+    if (network === 'devnet') {
+      uri = `https://arweave.net/BNttzDav3jHVnNiV7nYbQv-GY0HQ-4XXsdkE5K9ylHQ`;
+      console.log('📝 Mock metadata upload (devnet):', uri);
+    } else {
+      umi.use(bundlrUploader({
         address: 'https://node1.bundlr.network',
-        providerUrl: 'https://solana-mainnet.core.chainstack.com/4d36293a8e6eef86281f61a73c33af5c',
         timeout: 60000,
+        identity: signer
       }));
 
-    const file = createGenericFile(
-      JSON.stringify(metadataJson),
-      'metadata.json',
-      { contentType: 'application/json' }
-    );
+      const file = createGenericFile(
+        JSON.stringify(metadataJson),
+        'metadata.json'
+      );
 
-    // Get price and fund if needed
-    const price = await umi.uploader.getUploadPrice([file]);
-    const balance = await umi.uploader.getBundlrBalance();
-    
-    if (balance < price) {
-      const fundAmount = price * BigInt(110) / BigInt(100); // Add 10% buffer
-      await umi.uploader.fund(fundAmount);
+      const [uploadUri] = await umi.uploader.upload([file]);
+      uri = uploadUri;
+      console.log('📝 Real metadata upload:', uri);
     }
 
-    const [uri] = await umi.uploader.upload([file]);
-    console.log('✅ Metadata uploaded to Arweave:', uri);
-    return uri;
+    // Instead of creating metadata here, return the URI and necessary data
+    // for the frontend to create the metadata with the user's wallet
+    return { 
+      uri,
+      signature: uri.split('/').pop(), // Use the Arweave transaction ID as signature
+      metadata: {
+        name: metadataJson.name,
+        symbol: metadataJson.symbol,
+        uri,
+        sellerFeeBasisPoints: metadataJson.seller_fee_basis_points || 0,
+        creators: null,
+        collection: null,
+        uses: null,
+      }
+    };
   } catch (error) {
-    console.error('❌ Failed to upload metadata to Arweave:', error);
+    console.error('❌ Failed to upload metadata:', error);
     throw error;
   }
 };

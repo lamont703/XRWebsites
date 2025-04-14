@@ -318,3 +318,445 @@
         padding: 1.75rem;
     }
 }
+
+/* MissionControl.module.css */
+.missionControlContainer {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.missionControlHeader {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.missionControlHeader h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, #007bff, #6610f2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcomeMessage {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.5rem;
+}
+
+.walletConnectBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 123, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.bannerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.bannerIcon {
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+}
+
+.bannerText h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.bannerText p {
+  margin: 0.25rem 0 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.missionCardsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.missionCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.missionCard:hover, .missionCard:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.missionCard:focus-visible {
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+}
+
+.highlightCard {
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.highlightCard::before {
+  content: "Featured";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 215, 0, 0.8);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.lockedCard {
+  opacity: 0.7;
+}
+
+.cardIcon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.cardContent {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.cardContent h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.cardContent p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.statusBadge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.available {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.inProgress {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.completed {
+  background: rgba(23, 162, 184, 0.2);
+  color: #17a2b8;
+}
+
+.locked {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+}
+
+.cardArrow {
+  font-size: 1.2rem;
+  opacity: 0.7;
+  transition: transform 0.3s ease;
+}
+
+.missionCard:hover .cardArrow {
+  transform: translateX(5px);
+  opacity: 1;
+}
+
+.platformStats {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.statCard h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statItem:last-child {
+  border-bottom: none;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: linear-gradient(90deg, #007bff, #6610f2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.loadingState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #007bff;
+  animation: spin 1s linear infinite;
+}
+
+/* Quick access section for mobile */
+.quickAccessSection {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.quickAccessSection h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.quickAccessButtons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.quickAccessButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem;
+  color: white;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.quickAccessButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quickAccessButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.quickAccessIcon {
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tablet styles */
+@media (min-width: 480px) {
+  .missionControlContainer {
+    padding: 1.5rem;
+  }
+  
+  .missionControlHeader h1 {
+    font-size: 2rem;
+  }
+  
+  .welcomeMessage {
+    font-size: 1.1rem;
+  }
+  
+  .walletConnectBanner {
+    padding: 1.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .bannerContent {
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .missionCardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  
+  .cardContent h3 {
+    font-size: 1.2rem;
+  }
+  
+  .cardContent p {
+    font-size: 0.9rem;
+  }
+  
+  .statGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .statItem {
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0;
+  }
+  
+  .statItem:last-child {
+    border-right: none;
+  }
+  
+  .quickAccessButtons {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+  .missionControlContainer {
+    padding: 2rem;
+  }
+  
+  .missionControlHeader h1 {
+    font-size: 2.5rem;
+  }
+  
+  .welcomeMessage {
+    font-size: 1.2rem;
+  }
+  
+  .missionCardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .cardIcon {
+    font-size: 2.5rem;
+  }
+  
+  .cardContent h3 {
+    font-size: 1.3rem;
+  }
+  
+  .cardContent p {
+    font-size: 0.95rem;
+  }
+}
+
+/* Large desktop styles */
+@media (min-width: 1200px) {
+  .missionControlContainer {
+    padding: 2.5rem;
+  }
+  
+  .missionCardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Ensure safe area insets for notched mobile devices */
+@supports (padding: max(0px)) {
+  .missionControlContainer {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

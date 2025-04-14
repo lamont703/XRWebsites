@@ -41,6 +41,7 @@ import { UserProfile } from '@/pages/UserProfile';
 import { NetworkProvider } from '@/providers/NetworkProvider';
 import { FirstStepsMission } from './components/features/onboarding/FirstStepsMission';
 import { MissionProgressTracker } from './components/features/onboarding/MissionProgressTracker';
+import { RewardsCenter } from './pages/RewardsCenter';
 
 // Initialize QueryClient outside component to prevent recreation
 const queryClient = new QueryClient({
@@ -197,6 +198,14 @@ function App() {
                           <Messages />
                         </AuthGuard>
                       } 
+                    />
+                    <Route
+                      path="/rewards"
+                      element={
+                        <AuthGuard>
+                          <RewardsCenter />
+                        </AuthGuard>
+                      }
                     />
 
                     {/* Redirect root to dashboard */}

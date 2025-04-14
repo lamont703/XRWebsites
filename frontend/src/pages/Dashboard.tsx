@@ -1,315 +1,294 @@
 import { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth/Auth';
-import styles from '../styles/Dashboard.module.css';
+import { MainLayout } from '@/components/layout/MainLayout';
+import styles from '@/styles/Dashboard.module.css';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 
-
-interface Transaction {
+// Mission card interface
+interface MissionCard {
   id: string;
-  type: 'send' | 'receive';
-  amount: string;
-  timestamp: string;
-  status: 'pending' | 'completed' | 'failed';
-}
-
-interface WalletData {
-  id: string;
-  balance: string;
-  totalTokens: number;
-  transactions: Transaction[];
-  stats?: {
-    total: number;
-    purchases: number;
-    sales: number;
-    transfers: number;
-  };
-}
-
-interface DashboardStats {
-  totalNFTs: number;
-  activeJobs: number;
-}
-
-interface RecentActivity {
-  assets: Array<{
-    id: string;
-    name: string;
-    type: string;
-    createdAt: string;
-  }>;
-  jobPostings: Array<{
-    id: string;
-    title: string;
-    status: string;
-    createdAt: string;
-  }>;
-  jobApplications: Array<{
-    id: string;
-    jobTitle: string;
-    status: string;
-    appliedAt: string;
-  }>;
-  forumActivity: Array<{
-    id: string;
-    title: string;
-    type: 'post' | 'comment';
-    createdAt: string;
-  }>;
-  reviews: Array<{
-    id: string;
-    rating: number;
-    createdAt: string;
-  }>;
+  title: string;
+  description: string;
+  icon: string;
+  path: string;
+  status: 'available' | 'in-progress' | 'completed' | 'locked';
+  highlight?: boolean;
 }
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalNFTs: 0,
-    activeJobs: 0
-  });
+  const navigate = useNavigate();
+  const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(true);
-  const [walletData, setWalletData] = useState<WalletData>({ 
-    id: '', 
-    balance: '0.00',
-    totalTokens: 0,
-    transactions: [] 
-  });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity>({
-    assets: [],
-    jobPostings: [],
-    jobApplications: [],
-    forumActivity: [],
-    reviews: []
-  });
-  const [error, setError] = useState<string | null>(null);
+  const [missionCards, setMissionCards] = useState<MissionCard[]>([]);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [screenSize, setScreenSize] = useState('desktop');
 
-  // Add safe default stats
-  const defaultStats = {
-    total: 0,
-    purchases: 0,
-    sales: 0,
-    transfers: 0
-  };
-
-  // Ensure stats object exists before using Object.entries
-  const walletStats = walletData?.stats || defaultStats;
-  const statEntries = Object.entries(walletStats);
-
-  const loadWalletData = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        },
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to load wallet data');
-      }
-
-      const { data } = await response.json();
-      
-      // Ensure data exists and has required properties
-      if (!data || typeof data.balance === 'undefined') {
-        throw new Error('Invalid wallet data received');
-      }
-
-      // Update wallet data with safe defaults
-      setWalletData({
-        id: data.id || '',
-        balance: (data.balance || 0).toString(),
-        totalTokens: data.linked_accounts?.length || 0,
-        transactions: data.transactions || [],
-        stats: data.stats || {
-          total: 0,
-          purchases: 0,
-          sales: 0,
-          transfers: 0
-        }
-      });
-
-      return data.id;
-    } catch (err) {
-      console.error('Error loading wallet:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load wallet data');
-      return null;
+  useEffect(() => {
+    // Check if user has completed first steps mission
+    const missionProgress = localStorage.getItem('firstStepsMissionProgress');
+    if (missionProgress) {
+      const progress = JSON.parse(missionProgress);
+      const completedSteps = progress.completedSteps || [];
+      setHasCompletedOnboarding(completedSteps.includes('claim-reward'));
     }
-  };
 
-  const loadDashboardStats = async () => {
-    if (!user?.id) return;
+    // Load mission cards
+    loadMissionCards();
+    
+    // Set up responsive screen size detection
+    const handleResize = () => {
+      if (window.innerWidth < 480) {
+        setScreenSize('mobile');
+      } else if (window.innerWidth < 768) {
+        setScreenSize('tablet');
+      } else {
+        setScreenSize('desktop');
+      }
+    };
+    
+    // Initial call
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, [wallet.connected]);
 
+  const loadMissionCards = async () => {
+    setIsLoading(true);
+    
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_API_URL}/users/dashboard`,
+      // In a real implementation, you might fetch this from an API
+      // For now, we'll use static data
+      const cards: MissionCard[] = [
         {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            'Accept': 'application/json'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to load dashboard data');
-      }
-
-      const data = await response.json();
-      setRecentActivity(data.data.recentActivity);
-
-      // Get active jobs count
-      const jobsResponse = await fetch(
-        `${import.meta.env.VITE_BACKEND_API_URL}/jobs/user/${user.id}/active`,
+          id: 'rewards-center',
+          title: 'Available Rewards',
+          description: 'Explore reward journeys and claim tokens and NFTs',
+          icon: '🏆',
+          path: '/rewards',
+          status: 'available',
+          highlight: true
+        },
         {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            'Accept': 'application/json'
-          }
+          id: 'token-presale',
+          title: 'Token Pre-Sale',
+          description: 'Get early access to our platform tokens at exclusive rates',
+          icon: '🪙',
+          path: '/tokenomics',
+          status: 'available'
+        },
+        {
+          id: 'create-token',
+          title: 'Create Your Token',
+          description: 'Launch your own token on Solana with our easy-to-use creator',
+          icon: '✨',
+          path: '/token-creator',
+          status: wallet.connected ? 'available' : 'locked'
+        },
+        {
+          id: 'job-marketplace',
+          title: 'Job Marketplace',
+          description: 'Find opportunities or post jobs in our community marketplace',
+          icon: '💼',
+          path: '/marketplace',
+          status: 'available'
+        },
+        {
+          id: 'nft-gallery',
+          title: 'NFT Gallery',
+          description: 'View your NFT collection including your Key To The New Earth',
+          icon: '🖼️',
+          path: '/nft-assets',
+          status: hasCompletedOnboarding ? 'completed' : 'in-progress'
+        },
+        {
+          id: 'community-forum',
+          title: 'Community Forum',
+          description: 'Connect with other members and share ideas',
+          icon: '💬',
+          path: '/forum',
+          status: 'available'
+        },
+        {
+          id: 'wallet-management',
+          title: 'Wallet Management',
+          description: 'Manage your digital assets and view transaction history',
+          icon: '💰',
+          path: '/wallet',
+          status: wallet.connected ? 'available' : 'locked'
         }
-      );
-
-      // Get NFTs through wallet
-      const walletId = await loadWalletData();
-      let nftsCount = 0;
-
-      if (walletId) {
-        try {
-          const nftsResponse = await fetch(
-            `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletId}/nfts`,
-            {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                'Accept': 'application/json'
-              },
-              credentials: 'include'
-            }
-          );
-
-          if (nftsResponse.ok) {
-            const nftsData = await nftsResponse.json();
-            const nfts = nftsData.data?.nfts || nftsData.data || [];
-            nftsCount = Array.isArray(nfts) ? nfts.length : 0;
-          }
-        } catch (error) {
-          console.error('Error fetching NFTs:', error);
-          // Continue with dashboard loading despite NFT error
-        }
-      }
-
-      const jobsData = await jobsResponse.json();
-
-      setStats({
-        activeJobs: jobsData.data.jobs?.length || 0,
-        totalNFTs: nftsCount
-      });
+      ];
+      
+      setMissionCards(cards);
     } catch (error) {
-      console.error('Error loading dashboard stats:', error);
+      console.error('Error loading mission cards:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadDashboardStats();
-  }, [user?.id]);
+  const handleCardClick = (card: MissionCard) => {
+    if (card.status !== 'locked') {
+      navigate(card.path);
+    } else {
+      // If card is locked, show connect wallet prompt
+      console.log('Please connect your wallet to access this feature');
+    }
+  };
+
+  // Render status badge for each card
+  const renderStatusBadge = (status: MissionCard['status']) => {
+    switch (status) {
+      case 'available':
+        return <span className={`${styles.statusBadge} ${styles.available}`}>Available</span>;
+      case 'in-progress':
+        return <span className={`${styles.statusBadge} ${styles.inProgress}`}>In Progress</span>;
+      case 'completed':
+        return <span className={`${styles.statusBadge} ${styles.completed}`}>Completed</span>;
+      case 'locked':
+        return <span className={`${styles.statusBadge} ${styles.locked}`}>Connect Wallet</span>;
+      default:
+        return null;
+    }
+  };
+
+  // Render a welcome message appropriate for the time of day
+  const getWelcomeMessage = () => {
+    const hour = new Date().getHours();
+    let greeting = 'Welcome';
+    
+    if (hour < 12) {
+      greeting = 'Good morning';
+    } else if (hour < 18) {
+      greeting = 'Good afternoon';
+    } else {
+      greeting = 'Good evening';
+    }
+    
+    return `${greeting}, ${user?.name || 'Explorer'}`;
+  };
 
   return (
     <MainLayout>
-      <div className={styles.dashboardContainer}>
-        {/* Welcome Section */}
-        <div className={styles.welcomeCard}>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Welcome back, {user?.name}!
-          </h1>
-          <p className="text-gray-400">
-            Here's what's happening with your XRWebsites account today.
-          </p>
+      <div className={styles.missionControlContainer}>
+        <div className={styles.missionControlHeader}>
+          <h1>Mission Control Center</h1>
+          <p className={styles.welcomeMessage}>{getWelcomeMessage()}. Explore the opportunities below.</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Total NFTs</div>
-            <div className="text-2xl font-bold text-white">
-              {isLoading ? '...' : stats.totalNFTs}
+        {!wallet.connected && (
+          <div className={styles.walletConnectBanner}>
+            <div className={styles.bannerContent}>
+              <div className={styles.bannerIcon}>🔗</div>
+              <div className={styles.bannerText}>
+                <h3>Connect Your Wallet</h3>
+                <p>Connect your wallet to access all features and track your progress</p>
+              </div>
+            </div>
+            <div className={styles.bannerAction}>
+              <ConnectWallet />
             </div>
           </div>
-          <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Active Jobs</div>
-            <div className="text-2xl font-bold text-white">
-              {isLoading ? '...' : stats.activeJobs}
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Wallet Balance (USD)</div>
-            <div className="text-2xl font-bold text-white">
-              ${isLoading ? '...' : walletData.balance}
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className="text-sm font-medium text-gray-400 mb-2">Visorcoin Balance (XRV)</div>
-            <div className="text-2xl font-bold text-white">
-              {isLoading ? '...' : walletData.totalTokens} XRV
-            </div>
-          </div>
-        </div>
+        )}
 
-        {/* Recent Activity Section */}
-        <div className={styles.card}>
-          <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
+        <div className={styles.missionCardsGrid}>
           {isLoading ? (
-            <div className="text-center py-8">
-              <span className="text-gray-400">Loading activity...</span>
+            <div className={styles.loadingState}>
+              <div className={styles.loadingSpinner}></div>
+              <p>Loading mission cards...</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {Object.entries(recentActivity || {}).map(([category, items]) => (
-                Array.isArray(items) && items.length > 0 && (
-                  <div key={category} className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white capitalize">
-                      {category.replace(/([A-Z])/g, ' $1').trim()}
-                    </h3>
-                    <div className="space-y-2">
-                      {items.map((item: any) => (
-                        <div 
-                          key={item?.id || Math.random()} 
-                          className={styles.card}
-                        >
-                          <div>
-                            <div className="text-white">
-                              {item?.title || item?.name || `${category} Activity`}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {item?.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'No date'}
-                            </div>
-                          </div>
-                          {item?.status && (
-                            <span className={`px-3 py-1 rounded-full text-sm ${
-                              item.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                              item.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-blue-500/20 text-blue-400'
-                            }`}>
-                              {item.status}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              ))}
-              {(!recentActivity || Object.values(recentActivity).every(items => !Array.isArray(items) || items.length === 0)) && (
-                <div className={styles.emptyState}>
-                  No recent activity to show.
+            missionCards.map(card => (
+              <div 
+                key={card.id} 
+                className={`${styles.missionCard} ${card.highlight ? styles.highlightCard : ''} ${card.status === 'locked' ? styles.lockedCard : ''}`}
+                onClick={() => handleCardClick(card)}
+                role="button"
+                tabIndex={0}
+                aria-label={card.title}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCardClick(card);
+                  }
+                }}
+              >
+                <div className={styles.cardIcon}>{card.icon}</div>
+                <div className={styles.cardContent}>
+                  <h3>{card.title}</h3>
+                  <p>{card.description}</p>
                 </div>
-              )}
-            </div>
+                <div className={styles.cardFooter}>
+                  {renderStatusBadge(card.status)}
+                  <span className={styles.cardArrow}>→</span>
+                </div>
+              </div>
+            ))
           )}
         </div>
+
+        <div className={styles.platformStats}>
+          <div className={styles.statCard}>
+            <h4>Platform Stats</h4>
+            <div className={styles.statGrid}>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Active Jobs</span>
+                <span className={styles.statValue}>127</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Community Members</span>
+                <span className={styles.statValue}>3,842</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Tokens Created</span>
+                <span className={styles.statValue}>215</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Quick access section for mobile */}
+        {screenSize === 'mobile' && (
+          <div className={styles.quickAccessSection}>
+            <h4>Quick Access</h4>
+            <div className={styles.quickAccessButtons}>
+              <button 
+                className={styles.quickAccessButton}
+                onClick={() => navigate('/rewards')}
+              >
+                <span className={styles.quickAccessIcon}>🏆</span>
+                <span>Rewards</span>
+              </button>
+              <button 
+                className={styles.quickAccessButton}
+                onClick={() => navigate('/wallet')}
+                disabled={!wallet.connected}
+              >
+                <span className={styles.quickAccessIcon}>💰</span>
+                <span>Wallet</span>
+              </button>
+              <button 
+                className={styles.quickAccessButton}
+                onClick={() => navigate('/nft-assets')}
+              >
+                <span className={styles.quickAccessIcon}>🖼️</span>
+                <span>NFTs</span>
+              </button>
+              <button 
+                className={styles.quickAccessButton}
+                onClick={() => navigate('/forum')}
+              >
+                <span className={styles.quickAccessIcon}>💬</span>
+                <span>Forum</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

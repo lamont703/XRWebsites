@@ -2,6 +2,8 @@ import { Router } from "express";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import {
     getWallet,
+    getWalletById,
+    getWalletTransactions,
     createWallet,
     connectExternalWallet,
     depositTokens,
@@ -12,7 +14,8 @@ import {
     getNFTs,
     createNFT,
     updateWalletBalance,
-    getRecentTransactions
+    getRecentTransactions,
+    checkOnboardingNFT
 } from "../controllers/wallet.controller.js";
 import Wallet from "../models/wallet.models.js";
 import NFTAsset from "../models/nftAsset.models.js";
@@ -21,25 +24,32 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 const router = Router();
 
+router.use(verifyJWT);
 
-router.route("/").get(verifyJWT, getWallet);
-router.route("/me/wallet").get(verifyJWT, getWallet);
-router.route("/wallet").get(verifyJWT, getWallet);
-router.route("/wallet").post(verifyJWT, createWallet);
-router.route("/wallet/:id/connect").post(verifyJWT, connectExternalWallet);
-router.route("/wallet/:id/deposit").post(verifyJWT, depositTokens);
-router.route("/wallet/:id/withdraw").post(verifyJWT, withdrawTokens);
-router.route("/wallet/:id/transfer").post(verifyJWT, transferTokens);
-router.route("/wallet/:id/transactions").get(verifyJWT, getTransactionHistory);
+router.get('/', getWallet);
+router.get('/:walletId', getWalletById);
+router.get('/:walletId/transactions', getWalletTransactions);
 
-router.route("/wallet/:id/nfts/transfer").post(verifyJWT, transferNFT);
-router.route("/wallet/:id/nfts").get(verifyJWT, getNFTs);
-router.route("/wallet/:id/nfts/create").post(verifyJWT, createNFT);
+router.route("/").get(getWallet);
+router.route("/me/wallet").get(getWallet);
+router.route("/wallet").get(getWallet);
+router.route("/wallet").post(createWallet);
+router.route("/wallet/:id/connect").post(connectExternalWallet);
+router.route("/wallet/:id/deposit").post(depositTokens);
+router.route("/wallet/:id/withdraw").post(withdrawTokens);
+router.route("/wallet/:id/transfer").post(transferTokens);
+router.route("/wallet/:id/transactions").get(getTransactionHistory);
 
-router.get("/:id", verifyJWT, getWallet);
-router.put("/:id/balance", verifyJWT, updateWalletBalance);
+router.route("/wallet/:id/nfts/transfer").post(transferNFT);
+router.route("/wallet/:id/nfts").get(getNFTs);
+router.route("/wallet/:id/nfts/create").post(createNFT);
 
-router.route("/wallet/:id/recent-transactions").get(verifyJWT, getRecentTransactions);
+router.get("/:id", getWallet);
+router.put("/:id/balance", updateWalletBalance);
+
+router.route("/wallet/:id/recent-transactions").get(getRecentTransactions);
+
+router.get('/check-onboarding-nft', checkOnboardingNFT);
 
 router.post('/wallet/:walletId/nfts/create', verifyJWT, async (req, res) => {
   try {

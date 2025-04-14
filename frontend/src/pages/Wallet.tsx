@@ -8,6 +8,8 @@ import { SendReceiveVisorcoin } from '@/components/features/wallet/SendReceiveVi
 import { RecentTransactions } from '@/components/features/wallet/RecentTransactions';
 import type User from '../types/user';
 import styles from '@/styles/Wallet.module.css';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { ConnectWallet } from '../components/features/wallet/ConnectWallet';
 
 interface WalletData {
   balance: string;
@@ -36,26 +38,24 @@ interface TransactionStats {
 }
 
 export const Wallet = () => {
+  const wallet = useWallet();
   const {} = useAuth() as { user: User | null };
-  const [walletData, setWalletData] = useState<WalletData>({
-    balance: '0.00',
-    totalTokens: 0,
-    pendingTransactions: 0,
-    totalValueLocked: '0.00',
-    transactions: [],
-    recentTransactions: [],
-    id: '',
-    transactionStats: {
-      total: 0,
-      purchases: 0,
-      sales: 0,
-      transfers: 0
-    }
-  });
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
   const [nfts, setNfts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingNFTs, setIsLoadingNFTs] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false);
+
+  useEffect(() => {
+    // Show connect prompt if no wallet is connected
+    if (!wallet.connected) {
+      setShowConnectPrompt(true);
+    } else {
+      setShowConnectPrompt(false);
+      loadWalletData();
+    }
+  }, [wallet.connected]);
 
   const loadWalletData = async () => {
     console.log('🔄 Loading wallet data...');
@@ -202,6 +202,7 @@ export const Wallet = () => {
   };
 
   const handleBuyVisorcoin = async (amount: number) => {
+    if (!walletData) return;
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletData.id}/buy-visorcoin`, {
         method: 'POST',
@@ -226,6 +227,7 @@ export const Wallet = () => {
   };
 
   const handleSendVisorcoin = async (recipientAddress: string, amount: number) => {
+    if (!walletData) return;
     try {
       const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletData.id}/send-visorcoin`, {
         method: 'POST',
@@ -250,6 +252,7 @@ export const Wallet = () => {
   };
 
   const loadRecentTransactions = async () => {
+    if (!walletData) return;
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletData.id}/recent-transactions`,
@@ -267,11 +270,14 @@ export const Wallet = () => {
       }
 
       const { data } = await response.json();
-      setWalletData(prev => ({
-        ...prev,
-        recentTransactions: data.transactions,
-        transactionStats: data.stats
-      }));
+      setWalletData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          recentTransactions: data.transactions,
+          transactionStats: data.stats
+        };
+      });
     } catch (err) {
       console.error('Error loading recent transactions:', err);
       setError(err instanceof Error ? err.message : 'Failed to load recent transactions');
@@ -282,7 +288,7 @@ export const Wallet = () => {
     const initializeWallet = async () => {
       try {
         await loadWalletData();
-        if (walletData.id) {
+        if (walletData?.id) {
           await Promise.all([
             loadNFTs(walletData.id),
             loadRecentTransactions()
@@ -294,9 +300,35 @@ export const Wallet = () => {
     };
 
     initializeWallet();
-  }, [walletData.id]);
+  }, [walletData?.id]);
 
-  if (isLoading) {
+  if (showConnectPrompt) {
+    return (
+      <div className={styles.connectPromptContainer}>
+        <div className={styles.promptContent}>
+          <h2>Complete Your Setup</h2>
+          <div className={styles.benefitsList}>
+            <h3>Why Connect Your Wallet?</h3>
+            <ul>
+              <li>✨ Access exclusive bounties</li>
+              <li>💰 Earn tokens for contributions</li>
+              <li>🤝 Participate in the community</li>
+              <li>📈 Track your earnings and rewards</li>
+            </ul>
+          </div>
+          
+          <ConnectWallet 
+            onConnect={async (address) => {
+              await loadWalletData();
+              setShowConnectPrompt(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !walletData) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-screen">

@@ -38,9 +38,16 @@ export async function uploadMetadata(
       attributes: metadata.attributes || [],
       seller_fee_basis_points: metadata.sellerFeeBasisPoints || 0,
       properties: {
-        files: metadata.image ? [{ uri: metadata.image, type: 'image/png' }] : [],
+        files: metadata.image ? [{ 
+          uri: metadata.image, 
+          type: 'image/png'
+        }] : [],
         category: 'image',
-        creators: [{ address: wallet.publicKey.toString(), share: 100 }]
+        creators: [{ 
+          address: wallet.publicKey.toString(), 
+          share: 100,
+          verified: true
+        }]
       }
     };
 

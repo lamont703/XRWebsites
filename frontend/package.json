@@ -41,6 +41,7 @@
     "assert": "^2.1.0",
     "browserify-fs": "^1.0.0",
     "express": "^4.21.2",
+    "framer-motion": "^12.6.5",
     "heroicons": "^2.2.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",

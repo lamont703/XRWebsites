@@ -166,8 +166,8 @@ const NFTAsset = {
                 }
             };
         } catch (error) {
-            console.error("Error in findByWalletId:", error);
-            throw error;
+            console.error("Error finding NFTs by wallet ID:", error);
+            return []; // Return empty array instead of throwing error
         }
     },
 

@@ -96,7 +96,9 @@ export const uploadToArweave = async (
       metadata: {
         name: metadataJson.name,
         symbol: metadataJson.symbol,
+        image: metadataJson.image,
         uri,
+        description: metadataJson.description,
         sellerFeeBasisPoints: metadataJson.seller_fee_basis_points || 0,
         creators: null,
         collection: null,

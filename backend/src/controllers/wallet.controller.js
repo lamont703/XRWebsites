@@ -1,3 +1,4 @@
+import { getContainer } from "../database.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import Wallet from "../models/wallet.models.js";
@@ -6,42 +7,81 @@ import Transaction from "../models/transaction.models.js";
 import NFTAsset from "../models/nftAsset.models.js";
 
 const getWallet = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    
     try {
-        console.log('👤 User from request:', req.user);
-        const user_id = req.user.id;
-        console.log('🔍 Looking up wallet for user:', user_id);
+        const container = await getContainer();
         
-        const wallet = await Wallet.findOne({ user_id });
-        console.log('💰 Found wallet:', wallet ? 'Yes' : 'No');
+        // Query using Cosmos DB syntax
+        const { resources: wallets } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'wallet' AND c.user_id = @userId",
+                parameters: [{ name: "@userId", value: userId }]
+            })
+            .fetchAll();
+
+        const wallet = wallets[0];
         
         if (!wallet) {
-            throw new ApiError(404, "No wallet found for this user");
+            throw new ApiError(404, "Wallet not found");
         }
 
-        // Format wallet data with guaranteed structure
-        const walletData = {
-            id: wallet.id,
-            balance: wallet.balance || 0,
-            currency: wallet.currency || 'USD',
-            status: wallet.status || 'active',
-            linked_accounts: wallet.linked_accounts || [],
-            transactions: [],
-            stats: {
-                total: wallet.stats?.total || 0,
-                purchases: wallet.stats?.purchases || 0,
-                sales: wallet.stats?.sales || 0,
-                transfers: wallet.stats?.transfers || 0
-            }
-        };
-
-        return res
-            .status(200)
-            .json(new ApiResponse(200, walletData, "Wallet retrieved successfully"));
+        return res.json(new ApiResponse(200, wallet, "Wallet retrieved successfully"));
     } catch (error) {
-        throw new ApiError(
-            error.statusCode || 500,
-            error.message || "Failed to retrieve wallet"
-        );
+        console.error('Wallet lookup error:', error);
+        throw new ApiError(500, "Failed to retrieve wallet");
+    }
+});
+
+const getWalletById = asyncHandler(async (req, res) => {
+    const wallet = await Wallet.findOne({ _id: req.params.id });
+    
+    if (!wallet) {
+        throw new ApiError(404, "Wallet not found");
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: wallet
+    });
+});
+
+const getWalletTransactions = asyncHandler(async (req, res) => {
+    const { walletId } = req.params;
+    
+    try {
+        const container = await getContainer();
+        
+        // First verify wallet exists
+        const { resources: wallets } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'wallet' AND c.id = @walletId",
+                parameters: [{ name: "@walletId", value: walletId }]
+            })
+            .fetchAll();
+
+        if (wallets.length === 0) {
+            throw new ApiError(404, "Wallet not found");
+        }
+
+        // Get transactions
+        const { resources: transactions } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'transaction' AND c.wallet_id = @walletId ORDER BY c._ts DESC",
+                parameters: [{ name: "@walletId", value: walletId }]
+            })
+            .fetchAll();
+
+        return res.json(new ApiResponse(200, {
+            transactions,
+            stats: {
+                total: transactions.length,
+                // Add any other stats you need
+            }
+        }, "Transactions retrieved successfully"));
+    } catch (error) {
+        console.error('Error retrieving transactions:', error);
+        throw new ApiError(500, "Failed to retrieve transactions");
     }
 });
 
@@ -372,32 +412,41 @@ const transferNFT = asyncHandler(async (req, res) => {
 });
 
 const getNFTs = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
     try {
+        const { walletId } = req.params;
+        const container = await getContainer();
+        
         // Verify wallet ownership
-        const wallet = await Wallet.findById(id);
+        const { resources: wallets } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'wallet' AND c.id = @walletId",
+                parameters: [{ name: "@walletId", value: walletId }]
+            })
+            .fetchAll();
+            
+        const wallet = wallets[0];
         if (!wallet) {
             throw new ApiError(404, "Wallet not found");
         }
-
+        
         if (wallet.user_id !== req.user.id && !req.user.isAdmin) {
             throw new ApiError(403, "Unauthorized to access this wallet");
         }
-
-        // Get NFTs
-        const nfts = await NFTAsset.findByWalletId(id);
-
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(
-                    200,
-                    "NFTs retrieved successfully",
-                    nfts
-                )
-            );
+        
+        // Get NFTs owned by this wallet
+        const { resources: nfts } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'nft' AND c.owner_wallet_id = @walletId",
+                parameters: [{ name: "@walletId", value: walletId }]
+            })
+            .fetchAll();
+        
+        // Return empty array instead of error if no NFTs found
+        return res.json(
+            new ApiResponse(200, { nfts: nfts || [] }, "NFTs retrieved successfully")
+        );
     } catch (error) {
+        console.error("Error fetching NFTs:", error);
         throw new ApiError(
             error.statusCode || 500,
             error.message || "Failed to retrieve NFTs"
@@ -587,8 +636,34 @@ const listNFTForSale = asyncHandler(async (req, res) => {
     }
 });
 
+const checkOnboardingNFT = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const container = await getContainer();
+
+        // Check onboarding status
+        const { resources: onboardingStatus } = await container.items
+            .query({
+                query: "SELECT * FROM c WHERE c.type = 'onboarding' AND c.user_id = @userId AND c.status = 'completed'",
+                parameters: [{ name: "@userId", value: userId }]
+            })
+            .fetchAll();
+
+        return res.json(
+            new ApiResponse(200, { 
+                onboardingComplete: onboardingStatus.length > 0,
+                hasOnboardingNFT: onboardingStatus.length > 0 && onboardingStatus[0].nft_mint_address !== null
+            }, "Onboarding status checked successfully")
+        );
+    } catch (error) {
+        throw new ApiError(500, "Failed to check onboarding status");
+    }
+});
+
 export {
     getWallet,
+    getWalletById,
+    getWalletTransactions,
     createWallet,
     connectExternalWallet,
     depositTokens,
@@ -600,5 +675,6 @@ export {
     createNFT,
     updateWalletBalance,
     getRecentTransactions,
-    listNFTForSale
+    listNFTForSale,
+    checkOnboardingNFT
 }; 

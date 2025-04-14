@@ -177,21 +177,26 @@ export const Dashboard = () => {
       let nftsCount = 0;
 
       if (walletId) {
-        const nftsResponse = await fetch(
-          `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletId}/nfts`,
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-              'Accept': 'application/json'
-            },
-            credentials: 'include'
-          }
-        );
+        try {
+          const nftsResponse = await fetch(
+            `${import.meta.env.VITE_BACKEND_API_URL}/wallet/wallet/${walletId}/nfts`,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                'Accept': 'application/json'
+              },
+              credentials: 'include'
+            }
+          );
 
-        if (nftsResponse.ok) {
-          const nftsData = await nftsResponse.json();
-          const nfts = nftsData.data?.nfts || nftsData.data || [];
-          nftsCount = Array.isArray(nfts) ? nfts.length : 0;
+          if (nftsResponse.ok) {
+            const nftsData = await nftsResponse.json();
+            const nfts = nftsData.data?.nfts || nftsData.data || [];
+            nftsCount = Array.isArray(nfts) ? nfts.length : 0;
+          }
+        } catch (error) {
+          console.error('Error fetching NFTs:', error);
+          // Continue with dashboard loading despite NFT error
         }
       }
 

@@ -39,6 +39,8 @@ import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
 import { UserProfile } from '@/pages/UserProfile';
 import { NetworkProvider } from '@/providers/NetworkProvider';
+import { FirstStepsMission } from './components/features/onboarding/FirstStepsMission';
+import { MissionProgressTracker } from './components/features/onboarding/MissionProgressTracker';
 
 // Initialize QueryClient outside component to prevent recreation
 const queryClient = new QueryClient({
@@ -65,7 +67,7 @@ function App() {
       new SolflareWalletAdapter(),
       new TorusWalletAdapter(),
     ],
-    [network] // Add network as dependency since some adapters might need it
+    [network]
   );
 
   return (
@@ -76,6 +78,7 @@ function App() {
             <BrowserRouter>
               <QueryClientProvider client={queryClient}>
                 <AuthProvider>
+                  <MissionProgressTracker />
                   <Routes>
                     {/* Public Routes */}
                     <Route path="/login" element={<Login />} />
@@ -83,6 +86,14 @@ function App() {
                     {/* Protected Routes */}
                     <Route
                       path="/dashboard"
+                      element={
+                        <AuthGuard>
+                          <FirstStepsMission />
+                        </AuthGuard>
+                      }
+                    />
+                    <Route
+                      path="/classic-dashboard"
                       element={
                         <AuthGuard>
                           <Dashboard />

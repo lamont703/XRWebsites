@@ -6,57 +6,67 @@ import styles from '@/styles/ConnectWallet.module.css';
 
 interface ConnectWalletProps {
   onConnect?: (address: string) => Promise<void>;
+  referralCode?: string;
+  className?: string;
+  compact?: boolean;
 }
 
-export const ConnectWallet = ({ onConnect }: ConnectWalletProps) => {
+export const ConnectWallet = ({ 
+  onConnect, 
+  referralCode, 
+  className,
+  compact = false
+}: ConnectWalletProps) => {
   const wallet = useWallet();
   const [error, setError] = useState<string | null>(null);
-  const [hasConnected, setHasConnected] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
+  const [hasTriggeredConnect, setHasTriggeredConnect] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-
-    const connectWallet = async () => {
-      if (wallet.connected && wallet.publicKey && onConnect && !hasConnected) {
+    const handleWalletConnection = async () => {
+      if (wallet.connected && wallet.publicKey && onConnect && !hasTriggeredConnect) {
+        setIsLinking(true);
+        setHasTriggeredConnect(true);
         try {
           await onConnect(wallet.publicKey.toString());
-          if (mounted) {
-            setHasConnected(true);
-          }
         } catch (err) {
-          if (mounted) {
-            setError(err instanceof Error ? err.message : 'Failed to connect wallet');
-          }
+          setError(err instanceof Error ? err.message : 'Failed to link wallet');
+        } finally {
+          setIsLinking(false);
         }
       }
     };
 
-    connectWallet();
+    handleWalletConnection();
+  }, [wallet.connected, wallet.publicKey, onConnect, hasTriggeredConnect]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [wallet.connected, wallet.publicKey, onConnect, hasConnected]);
-
-  // Reset hasConnected when wallet disconnects
-  useEffect(() => {
-    if (!wallet.connected) {
-      setHasConnected(false);
-    }
-  }, [wallet.connected]);
+  const containerClass = compact 
+    ? `${styles.container} ${styles.compact} ${className || ''}` 
+    : `${styles.container} ${className || ''}`;
 
   return (
-    <div className={styles.container}>
-      <h3 className={styles.title}>Connect Wallet</h3>
+    <div className={containerClass}>
+      {!compact && <h3 className={styles.title}>Connect Wallet</h3>}
       <div className={styles.content}>
-        <p className={styles.walletInfo}>
-          {wallet.connected 
-            ? `Connected: ${wallet.publicKey?.toString().slice(0, 6)}...${wallet.publicKey?.toString().slice(-4)}`
-            : 'Connect your Solana wallet to continue'}
-        </p>
-        <div className={styles.buttonContainer}>
-          <WalletMultiButton className={styles.walletButton} />
-        </div>
+        {isLinking ? (
+          <div className={styles.linking}>
+            <div className={styles.spinner}></div>
+            <span>Connecting your wallet...</span>
+          </div>
+        ) : (
+          <>
+            {!compact && (
+              <p className={styles.walletInfo}>
+                {wallet.connected 
+                  ? `Connected: ${wallet.publicKey?.toString().slice(0, 6)}...${wallet.publicKey?.toString().slice(-4)}`
+                  : 'Connect your Solana wallet to continue'}
+              </p>
+            )}
+            <div className={styles.buttonContainer}>
+              <WalletMultiButton className={styles.walletButton} />
+            </div>
+          </>
+        )}
       </div>
       {error && (
         <div className={styles.error}>{error}</div>

@@ -138,83 +138,69 @@ export const JobDetails: React.FC<JobDetailsProps> = ({
         />
       ) : (
         <>
-          <div className={styles.header}>
-            <div>
-              <h2 className={styles.title}>{title}</h2>
-              <div className={styles.metaInfo}>
-                <span>Posted {postedDate}</span>
-                <span>•</span>
-                <span>{location}</span>
+          <div className={styles.missionDetails}>
+            <div className={styles.missionDetailsHeader}>
+              <h2 className={styles.missionTitle}>{title}</h2>
+              <div className={styles.missionBadge}>
+                {/* Assuming a status prop is added to the component */}
+                {/* Replace 'Completed Mission' with 'Active Mission' if status is 'open' */}
+                Completed Mission
               </div>
             </div>
-            <button
-              onClick={handleSave}
-              className={`${styles.saveButton} ${isSaved ? styles.saved : ''}`}
-              title={isSaved ? "Remove from saved jobs" : "Save job"}
-            >
-              <svg
-                className="w-6 h-6"
-                fill={isSaved ? 'currentColor' : 'none'}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className={styles.content}>
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <div className={styles.statLabel}>Price</div>
-                <div className={styles.statValue}>{price} XRV</div>
-              </div>
-              <div className={styles.statCard}>
-                <div className={styles.statLabel}>Experience Level</div>
-                <div className={styles.statValue}>{experienceLevel}</div>
-              </div>
+            
+            <div className={styles.missionSection}>
+              <h3 className={styles.sectionTitle}>Mission Brief</h3>
+              <p className={styles.missionDescription}>{description}</p>
             </div>
-
-            <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>Job Description</h3>
-              <p className={styles.description}>{description}</p>
-            </div>
-
-            <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>Skills & Expertise</h3>
+            
+            <div className={styles.missionSection}>
+              <h3 className={styles.sectionTitle}>Required Skills</h3>
               <div className={styles.skillsGrid}>
-                {skills.map((skill) => (
-                  <div key={skill.name} className={styles.skillTag}>
-                    <span>{skill.name}</span>
-                    <span> • {skill.yearsRequired}+ years</span>
+                {skills.map(skill => (
+                  <div key={skill.name} className={styles.skillItem}>
+                    <span className={styles.skillName}>{skill.name}</span>
+                    <span className={styles.skillYears}>{skill.yearsRequired}+ years</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>About the Client</h3>
-              <div className={styles.clientCard}>
-                <div className={styles.clientName}>{poster.name}</div>
-                <div className={styles.clientInfo}>
-                  <div>Rating: {poster.rating}/5</div>
-                  <div>{poster.jobsPosted} jobs posted</div>
-                  <div>Member since {poster.memberSince}</div>
+            
+            <div className={styles.missionSection}>
+              <h3 className={styles.sectionTitle}>Mission Parameters</h3>
+              <div className={styles.parameterGrid}>
+                <div className={styles.parameter}>
+                  <span className={styles.parameterLabel}>Location</span>
+                  <span className={styles.parameterValue}>{location}</span>
+                </div>
+                <div className={styles.parameter}>
+                  <span className={styles.parameterLabel}>Experience</span>
+                  <span className={styles.parameterValue}>{experienceLevel}</span>
+                </div>
+                <div className={styles.parameter}>
+                  <span className={styles.parameterLabel}>Posted</span>
+                  <span className={styles.parameterValue}>{postedDate}</span>
+                </div>
+                <div className={styles.parameter}>
+                  <span className={styles.parameterLabel}>Reward</span>
+                  <span className={styles.parameterValue}>{price} USDC</span>
                 </div>
               </div>
             </div>
-
-            <button
-              onClick={handleApplyClick}
-              className={styles.applyButton}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Applying...' : 'Apply Now'}
-            </button>
+            
+            <div className={styles.missionActions}>
+              <button 
+                onClick={() => onApply(id, { coverLetter: '', expectedRate: price })}
+                className={styles.primaryButton}
+              >
+                Accept Mission
+              </button>
+              <button 
+                onClick={() => onSave(id)}
+                className={styles.secondaryButton}
+              >
+                Save For Later
+              </button>
+            </div>
           </div>
         </>
       )}

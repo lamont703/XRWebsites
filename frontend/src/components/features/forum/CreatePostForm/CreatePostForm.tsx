@@ -22,6 +22,7 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCanc
     tags: [] as string[],
     tagInput: ''
   });
+  const [error, setError] = useState<string | null>(null);
 
   const handleAddTag = () => {
     if (formData.tagInput && !formData.tags.includes(formData.tagInput)) {
@@ -42,12 +43,20 @@ export const CreatePostForm: React.FC<CreatePostFormProps> = ({ onSubmit, onCanc
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title: formData.title,
-      content: formData.content,
-      category: formData.category,
-      tags: formData.tags
-    });
+    
+    // Validate form data
+    if (!formData.title.trim()) {
+      setError('Title is required');
+      return;
+    }
+    
+    if (!formData.content.trim()) {
+      setError('Content is required');
+      return;
+    }
+    
+    console.log('Submitting post form data:', formData);
+    onSubmit(formData);
   };
 
   return (

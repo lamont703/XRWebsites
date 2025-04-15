@@ -16,17 +16,27 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
+.formField {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  height: 100%;
+  position: relative;
+}
+
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 2rem;
   margin-bottom: 2rem;
 }
 
-.inputGroup {
+.labelContainer {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-height: 24px;
 }
 
 .label {
@@ -40,13 +50,14 @@
 
 .input {
   width: 100%;
-  padding: 0.75rem;
-  background: rgba(31, 41, 55, 0.5);
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: all 0.2s;
+  border-radius: 8px;
   color: white;
+  font-size: 1rem;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -75,8 +86,8 @@
 }
 
 .features {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -88,7 +99,12 @@
 .featureGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.featureField {
+  margin-bottom: 1.5rem;
 }
 
 .featureLabel {
@@ -306,4 +322,272 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-} 
+}
+
+.missionControlContainer {
+  background: linear-gradient(180deg, rgba(13, 17, 28, 0.95) 0%, rgba(20, 30, 48, 0.95) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.missionControlContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/assets/grid-pattern.svg');
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.missionTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.missionIcon {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.controlPanel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.controlModule {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controlModuleHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.launchSequence {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+  position: relative;
+}
+
+.sequenceStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.stepConnector {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+
+/* Responsive adjustments for the launch sequence */
+@media (max-width: 768px) {
+  .launchSequence {
+    margin: 1.5rem 0;
+  }
+  
+  .stepLabel {
+    font-size: 0.8rem;
+  }
+  
+  .stepIcon {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .launchSequence {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .sequenceStep {
+    min-width: 80px;
+  }
+  
+  .stepLabel {
+    font-size: 0.7rem;
+  }
+}
+
+.controlField {
+  margin-bottom: 1.5rem;
+}
+
+.fieldHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.fieldLabel {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.controlInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+/* Responsive form adjustments */
+@media (max-width: 768px) {
+  .controlInput {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .controlField {
+    margin-bottom: 1rem;
+  }
+  
+  .fieldHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .tooltipContainer {
+    margin-top: 0.25rem;
+  }
+}
+
+/* Touch-friendly inputs */
+input, select, button {
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+@media (hover: none) and (pointer: coarse) {
+  /* Styles for touch devices */
+  .controlInput, .controlSelect, button {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+  }
+  
+  .tooltipIcon:hover .tooltip {
+    display: none; /* Disable hover tooltips on touch devices */
+  }
+  
+  .tooltipIcon:active .tooltip {
+    display: block; /* Show tooltip on tap instead */
+  }
+}
+
+/* Form field spacing improvements */
+.formField {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  height: 100%;
+  position: relative;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.labelContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-height: 24px;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+/* Make textareas taller but maintain consistent styling */
+textarea.input {
+  height: auto;
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Feature section spacing */
+.features {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.featureField {
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .formField {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .formField {
+    margin-bottom: 1.25rem;
+  }
+  
+  .formGrid {
+    gap: 1rem;
+  }
+}

@@ -5,38 +5,35 @@ export async function confirmTransaction(
   signature: TransactionSignature,
   network: 'devnet' | 'mainnet-beta' = 'devnet'
 ): Promise<boolean> {
-  const commitment = network === 'mainnet-beta' ? 'confirmed' : 'processed';
-  
   try {
-    const latestBlockhash = await connection.getLatestBlockhash();
+    // Use polling instead of WebSocket subscriptions
+    const maxRetries = 30;
+    const commitment = network === 'mainnet-beta' ? 'confirmed' : 'processed';
     
-    // Increase timeout for mainnet
-    const timeout = network === 'mainnet-beta' ? 90000 : 60000; // 90 seconds for mainnet
-    
-    // Use more robust confirmation strategy
-    const confirmation = await connection.confirmTransaction({
-      signature,
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-    }, commitment);
-
-    // Check for various error conditions
-    if (confirmation.value.err) {
-      // If block height exceeded, suggest retry
-      if (confirmation.value.err.toString().includes('block height exceeded')) {
-        throw new Error('Transaction expired due to network congestion. Please try again.');
+    for (let i = 0; i < maxRetries; i++) {
+      const signatureStatus = await connection.getSignatureStatus(signature);
+      
+      // Check if confirmed or finalized
+      if (signatureStatus.value?.confirmationStatus === 'confirmed' || 
+          signatureStatus.value?.confirmationStatus === 'finalized') {
+        return true;
       }
-      console.error('Transaction failed:', confirmation.value.err);
-      return false;
+      
+      // Check for errors
+      if (signatureStatus.value?.err) {
+        console.error('Transaction failed:', signatureStatus.value.err);
+        return false;
+      }
+      
+      // Wait before checking again
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
-
-    return true;
+    
+    // If we've reached here, transaction didn't confirm in time
+    console.error('Transaction confirmation timeout');
+    return false;
   } catch (error) {
-    console.error('Confirmation failed:', error);
-    // Specific error handling for block height exceeded
-    if (error instanceof Error && error.message.includes('block height exceeded')) {
-      throw new Error('Transaction expired due to network congestion. Please try again.');
-    }
+    console.error('Confirmation error:', error);
     return false;
   }
 }

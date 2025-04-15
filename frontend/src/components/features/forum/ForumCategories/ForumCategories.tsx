@@ -21,6 +21,15 @@ interface ForumCategoriesProps {
 }
 
 export const ForumCategories: React.FC<ForumCategoriesProps> = ({ categories }) => {
+  if (!categories || !Array.isArray(categories)) {
+    console.log('Categories data is not an array:', categories);
+    return (
+      <div className={styles.emptyState}>
+        <p>No categories available</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.grid}>
       {categories.map((category) => (

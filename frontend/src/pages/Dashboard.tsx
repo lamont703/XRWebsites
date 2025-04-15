@@ -25,6 +25,7 @@ export const Dashboard = () => {
   const [missionCards, setMissionCards] = useState<MissionCard[]>([]);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [screenSize, setScreenSize] = useState('desktop');
+  const [showWalletPrompt, setShowWalletPrompt] = useState(false);
 
   useEffect(() => {
     // Check if user has completed first steps mission
@@ -84,6 +85,15 @@ export const Dashboard = () => {
           status: 'available'
         },
         {
+          id: 'spatial-token-toolkit',
+          title: 'Spatial Token Monetization Toolkit',
+          description: 'Tokenize digital space with our AR/VR monetization platform',
+          icon: '🌐',
+          path: '/spatial-tokens',
+          status: 'available',
+          highlight: true
+        },
+        {
           id: 'create-token',
           title: 'Create Your Token',
           description: 'Launch your own token on Solana with our easy-to-use creator',
@@ -100,12 +110,12 @@ export const Dashboard = () => {
           status: 'available'
         },
         {
-          id: 'nft-gallery',
-          title: 'NFT Gallery',
-          description: 'View your NFT collection including your Key To The New Earth',
-          icon: '🖼️',
-          path: '/nft-assets',
-          status: hasCompletedOnboarding ? 'completed' : 'in-progress'
+          id: 'nft-launch-station',
+          title: 'NFT Launch Station',
+          description: 'Create and deploy your own NFTs on the Solana blockchain',
+          icon: '🚀',
+          path: '/nft-launch-station',
+          status: wallet.connected ? 'available' : 'locked'
         },
         {
           id: 'community-forum',
@@ -122,6 +132,15 @@ export const Dashboard = () => {
           icon: '💰',
           path: '/wallet',
           status: wallet.connected ? 'available' : 'locked'
+        },
+        {
+          id: 'user-profile',
+          title: 'User Profile',
+          description: 'View and manage your personal profile and settings',
+          icon: '👤',
+          path: '/user-profile',
+          status: 'available',
+          highlight: wallet.connected
         }
       ];
       
@@ -134,12 +153,16 @@ export const Dashboard = () => {
   };
 
   const handleCardClick = (card: MissionCard) => {
-    if (card.status !== 'locked') {
-      navigate(card.path);
-    } else {
-      // If card is locked, show connect wallet prompt
-      console.log('Please connect your wallet to access this feature');
+    if (card.status === 'locked') {
+      // If the card is locked, show a message about connecting wallet
+      if (!wallet.connected) {
+        setShowWalletPrompt(true);
+      }
+      return;
     }
+    
+    // Navigate to the card's path
+    navigate(card.path);
   };
 
   // Render status badge for each card
@@ -274,10 +297,11 @@ export const Dashboard = () => {
               </button>
               <button 
                 className={styles.quickAccessButton}
-                onClick={() => navigate('/nft-assets')}
+                onClick={() => navigate('/nft-launch-station')}
+                disabled={!wallet.connected}
               >
-                <span className={styles.quickAccessIcon}>🖼️</span>
-                <span>NFTs</span>
+                <span className={styles.quickAccessIcon}>🚀</span>
+                <span>NFT Launch</span>
               </button>
               <button 
                 className={styles.quickAccessButton}

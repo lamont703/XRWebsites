@@ -66,138 +66,147 @@ export const TokenForm = ({
   }, [tokenConfig]);
 
   return (
-    <div className={styles.formContainer}>
-      <div className={styles.card}>
-        <div className={styles.formGrid}>
-          <div>
-            <label className={styles.label}>Token Name</label>
-            <input
-              type="text"
-              value={tokenConfig.name}
-              onChange={(e) => onChange({ ...tokenConfig, name: e.target.value })}
-              className={`${styles.input} ${validationErrors.name ? styles.inputError : ''}`}
-              placeholder="Example Token"
-            />
-            {validationErrors.name && (
-              <span className={styles.errorText}>{validationErrors.name}</span>
-            )}
-          </div>
-          
-          <div>
-            <label className={styles.label}>Token Symbol</label>
-            <input
-              type="text"
-              value={tokenConfig.symbol}
-              onChange={(e) => onChange({ ...tokenConfig, symbol: e.target.value.toUpperCase() })}
-              className={`${styles.input} ${validationErrors.symbol ? styles.inputError : ''}`}
-              placeholder="EXM"
-              maxLength={5}
-            />
-            {validationErrors.symbol && (
-              <span className={styles.errorText}>{validationErrors.symbol}</span>
-            )}
-          </div>
-
-          <div>
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+      <div className={styles.formGrid}>
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
             <label className={styles.label}>
-              Decimals
-              <span className={styles.tooltip} title="Number of decimal places for your token (e.g., 9 decimals means 1 token = 1,000,000,000 base units)">ℹ️</span>
+              Token Name
             </label>
-            <input
-              type="number"
-              value={tokenConfig.decimals}
-              onChange={(e) => onChange({ ...tokenConfig, decimals: Number(e.target.value) })}
-              className={`${styles.input} ${validationErrors.decimals ? styles.inputError : ''}`}
-              min="0"
-              max="9"
-              placeholder="9"
-            />
-            {validationErrors.decimals && (
-              <span className={styles.errorText}>{validationErrors.decimals}</span>
-            )}
+            <span className={styles.tooltip} title="The full name of your token (e.g., 'Solana')">ℹ️</span>
           </div>
-
-          <div>
-            <label className={styles.label}>
-              Total Supply
-              <span className={styles.tooltip} title="The initial amount of tokens to create">ℹ️</span>
-            </label>
-            <input
-              type="number"
-              value={tokenConfig.totalSupply}
-              onChange={(e) => onChange({ ...tokenConfig, totalSupply: Number(e.target.value) })}
-              className={`${styles.input} ${validationErrors.totalSupply ? styles.inputError : ''}`}
-              min="0"
-              placeholder="1000000"
-            />
-            {validationErrors.totalSupply && (
-              <span className={styles.errorText}>{validationErrors.totalSupply}</span>
-            )}
-          </div>
-
-          <div>
-            <label className={styles.label}>
-              Token Image URL
-              <span className={styles.tooltip} title="URL to your token's image (PNG, JPG recommended)">ℹ️</span>
-            </label>
-            <input
-              type="url"
-              value={tokenConfig.image}
-              onChange={(e) => onChange({ ...tokenConfig, image: e.target.value })}
-              className={styles.input}
-              placeholder="https://example.com/token-image.png"
-            />
-          </div>
-
-          <div>
-            <label className={styles.label}>
-              Description
-              <span className={styles.tooltip} title="A brief description of your token">ℹ️</span>
-            </label>
-            <textarea
-              value={tokenConfig.description}
-              onChange={(e) => onChange({ ...tokenConfig, description: e.target.value })}
-              className={styles.input}
-              placeholder="Describe your token..."
-              rows={3}
-            />
-          </div>
+          <input
+            type="text"
+            value={tokenConfig.name}
+            onChange={(e) => onChange({ ...tokenConfig, name: e.target.value })}
+            placeholder="Enter token name"
+            className={styles.input}
+            required
+          />
         </div>
 
-        <div className={styles.features}>
-          <h3>Token Features</h3>
-          <div className={styles.featureGrid}>
-            {Object.entries(tokenConfig.features).map(([key, value]) => (
-              <label key={key} className={styles.featureLabel}>
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
+            <label className={styles.label}>
+              Token Symbol
+            </label>
+            <span className={styles.tooltip} title="The ticker symbol for your token (e.g., 'SOL')">ℹ️</span>
+          </div>
+          <input
+            type="text"
+            value={tokenConfig.symbol}
+            onChange={(e) => onChange({ ...tokenConfig, symbol: e.target.value.toUpperCase() })}
+            placeholder="Enter token symbol"
+            className={styles.input}
+            required
+          />
+        </div>
+
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
+            <label className={styles.label}>
+              Decimals
+            </label>
+            <span className={styles.tooltip} title="Number of decimal places for your token (e.g., 9 decimals means 1 token = 1,000,000,000 base units)">ℹ️</span>
+          </div>
+          <input
+            type="number"
+            value={tokenConfig.decimals}
+            onChange={(e) => onChange({ ...tokenConfig, decimals: parseInt(e.target.value) })}
+            min="0"
+            max="9"
+            className={styles.input}
+            required
+          />
+        </div>
+
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
+            <label className={styles.label}>
+              Total Supply
+            </label>
+            <span className={styles.tooltip} title="The total number of tokens that will be created">ℹ️</span>
+          </div>
+          <input
+            type="number"
+            value={tokenConfig.totalSupply}
+            onChange={(e) => onChange({ ...tokenConfig, totalSupply: parseInt(e.target.value) })}
+            min="1"
+            className={styles.input}
+            required
+          />
+        </div>
+
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
+            <label className={styles.label}>
+              Token Image URL
+            </label>
+            <span className={styles.tooltip} title="URL to your token's image (PNG, JPG recommended)">ℹ️</span>
+          </div>
+          <input
+            type="url"
+            value={tokenConfig.image}
+            onChange={(e) => onChange({ ...tokenConfig, image: e.target.value })}
+            className={styles.input}
+            placeholder="https://example.com/token-image.png"
+          />
+        </div>
+
+        <div className={styles.formField}>
+          <div className={styles.labelContainer}>
+            <label className={styles.label}>
+              Description
+            </label>
+            <span className={styles.tooltip} title="A brief description of your token">ℹ️</span>
+          </div>
+          <textarea
+            value={tokenConfig.description}
+            onChange={(e) => onChange({ ...tokenConfig, description: e.target.value })}
+            className={styles.input}
+            placeholder="Describe your token..."
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <div className={styles.features}>
+        <h3>Token Features</h3>
+        <div className={styles.featureGrid}>
+          {Object.keys(tokenConfig.features).map(key => (
+            <div className={styles.featureField} key={key}>
+              <label className={styles.featureLabel}>
                 <input
                   type="checkbox"
-                  checked={value}
+                  checked={tokenConfig.features[key]}
                   onChange={(e) => onChange({
                     ...tokenConfig,
                     features: { ...tokenConfig.features, [key]: e.target.checked }
                   })}
                   className={styles.checkbox}
                 />
-                <span>{key}</span>
-                <span className={styles.tooltip} title={getFeatureDescription(key)}>ℹ️</span>
+                <div className={styles.featureLabelContent}>
+                  <span>{key}</span>
+                  <span className={styles.tooltip} title={getFeatureDescription(key)}>ℹ️</span>
+                </div>
               </label>
-            ))}
-          </div>
-        </div>
-
-        {error && <div className={styles.errorMessage}>{error}</div>}
-
-        <div className={styles.buttonContainer}>
-          <button
-            onClick={onSubmit}
-            disabled={!isWalletConnected || !isFormValid}
-            className={styles.primaryButton}
-          >
-            Create Token
-          </button>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      {error && <div className={styles.errorMessage}>{error}</div>}
+
+      <div className={styles.buttonContainer}>
+        <button
+          type="submit"
+          className={styles.primaryButton}
+          disabled={!isWalletConnected}
+        >
+          Create Token
+        </button>
+      </div>
+    </form>
   );
 };
 

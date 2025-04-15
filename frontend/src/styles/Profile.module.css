@@ -1,0 +1,164 @@
+.profileContainer {
+  background: linear-gradient(180deg, rgba(13, 17, 28, 0.95) 0%, rgba(20, 30, 48, 0.95) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profileContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/assets/grid-pattern.svg');
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.profileHeader {
+  margin-bottom: 2rem;
+}
+
+.profileTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profileIcon {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.connectWalletContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 2rem auto;
+}
+
+.subtitle {
+  color: rgb(156, 163, 175);
+  font-size: 1.125rem;
+  margin-bottom: 2rem;
+}
+
+.profileContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.profileCard, .activityCard {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profileSection {
+  margin-bottom: 2rem;
+}
+
+.profileSection:last-child {
+  margin-bottom: 0;
+}
+
+.profileSection h2 {
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.infoLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.infoValue {
+  color: white;
+  word-break: break-all;
+}
+
+.comingSoon {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.activityCard h2 {
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 768px) {
+  .profileContent {
+    grid-template-columns: 2fr 1fr;
+  }
+  
+  .infoRow {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .infoLabel {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .profileContainer {
+    padding: 1.5rem;
+  }
+  
+  .profileTitle {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileContainer {
+    padding: 1rem;
+  }
+  
+  .profileTitle {
+    font-size: 1.3rem;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+} 

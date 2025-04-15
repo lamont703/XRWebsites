@@ -37,11 +37,16 @@ import { JobMarketplace } from './pages/JobMarketplace';
 import { Tokenomics } from './pages/Tokenomics';
 import { Forum } from './pages/Forum';
 import { PostDetail } from './pages/PostDetail';
-import { UserProfile } from '@/pages/UserProfile';
+import { UserProfile } from './pages/UserProfile';
 import { NetworkProvider } from '@/providers/NetworkProvider';
 import { FirstStepsMission } from './components/features/onboarding/FirstStepsMission';
 import { MissionProgressTracker } from './components/features/onboarding/MissionProgressTracker';
 import { RewardsCenter } from './pages/RewardsCenter';
+import { TokenPresale } from './pages/TokenPresale';
+import { Profile } from './pages/Profile';
+import { NFTLaunchStation } from './NFTLaunchStation/NFTLaunchStation';
+import { SpatialTokenPlatform } from '@/pages/SpatialTokenPlatform';
+import { NotFound } from '@/pages/NotFound';
 
 // Initialize QueryClient outside component to prevent recreation
 const queryClient = new QueryClient({
@@ -153,7 +158,7 @@ function App() {
                       path="/tokenomics"
                       element={
                         <AuthGuard>
-                          <Tokenomics />
+                          <TokenPresale />
                         </AuthGuard>
                       }
                     />
@@ -207,13 +212,17 @@ function App() {
                         </AuthGuard>
                       }
                     />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/user-profile" element={<UserProfile />} />
+                    <Route path="/nft-launch-station" element={<NFTLaunchStation />} />
+                    <Route path="/spatial-tokens" element={<SpatialTokenPlatform />} />
 
                     {/* Redirect root to dashboard */}
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     
 
                     {/* 404 Route */}
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AuthProvider>
               </QueryClientProvider>

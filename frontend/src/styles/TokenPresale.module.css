@@ -1,0 +1,506 @@
+/* Token Presale Page Styles */
+.presaleContainer {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.presaleCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.presaleTitle {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #007bff, #6610f2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 3s infinite;
+}
+
+/* Countdown Section */
+.countdownSection {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.countdownLabel {
+  margin: 0;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.countdownTimer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.countdownItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdownValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.countdownUnit {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+.countdownSeparator {
+  margin: 0 0.5rem;
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  align-self: flex-start;
+  padding-top: 0.25rem;
+}
+
+/* Progress Section */
+.progressSection {
+  margin: 1.5rem 0;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.progressLabel {
+  font-weight: bold;
+}
+
+.progressValue {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.progressBar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(to right, #4ade80, #22c55e);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* Token Balances */
+.tokenBalances {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.balanceItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.balanceItem:last-child {
+  margin-bottom: 0;
+}
+
+.balanceLabel {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.balanceValue {
+  font-weight: bold;
+}
+
+/* Conversion Rate */
+.conversionRate {
+  text-align: center;
+  margin: 1.5rem 0;
+  font-weight: bold;
+}
+
+.tokenPrice {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+/* Purchase Section */
+.purchaseSection {
+  margin: 1.5rem 0;
+}
+
+.inputGroup {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.solInput {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.solInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+}
+
+.solInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.tokenPreview {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.buyButton {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: glow 2s infinite;
+}
+
+.buyButton:hover {
+  background: linear-gradient(90deg, #4338ca, #5b5ef4);
+  transform: translateY(-2px);
+}
+
+.buyButton:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.statusMessage {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #4ade80;
+}
+
+/* Wallet Section */
+.walletSection {
+  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.walletHelp {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.walletLink {
+  color: #4f46e5;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.walletLink:hover {
+  color: #6366f1;
+}
+
+.walletInfo {
+  margin: 1.5rem 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Trust Section */
+.trustSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.trustLink {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+}
+
+.socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.socialLink {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+}
+
+.socialSeparator {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: rgba(30, 30, 30, 0.95);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.modalIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.modalTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.modalMessage {
+  margin: 0 0 1.5rem 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.modalProgress {
+  margin-top: 1.5rem;
+}
+
+.modalProgressHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modalProgressBar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.modalProgressFill {
+  height: 100%;
+  background: linear-gradient(to right, #4f46e5, #6366f1);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.modalCloseButton {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modalCloseButton:hover {
+  background: linear-gradient(90deg, #4338ca, #5b5ef4);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .presaleCard {
+    padding: 1.5rem;
+  }
+  
+  .presaleTitle {
+    font-size: 1.5rem;
+  }
+  
+  .countdownValue {
+    font-size: 1.2rem;
+  }
+  
+  .countdownSeparator {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .presaleContainer {
+    padding: 1rem 0.5rem;
+  }
+  
+  .presaleCard {
+    padding: 1rem;
+  }
+  
+  .presaleTitle {
+    font-size: 1.3rem;
+  }
+  
+  .countdownTimer {
+    flex-wrap: wrap;
+  }
+  
+  .tokenPreview {
+    position: static;
+    transform: none;
+    text-align: right;
+    margin-top: 0.5rem;
+  }
+} 
+
+/* Add these keyframes animations */
+@keyframes pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 5px rgba(79, 70, 229, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(79, 70, 229, 0.5); }
+}
+
+/* Apply animations to elements */
+.tokenLogo {
+  animation: float 3s ease-in-out infinite;
+}
+
+.buyButton {
+  animation: glow 2s infinite;
+}
+
+.presaleTitle {
+  animation: pulse 3s infinite;
+}
+
+/* Tier styles */
+.tierSection {
+  margin: 1.5rem 0;
+}
+
+.tierTitle {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.tiers {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.tier {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.tier:hover {
+  transform: translateY(-5px);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.activeTier {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-5px);
+}
+
+.tierHeader {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.tierAmount {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.tierBenefit {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}

@@ -28,6 +28,13 @@ export const TokenCreator = () => {
   const [currentStep, setCurrentStep] = useState<string>('');
   const navigate = useNavigate();
 
+  const steps = [
+    { id: 'configure', label: 'Configure Token', icon: '⚙️' },
+    { id: 'preview', label: 'Preview Launch', icon: '👁️' },
+    { id: 'confirm', label: 'Confirm Launch', icon: '✓' },
+    { id: 'launch', label: 'Token Launch', icon: '🚀' }
+  ];
+
   const handleCreateToken = async () => {
     try {
       setIsLoading(true);
@@ -208,46 +215,91 @@ export const TokenCreator = () => {
 
   return (
     <MainLayout>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Create Your Token</h1>
-          <NetworkSelector 
-            currentNetwork={network}
-            onNetworkChange={setNetwork}
-          />
-        </div>
-        {!wallet.connected ? (
-          <div className={styles.connectWalletContainer}>
-            <p className={styles.subtitle}>Connect your wallet to start creating your token</p>
-            <ConnectWallet />
+      <div className={styles.missionControlContainer}>
+        <div className={styles.missionHeader}>
+          <h1 className={styles.missionTitle}>
+            <span className={styles.missionIcon}>🚀</span> 
+            Token Launch Sequence
+          </h1>
+          <div className={styles.missionStatus}>
+            Status: <span className={isLoading ? styles.statusPending : styles.statusReady}>
+              {isLoading ? 'Sequence in Progress' : 'Ready for Launch'}
+            </span>
           </div>
-        ) : (
-          <TokenForm 
-            tokenConfig={tokenConfig}
-            onChange={setTokenConfig}
-            onSubmit={() => setShowConfirmation(true)}
-            isWalletConnected={wallet.connected}
-            error={error}
-          />
-        )}
-        {showConfirmation && (
-          <ConfirmationModal
-            tokenConfig={tokenConfig}
-            isLoading={isLoading}
-            currentStep={currentStep}
-            onConfirm={handleCreateToken}
-            onCancel={() => setShowConfirmation(false)}
-          />
-        )}
-        {showSuccess && (
-          <TokenSuccessModal
-            tokenConfig={tokenConfig}
-            mintAddress={mintAddress}
-            onViewExplorer={handleViewExplorer}
-            onCreateAnother={handleCreateAnother}
-            onViewDashboard={handleViewDashboard}
-          />
-        )}
+        </div>
+        
+        <div className={styles.launchSequence}>
+          {steps.map((step, index) => (
+            <div 
+              key={step.id}
+              className={`${styles.sequenceStep} ${
+                currentStep === step.id ? styles.activeStep : ''
+              }`}
+            >
+              <div className={styles.stepIcon}>{step.icon}</div>
+              <div className={styles.stepLabel}>{step.label}</div>
+              {index < steps.length - 1 && <div className={styles.stepConnector} />}
+            </div>
+          ))}
+        </div>
+        
+        <div className={styles.controlPanel}>
+          {!wallet.connected ? (
+            <div className={styles.connectWalletContainer}>
+              <p className={styles.subtitle}>Connect your wallet to start creating your token</p>
+              <ConnectWallet />
+            </div>
+          ) : (
+            <TokenForm 
+              tokenConfig={tokenConfig}
+              onChange={setTokenConfig}
+              onSubmit={() => setShowConfirmation(true)}
+              isWalletConnected={wallet.connected}
+              error={error}
+            />
+          )}
+          {showConfirmation && (
+            <ConfirmationModal
+              tokenConfig={tokenConfig}
+              isLoading={isLoading}
+              currentStep={currentStep}
+              onConfirm={handleCreateToken}
+              onCancel={() => setShowConfirmation(false)}
+            />
+          )}
+          {showSuccess && (
+            <TokenSuccessModal
+              tokenConfig={tokenConfig}
+              mintAddress={mintAddress}
+              onViewExplorer={handleViewExplorer}
+              onCreateAnother={handleCreateAnother}
+              onViewDashboard={handleViewDashboard}
+            >
+              <div className={styles.terminalOutput}>
+                <div className={styles.terminalHeader}>
+                  <span>Launch Telemetry</span>
+                  <button className={styles.terminalCopy} onClick={() => copyToClipboard(mintAddress)}>
+                    Copy Address
+                  </button>
+                </div>
+                <div className={styles.terminalContent}>
+                  <div className={styles.terminalLine}>
+                    <span className={styles.terminalPrompt}>$</span> Token deployed successfully
+                  </div>
+                  <div className={styles.terminalLine}>
+                    <span className={styles.terminalPrompt}>$</span> Mint Address: {mintAddress}
+                  </div>
+                  <div className={styles.terminalLine}>
+                    <span className={styles.terminalPrompt}>$</span> Network: {network}
+                  </div>
+                  <div className={styles.terminalLine}>
+                    <span className={styles.terminalPrompt}>$</span> Supply: {tokenConfig.totalSupply} {tokenConfig.symbol}
+                  </div>
+                </div>
+              </div>
+            </TokenSuccessModal>
+          )}
+        </div>
       </div>
     </MainLayout>
   );

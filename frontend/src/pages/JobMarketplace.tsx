@@ -68,9 +68,17 @@ export const JobMarketplace = () => {
       if (selectedCategory !== 'all') {
         params.append('category', selectedCategory);
       }
+      
+      // Add pagination parameters
+      params.append('page', '1');
+      params.append('limit', '20');
+
+      // Log the URLs we're fetching from to verify
+      console.log('Fetching jobs from:', `${import.meta.env.VITE_BACKEND_API_URL}/jobs?${params}`);
+      console.log('Fetching listings from:', `${import.meta.env.VITE_BACKEND_API_URL}/marketplace/listings?${params}`);
 
       const [jobsResponse, listingsResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs/public?${params}`, {
+        fetch(`${import.meta.env.VITE_BACKEND_API_URL}/jobs?${params}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -84,27 +92,80 @@ export const JobMarketplace = () => {
         })
       ]);
 
-      if (!jobsResponse.ok || !listingsResponse.ok) {
-        throw new Error('Failed to load marketplace items');
+      // Log the response status to check if they're successful
+      console.log('Jobs response status:', jobsResponse.status);
+      console.log('Listings response status:', listingsResponse.status);
+
+      // Process jobs if response is OK
+      let jobItems = [];
+      if (jobsResponse.ok) {
+        const jobsData = await jobsResponse.json();
+        console.log('Jobs data:', jobsData);
+        
+        // Handle different response structures
+        const jobs = jobsData.data || jobsData || [];
+        
+        if (Array.isArray(jobs)) {
+          // Transform jobs to MarketplaceItem format
+          jobItems = jobs.map(job => ({
+            id: job.id,
+            type: 'job',
+            title: job.title,
+            description: job.description,
+            price: job.budget,  // Note: changed from price to budget based on controller
+            skills: job.required_skills || [],  // Note: changed from skills to required_skills
+            experienceLevel: job.experienceLevel || 'beginner',
+            location: job.location || 'Remote',
+            postedDate: job.createdAt,
+            poster: {
+              id: job.business_id,
+              name: job.business_name || 'Anonymous',
+              rating: job.business_rating || 0
+            },
+            status: job.status || 'open',
+            createdAt: job.createdAt
+          }));
+        } else {
+          console.warn('Jobs data is not an array:', jobs);
+        }
       }
 
-      const jobsData = await jobsResponse.json();
-      const listingsData = await listingsResponse.json();
+      // Process listings if response is OK
+      let nftItems = [];
+      if (listingsResponse.ok) {
+        const listingsData = await listingsResponse.json();
+        console.log('Listings data:', listingsData);
+        
+        // Handle different response structures
+        const listings = listingsData.data || listingsData || [];
+        
+        if (Array.isArray(listings)) {
+          // Transform NFT listings to MarketplaceItem format
+          nftItems = listings.map(listing => ({
+            id: listing.id,
+            type: 'nft_listing',
+            nft_name: listing.nft?.name || listing.nft_name,
+            nft_description: listing.nft?.description || listing.nft_description,
+            image_url: listing.nft?.image_url || listing.image_url,
+            price: listing.price
+          }));
+        } else {
+          console.warn('Listings data is not an array:', listings);
+        }
+      }
 
-      const items = [
-        ...jobsData.jobs.map((job: any) => ({
-          ...job,
-          type: 'job' as const
-        })),
-        ...listingsData.data.map((listing: any) => ({
-          ...listing,
-          type: 'nft_listing' as const
-        }))
-      ];
+      // Combine both types of items
+      const combinedItems = [...jobItems, ...nftItems];
+      setMarketplaceItems(combinedItems);
+      console.log('Combined marketplace items:', combinedItems);
 
-      setMarketplaceItems(items);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load marketplace items');
+      // If there's a job, select the first one by default for desktop view
+      if (jobItems.length > 0) {
+        setSelectedJob(jobItems[0] as Job);
+      }
+    } catch (error) {
+      console.error('Error loading marketplace items:', error);
+      setError('Failed to load marketplace items. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +176,10 @@ export const JobMarketplace = () => {
       loadMarketplaceItems();
     }
   }, [isAuthenticated, selectedCategory]);
+
+  useEffect(() => {
+    console.log('Current marketplace items:', marketplaceItems);
+  }, [marketplaceItems]);
 
   const handleApplyJob = async (jobId: string, applicationData: JobApplicationData) => {
     try {
@@ -203,47 +268,154 @@ export const JobMarketplace = () => {
   const renderMarketplaceItem = (item: MarketplaceItem) => {
     if (item.type === 'nft_listing') {
       return (
-        <NFTListingCard 
-          key={item.id}
-          listing={item as { id: string; nft_name?: string; nft_description?: string; image_url?: string; price: number }}
-        />
+        <div 
+          key={item.id} 
+          className={styles.missionCard}
+        >
+          <div className={styles.cardHeader}>
+            <div className={styles.cardIcon}>🖼️</div>
+            <div className={styles.cardBadge}>Asset</div>
+          </div>
+          
+          <h3 className={styles.cardTitle}>
+            {item.nft_name || 'Unnamed NFT'}
+          </h3>
+          
+          <p className={styles.cardDescription}>
+            {item.nft_description || 'No description available'}
+          </p>
+          
+          {item.image_url && (
+            <div className={styles.nftImageContainer}>
+              <img 
+                src={item.image_url} 
+                alt={item.nft_name || 'NFT'} 
+                className={styles.nftImage}
+              />
+            </div>
+          )}
+          
+          <div className={styles.cardFooter}>
+            <div className={styles.cardPrice}>
+              {item.price ? `${item.price} USDC` : 'Price on request'}
+            </div>
+            <button className={styles.cardAction}>
+              View Asset
+            </button>
+          </div>
+        </div>
       );
     }
-    if (!('skills' in item) || !('experienceLevel' in item)) {
-      return null; // Skip rendering if it's not a proper job
-    }
+    
     return (
-      <JobCard 
-        key={item.id}
-        job={{
-          id: item.id,
-          title: item.title || '',
-          description: item.description || '',
-          price: item.price || 0,
-          experienceLevel: 'beginner',
-          location: '',
-          poster: {
-            name: '',
-            rating: 0
-          },
-          createdAt: new Date().toISOString()
-        }}
-        onClick={handleJobClick}
-      />
+      <div 
+        key={item.id} 
+        className={`${styles.missionCard} ${
+          selectedJob?.id === item.id ? styles.activeCard : ''
+        }`}
+        onClick={() => handleJobClick(item as Job)}
+      >
+        <div className={styles.cardHeader}>
+          <div className={styles.cardIcon}>💼</div>
+          <div className={styles.cardBadge}>Mission</div>
+        </div>
+        
+        <h3 className={styles.cardTitle}>
+          {item.title || 'Unnamed Mission'}
+        </h3>
+        
+        <p className={styles.cardDescription}>
+          {item.description || 'No description available'}
+        </p>
+        
+        <div className={styles.cardFooter}>
+          <div className={styles.cardPrice}>
+            {item.price ? `${item.price} USDC` : 'Price on request'}
+          </div>
+          <button className={styles.cardAction}>
+            View Mission
+          </button>
+        </div>
+      </div>
     );
   };
 
   return (
     <MainLayout>
       <div className={styles.container}>
-        <div className={styles.searchContainer}>
-          <input
-            type="text"
-            placeholder="Search jobs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+        <div className={styles.missionHeader}>
+          <h1 className={styles.missionTitle}>
+            <span className={styles.missionIcon}>💼</span> 
+            Mission Opportunities Hub
+          </h1>
+          <div className={styles.missionStatus}>
+            Status: <span className={isLoading ? styles.statusPending : styles.statusReady}>
+              {isLoading ? 'Scanning Network' : 'Opportunities Available'}
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.controlPanel}>
+          <div className={styles.controlModule}>
+            <div className={styles.controlModuleHeader}>
+              <h3>Mission Parameters</h3>
+            </div>
+            <div className={styles.searchContainer}>
+              <input
+                type="text"
+                placeholder="Scan for missions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.controlInput}
+              />
+              <button className={styles.scanButton}>
+                <span className={styles.scanIcon}>🔍</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className={styles.controlModule}>
+            <div className={styles.controlModuleHeader}>
+              <h3>Mission Filters</h3>
+            </div>
+            <div className={styles.filterControls}>
+              <div className={styles.controlField}>
+                <div className={styles.fieldHeader}>
+                  <span className={styles.fieldLabel}>Mission Type</span>
+                </div>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className={styles.controlInput}
+                >
+                  <option value="all">All Missions</option>
+                  <option value="development">Development</option>
+                  <option value="design">Design</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div className={styles.controlField}>
+                <div className={styles.fieldHeader}>
+                  <span className={styles.fieldLabel}>Reward Range</span>
+                </div>
+                <div className={styles.rangeInputs}>
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className={styles.controlInput}
+                  />
+                  <span className={styles.rangeSeparator}>to</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className={styles.controlInput}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className={styles.mainContent}>
@@ -285,11 +457,20 @@ export const JobMarketplace = () => {
 
           <div>
             {isLoading ? (
-              <div className={styles.loadingText}>Loading marketplace items...</div>
+              <div className={styles.loadingText}>Scanning for missions...</div>
             ) : error ? (
               <div className={styles.errorText}>{error}</div>
+            ) : marketplaceItems.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyStateIcon}>🔍</div>
+                <h3 className={styles.emptyStateTitle}>No Missions Found</h3>
+                <p className={styles.emptyStateMessage}>
+                  There are currently no missions available matching your criteria. 
+                  Try adjusting your filters or check back later.
+                </p>
+              </div>
             ) : (
-              <div className={styles.listingsGrid}>
+              <div className={styles.missionCardsGrid}>
                 {marketplaceItems.map(renderMarketplaceItem)}
               </div>
             )}

@@ -46,7 +46,8 @@ import { TokenPresale } from './pages/TokenPresale';
 import { Profile } from './pages/Profile';
 import { NFTLaunchStation } from './NFTLaunchStation/NFTLaunchStation';
 import { SpatialTokenPlatform } from '@/pages/SpatialTokenPlatform';
-import { NotFound } from '@/pages/NotFound';
+import { NotFound } from './pages/NotFound';
+import { OrbitalStaking } from './pages/OrbitalStaking';
 
 // Initialize QueryClient outside component to prevent recreation
 const queryClient = new QueryClient({
@@ -216,6 +217,7 @@ function App() {
                     <Route path="/user-profile" element={<UserProfile />} />
                     <Route path="/nft-launch-station" element={<NFTLaunchStation />} />
                     <Route path="/spatial-tokens" element={<SpatialTokenPlatform />} />
+                    <Route path="/staking" element={<OrbitalStaking />} />
 
                     {/* Redirect root to dashboard */}
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />

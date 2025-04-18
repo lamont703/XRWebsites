@@ -1040,3 +1040,28 @@
         flex-direction: column;
     }
 }
+
+.missionControlButton {
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.missionControlButton:hover {
+    background: rgba(0, 123, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.missionSubtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}

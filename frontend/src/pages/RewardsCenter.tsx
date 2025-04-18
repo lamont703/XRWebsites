@@ -26,6 +26,8 @@ interface RewardJourney {
     description: string;
   };
   isLocked?: boolean;
+  featured?: boolean;
+  path?: string; // Add path property for navigation
 }
 
 export const RewardsCenter = () => {
@@ -36,9 +38,20 @@ export const RewardsCenter = () => {
   const [rewardJourneys, setRewardJourneys] = useState<RewardJourney[]>([]);
   const [selectedJourney, setSelectedJourney] = useState<RewardJourney | null>(null);
   const [showJourneyDetails, setShowJourneyDetails] = useState(false);
+  const [hasCompletedFirstSteps, setHasCompletedFirstSteps] = useState(false);
 
   useEffect(() => {
     loadRewardJourneys();
+    
+    // Check if user has completed first steps mission
+    const checkFirstStepsMission = async () => {
+      // In a real app, you would check from your backend
+      // For now, we'll check localStorage
+      const completed = localStorage.getItem('firstStepsMissionCompleted') === 'true';
+      setHasCompletedFirstSteps(completed);
+    };
+    
+    checkFirstStepsMission();
   }, [wallet.connected]);
 
   const loadRewardJourneys = async () => {
@@ -48,6 +61,24 @@ export const RewardsCenter = () => {
       // In a real implementation, you would fetch this from an API
       // For now, we'll use static data
       const journeys: RewardJourney[] = [
+        {
+          id: 'first-steps',
+          title: 'First Steps Mission',
+          description: 'Complete the onboarding mission to receive your "Key To The New Earth" NFT',
+          icon: '🔑',
+          progress: hasCompletedFirstSteps ? 4 : 0,
+          totalSteps: 4,
+          rewards: {
+            nfts: [
+              {
+                name: 'Key To The New Earth',
+                image: 'https://xrwebsitesarchive2024.blob.core.windows.net/uploads/ChatGPT%20Image%20Apr%2012,%202025,%2008_58_40%20PM.png'
+              }
+            ]
+          },
+          featured: true,
+          path: '/onboarding/first-steps' // Path to the FirstStepsMission component
+        },
         {
           id: 'community-builder',
           title: 'Community Builder',
@@ -126,6 +157,29 @@ export const RewardsCenter = () => {
             title: 'Complete Your Profile',
             description: 'Add your skills and experience to your profile to unlock job opportunities'
           }
+        },
+        {
+          id: 'orbital-staking',
+          title: 'Orbital Staking Protocol',
+          description: 'Deploy your tokens into orbit and earn rewards for supporting the ecosystem',
+          icon: '🌌',
+          progress: wallet.connected ? 1 : 0,
+          totalSteps: 3,
+          rewards: {
+            tokens: 250,
+            nfts: [
+              {
+                name: 'Orbital Engineer Badge',
+                image: '/images/nfts/orbital-engineer.png'
+              }
+            ]
+          },
+          currentStep: {
+            title: 'Deploy Your First Tokens',
+            description: 'Stake tokens in an orbital pool to start earning rewards'
+          },
+          featured: true,
+          path: '/staking'
         }
       ];
       
@@ -138,12 +192,12 @@ export const RewardsCenter = () => {
   };
 
   const handleJourneyClick = (journey: RewardJourney) => {
-    if (journey.isLocked) {
-      return;
+    if (journey.path) {
+      navigate(journey.path);
+    } else {
+      setSelectedJourney(journey);
+      setShowJourneyDetails(true);
     }
-    
-    setSelectedJourney(journey);
-    setShowJourneyDetails(true);
   };
 
   const handleBackToJourneys = () => {
@@ -255,13 +309,19 @@ export const RewardsCenter = () => {
   return (
     <MainLayout>
       <div className={styles.rewardsCenterContainer}>
+        <div className={styles.rewardsCenterHeader}>
+          <h1>Rewards Center</h1>
+          <p>Complete missions and earn rewards for your contributions</p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
+        </div>
+        
         {!showJourneyDetails ? (
           <>
-            <div className={styles.rewardsCenterHeader}>
-              <h1>Rewards Center</h1>
-              <p>Explore different journeys to earn tokens and exclusive NFTs</p>
-            </div>
-            
             {!wallet.connected && (
               <div className={styles.walletConnectBanner}>
                 <div className={styles.bannerContent}>
@@ -287,7 +347,7 @@ export const RewardsCenter = () => {
                 {rewardJourneys.map(journey => (
                   <div 
                     key={journey.id}
-                    className={`${styles.journeyCard} ${journey.isLocked ? styles.lockedJourney : ''}`}
+                    className={`${styles.journeyCard} ${journey.featured ? styles.featuredJourney : ''} ${journey.isLocked ? styles.lockedJourney : ''}`}
                     onClick={() => handleJourneyClick(journey)}
                     role="button"
                     tabIndex={0}
@@ -298,6 +358,7 @@ export const RewardsCenter = () => {
                       }
                     }}
                   >
+                    {journey.featured && <div className={styles.featuredBadge}>Featured</div>}
                     <div className={styles.journeyCardHeader}>
                       <div className={styles.journeyIcon}>{journey.icon}</div>
                       <h3>{journey.title}</h3>

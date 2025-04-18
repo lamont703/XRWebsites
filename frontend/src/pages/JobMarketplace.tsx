@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { JobDetails } from '@/components/features/jobs/JobDetails';
 import { useAuth } from '@/store/auth/Auth';
@@ -8,6 +10,7 @@ import { JobApplicationData } from '@/components/features/jobs/JobApplication';
 import { JobCard } from '@/components/features/jobs/JobCard';
 import { NFTListingCard } from '@/components/features/marketplace/NFTListingCard';
 import styles from '@/styles/JobMarketplace.module.css';
+import { ConnectWallet } from '@/components/features/wallet/ConnectWallet';
 
 interface Job {
   id: string;
@@ -50,6 +53,8 @@ export const JobMarketplace = () => {
   const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const navigate = useNavigate();
+  const wallet = useWallet();
 
   const loadMarketplaceItems = async () => {
     if (!isAuthenticated) {
@@ -342,202 +347,220 @@ export const JobMarketplace = () => {
 
   return (
     <MainLayout>
-      <div className={styles.container}>
-        <div className={styles.missionHeader}>
-          <h1 className={styles.missionTitle}>
-            <span className={styles.missionIcon}>💼</span> 
-            Mission Opportunities Hub
+      <div className={styles.marketplaceContainer}>
+        <div className={styles.marketplaceHeader}>
+          <h1 className={styles.marketplaceTitle}>
+            <span className={styles.marketplaceIcon}>💼</span> 
+            Job Marketplace
           </h1>
-          <div className={styles.missionStatus}>
-            Status: <span className={isLoading ? styles.statusPending : styles.statusReady}>
-              {isLoading ? 'Scanning Network' : 'Opportunities Available'}
-            </span>
-          </div>
+          <p className={styles.marketplaceSubtitle}>
+            Find opportunities or post jobs in our community marketplace
+          </p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
         </div>
-
-        <div className={styles.controlPanel}>
-          <div className={styles.controlModule}>
-            <div className={styles.controlModuleHeader}>
-              <h3>Mission Parameters</h3>
-            </div>
-            <div className={styles.searchContainer}>
-              <input
-                type="text"
-                placeholder="Scan for missions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.controlInput}
-              />
-              <button className={styles.scanButton}>
-                <span className={styles.scanIcon}>🔍</span>
-              </button>
+        
+        <div className={styles.container}>
+          <div className={styles.missionHeader}>
+            <h1 className={styles.missionTitle}>
+              <span className={styles.missionIcon}>💼</span> 
+              Mission Opportunities Hub
+            </h1>
+            <div className={styles.missionStatus}>
+              Status: <span className={isLoading ? styles.statusPending : styles.statusReady}>
+                {isLoading ? 'Scanning Network' : 'Opportunities Available'}
+              </span>
             </div>
           </div>
-          
-          <div className={styles.controlModule}>
-            <div className={styles.controlModuleHeader}>
-              <h3>Mission Filters</h3>
-            </div>
-            <div className={styles.filterControls}>
-              <div className={styles.controlField}>
-                <div className={styles.fieldHeader}>
-                  <span className={styles.fieldLabel}>Mission Type</span>
-                </div>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={styles.controlInput}
-                >
-                  <option value="all">All Missions</option>
-                  <option value="development">Development</option>
-                  <option value="design">Design</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="other">Other</option>
-                </select>
+
+          <div className={styles.controlPanel}>
+            <div className={styles.controlModule}>
+              <div className={styles.controlModuleHeader}>
+                <h3>Mission Parameters</h3>
               </div>
-              
-              <div className={styles.controlField}>
-                <div className={styles.fieldHeader}>
-                  <span className={styles.fieldLabel}>Reward Range</span>
+              <div className={styles.searchContainer}>
+                <input
+                  type="text"
+                  placeholder="Scan for missions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={styles.controlInput}
+                />
+                <button className={styles.scanButton}>
+                  <span className={styles.scanIcon}>🔍</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className={styles.controlModule}>
+              <div className={styles.controlModuleHeader}>
+                <h3>Mission Filters</h3>
+              </div>
+              <div className={styles.filterControls}>
+                <div className={styles.controlField}>
+                  <div className={styles.fieldHeader}>
+                    <span className={styles.fieldLabel}>Mission Type</span>
+                  </div>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className={styles.controlInput}
+                  >
+                    <option value="all">All Missions</option>
+                    <option value="development">Development</option>
+                    <option value="design">Design</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="other">Other</option>
+                  </select>
                 </div>
-                <div className={styles.rangeInputs}>
+                
+                <div className={styles.controlField}>
+                  <div className={styles.fieldHeader}>
+                    <span className={styles.fieldLabel}>Reward Range</span>
+                  </div>
+                  <div className={styles.rangeInputs}>
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className={styles.controlInput}
+                    />
+                    <span className={styles.rangeSeparator}>to</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className={styles.controlInput}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.mainContent}>
+            <div className={styles.filtersContainer}>
+              <div className={styles.filterSection}>
+                <h3 className={styles.filterTitle}>Categories</h3>
+                <div className={styles.filterGroup}>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className={styles.select}
+                    title="Filter by category"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="development">Development</option>
+                    <option value="design">Design</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.filterSection}>
+                <h3 className={styles.filterTitle}>Price Range</h3>
+                <div className={styles.priceInputs}>
                   <input
                     type="number"
                     placeholder="Min"
-                    className={styles.controlInput}
+                    className={styles.priceInput}
                   />
-                  <span className={styles.rangeSeparator}>to</span>
                   <input
                     type="number"
                     placeholder="Max"
-                    className={styles.controlInput}
+                    className={styles.priceInput}
                   />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className={styles.mainContent}>
-          <div className={styles.filtersContainer}>
-            <div className={styles.filterSection}>
-              <h3 className={styles.filterTitle}>Categories</h3>
-              <div className={styles.filterGroup}>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={styles.select}
-                  title="Filter by category"
-                >
-                  <option value="all">All Categories</option>
-                  <option value="development">Development</option>
-                  <option value="design">Design</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.filterSection}>
-              <h3 className={styles.filterTitle}>Price Range</h3>
-              <div className={styles.priceInputs}>
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className={styles.priceInput}
-                />
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className={styles.priceInput}
-                />
-              </div>
+            <div>
+              {isLoading ? (
+                <div className={styles.loadingText}>Scanning for missions...</div>
+              ) : error ? (
+                <div className={styles.errorText}>{error}</div>
+              ) : marketplaceItems.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>🔍</div>
+                  <h3 className={styles.emptyStateTitle}>No Missions Found</h3>
+                  <p className={styles.emptyStateMessage}>
+                    There are currently no missions available matching your criteria. 
+                    Try adjusting your filters or check back later.
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.missionCardsGrid}>
+                  {marketplaceItems.map(renderMarketplaceItem)}
+                </div>
+              )}
             </div>
           </div>
 
-          <div>
-            {isLoading ? (
-              <div className={styles.loadingText}>Scanning for missions...</div>
-            ) : error ? (
-              <div className={styles.errorText}>{error}</div>
-            ) : marketplaceItems.length === 0 ? (
-              <div className={styles.emptyState}>
-                <div className={styles.emptyStateIcon}>🔍</div>
-                <h3 className={styles.emptyStateTitle}>No Missions Found</h3>
-                <p className={styles.emptyStateMessage}>
-                  There are currently no missions available matching your criteria. 
-                  Try adjusting your filters or check back later.
-                </p>
-              </div>
-            ) : (
-              <div className={styles.missionCardsGrid}>
-                {marketplaceItems.map(renderMarketplaceItem)}
-              </div>
+          {/* Desktop Job Details Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
+            {selectedJob && (
+              <JobDetails
+                {...selectedJob}
+                onApply={handleApplyJob}
+                onSave={handleSaveJob}
+              />
             )}
           </div>
-        </div>
 
-        {/* Desktop Job Details Sidebar */}
-        <div className="hidden lg:block lg:col-span-1">
-          {selectedJob && (
-            <JobDetails
-              {...selectedJob}
-              onApply={handleApplyJob}
-              onSave={handleSaveJob}
-            />
-          )}
-        </div>
-
-        {/* Mobile Job Details Modal */}
-        <Transition appear show={isMobileDetailsOpen} as={Fragment}>
-          <Dialog 
-            as="div"
-            className="relative z-50 lg:hidden"
-            onClose={() => setIsMobileDetailsOpen(false)}
-          >
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+          {/* Mobile Job Details Modal */}
+          <Transition appear show={isMobileDetailsOpen} as={Fragment}>
+            <Dialog 
+              as="div"
+              className="relative z-50 lg:hidden"
+              onClose={() => setIsMobileDetailsOpen(false)}
             >
-              <div className="fixed inset-0 bg-black bg-opacity-75" />
-            </Transition.Child>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-75" />
+              </Transition.Child>
 
-            <div className="fixed inset-0 overflow-y-auto">
-              <div className="flex min-h-full items-center justify-center p-4 text-center">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-                >
-                  <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
-                    {selectedJob && (
-                      <JobDetails
-                        {...selectedJob}
-                        onApply={handleApplyJob}
-                        onSave={handleSaveJob}
-                      />
-                    )}
-                    <button
-                      className="mt-4 w-full bg-gray-700 text-white rounded-lg px-4 py-2"
-                      onClick={() => setIsMobileDetailsOpen(false)}
-                    >
-                      Close
-                    </button>
-                  </Dialog.Panel>
-                </Transition.Child>
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                      {selectedJob && (
+                        <JobDetails
+                          {...selectedJob}
+                          onApply={handleApplyJob}
+                          onSave={handleSaveJob}
+                        />
+                      )}
+                      <button
+                        className="mt-4 w-full bg-gray-700 text-white rounded-lg px-4 py-2"
+                        onClick={() => setIsMobileDetailsOpen(false)}
+                      >
+                        Close
+                      </button>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
               </div>
-            </div>
-          </Dialog>
-        </Transition>
+            </Dialog>
+          </Transition>
+        </div>
       </div>
     </MainLayout>
   );

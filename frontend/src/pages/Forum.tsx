@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/store/auth/Auth';
 import { ForumCategories } from '@/components/features/forum/ForumCategories/ForumCategories';
@@ -53,6 +54,7 @@ export const Forum = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
   const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
@@ -280,119 +282,137 @@ export const Forum = () => {
 
   return (
     <MainLayout>
-      <div className={styles.missionControlContainer}>
-        <div className={styles.missionHeader}>
-          <div className={styles.headerLeft}>
-            <FaSatelliteDish className={styles.headerIcon} />
-            <h1 className={styles.missionTitle}>Community Forum</h1>
-          </div>
-          
-          <div className={styles.headerControls}>
-            <div className={styles.searchContainer}>
-              <FaSearch className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search discussions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.searchInput}
-              />
-            </div>
-            
-            <button
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['forum-posts'] })}
-              className={styles.controlButton}
-              title="Refresh"
-            >
-              <FaSync className={styles.buttonIcon} />
-              <span className={styles.buttonText}>Refresh</span>
-            </button>
-            
-            <button
-              onClick={() => setIsCreatePostOpen(true)}
-              className={styles.primaryButton}
-            >
-              <FaPlus className={styles.buttonIcon} />
-              <span className={styles.buttonText}>New Discussion</span>
-            </button>
-          </div>
+      <div className={styles.forumContainer}>
+        <div className={styles.forumHeader}>
+          <h1 className={styles.forumTitle}>
+            <span className={styles.forumIcon}>💬</span> 
+            Community Forum
+          </h1>
+          <p className={styles.forumSubtitle}>
+            Join discussions and connect with other community members
+          </p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
         </div>
-
-        <div className={styles.missionContent}>
-          <div className={styles.mainContent}>
-            <div className={styles.categoriesSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Categories</h2>
-              </div>
-              <ForumCategories categories={Array.isArray(categories) ? categories : []} />
+        
+        <div className={styles.missionControlContainer}>
+          <div className={styles.missionHeader}>
+            <div className={styles.headerLeft}>
+              <FaSatelliteDish className={styles.headerIcon} />
+              <h1 className={styles.missionTitle}>Community Forum</h1>
             </div>
             
-            <div className={styles.postsSection}>
-              <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Discussions</h2>
-                <ForumFilters
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                  selectedSort={selectedSort}
-                  onSortChange={setSelectedSort}
+            <div className={styles.headerControls}>
+              <div className={styles.searchContainer}>
+                <FaSearch className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Search discussions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={styles.searchInput}
                 />
               </div>
               
-              {isLoading ? (
-                <div className={styles.loadingContainer}>
-                  <LoadingOverlay isLoading={true} />
-                </div>
-              ) : (
-                <div className={styles.postsContainer}>
-                  {/* Add debugging to see what data is actually coming back */}
-                  {console.log('Posts data structure:', postsData)}
-                  
-                  {/* Make the path more flexible to handle different response structures */}
-                  {(postsData?.data?.posts || postsData?.posts || []).map((post: ForumPost) => (
-                    <ForumPost 
-                      key={post.id} 
-                      {...post} 
-                      likedBy={post.likedBy || []}
-                      onLike={async (postId) => {
-                        try {
-                          await likePostMutation.mutateAsync(postId);
-                        } catch (error) {
-                          // Error handling is in the mutation
-                        }
-                      }}
-                      isLiking={likePostMutation.isPending}
-                      onDelete={async (postId) => {
-                        try {
-                          await deletePostMutation.mutateAsync(postId);
-                          toast.success('Post deleted successfully');
-                        } catch (error) {
-                          console.error('Failed to delete post:', error);
-                          toast.error('Failed to delete post');
-                        }
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Show a message if no posts are found */}
-                  {(postsData?.data?.posts || postsData?.posts || []).length === 0 && (
-                    <div className={styles.emptyState}>
-                      <FaRocket className={styles.emptyIcon} />
-                      <p>No discussions found. Be the first to start a conversation!</p>
-                      <button 
-                        onClick={() => setIsCreatePostOpen(true)}
-                        className={styles.emptyStateButton}
-                      >
-                        Create Discussion
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              <button
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['forum-posts'] })}
+                className={styles.controlButton}
+                title="Refresh"
+              >
+                <FaSync className={styles.buttonIcon} />
+                <span className={styles.buttonText}>Refresh</span>
+              </button>
+              
+              <button
+                onClick={() => setIsCreatePostOpen(true)}
+                className={styles.primaryButton}
+              >
+                <FaPlus className={styles.buttonIcon} />
+                <span className={styles.buttonText}>New Discussion</span>
+              </button>
             </div>
           </div>
-          
-          <div className={styles.sidebarContent}>
-            <ForumSidebar />
+
+          <div className={styles.missionContent}>
+            <div className={styles.mainContent}>
+              <div className={styles.categoriesSection}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Categories</h2>
+                </div>
+                <ForumCategories categories={Array.isArray(categories) ? categories : []} />
+              </div>
+              
+              <div className={styles.postsSection}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Discussions</h2>
+                  <ForumFilters
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
+                    selectedSort={selectedSort}
+                    onSortChange={setSelectedSort}
+                  />
+                </div>
+                
+                {isLoading ? (
+                  <div className={styles.loadingContainer}>
+                    <LoadingOverlay isLoading={true} />
+                  </div>
+                ) : (
+                  <div className={styles.postsContainer}>
+                    {/* Add debugging to see what data is actually coming back */}
+                    {console.log('Posts data structure:', postsData)}
+                    
+                    {/* Make the path more flexible to handle different response structures */}
+                    {(postsData?.data?.posts || postsData?.posts || []).map((post: ForumPost) => (
+                      <ForumPost 
+                        key={post.id} 
+                        {...post} 
+                        likedBy={post.likedBy || []}
+                        onLike={async (postId) => {
+                          try {
+                            await likePostMutation.mutateAsync(postId);
+                          } catch (error) {
+                            // Error handling is in the mutation
+                          }
+                        }}
+                        isLiking={likePostMutation.isPending}
+                        onDelete={async (postId) => {
+                          try {
+                            await deletePostMutation.mutateAsync(postId);
+                            toast.success('Post deleted successfully');
+                          } catch (error) {
+                            console.error('Failed to delete post:', error);
+                            toast.error('Failed to delete post');
+                          }
+                        }}
+                      />
+                    ))}
+                    
+                    {/* Show a message if no posts are found */}
+                    {(postsData?.data?.posts || postsData?.posts || []).length === 0 && (
+                      <div className={styles.emptyState}>
+                        <FaRocket className={styles.emptyIcon} />
+                        <p>No discussions found. Be the first to start a conversation!</p>
+                        <button 
+                          onClick={() => setIsCreatePostOpen(true)}
+                          className={styles.emptyStateButton}
+                        >
+                          Create Discussion
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className={styles.sidebarContent}>
+              <ForumSidebar />
+            </div>
           </div>
         </div>
       </div>

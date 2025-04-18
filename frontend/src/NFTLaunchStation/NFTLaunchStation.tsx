@@ -144,6 +144,15 @@ export const NFTLaunchStation = () => {
             <span className={styles.missionIcon}>🖼️</span> 
             NFT Launch Station
           </h1>
+          <p className={styles.missionSubtitle}>
+            Create and deploy your own NFTs on the Solana blockchain
+          </p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
           <div className={styles.missionStatus}>
             Status: <span className={isLoading ? styles.statusPending : styles.statusReady}>
               {isLoading ? 'Launch Sequence in Progress' : 'Ready for Deployment'}

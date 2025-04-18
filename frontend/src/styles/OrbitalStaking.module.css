@@ -1,0 +1,585 @@
+.stakingContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: white;
+}
+
+.stakingHeader {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.stakingTitle {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stakingIcon {
+  margin-right: 0.5rem;
+  font-size: 2.5rem;
+}
+
+.stakingSubtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.missionControlButton {
+  background: rgba(0, 123, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.missionControlButton:hover {
+  background: rgba(0, 123, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.walletConnectBanner {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bannerContent {
+  display: flex;
+  align-items: center;
+}
+
+.bannerIcon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.bannerText h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.bannerText p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.orbitalMap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.coreSystem {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.systemCore {
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(0, 123, 255, 0.8) 0%, rgba(0, 123, 255, 0.2) 70%, transparent 100%);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  animation: pulse 3s infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.orbit {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.orbit1 {
+  width: 200px;
+  height: 200px;
+}
+
+.orbit2 {
+  width: 300px;
+  height: 300px;
+}
+
+.orbit3 {
+  width: 400px;
+  height: 400px;
+}
+
+.orbit4 {
+  width: 500px;
+  height: 500px;
+  border-color: rgba(204, 93, 232, 0.3);
+}
+
+.orbitalToken {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.stakingInterface {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.stakingControls {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orbitalOptions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.orbitalOption {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orbitalOption:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.selectedOrbit {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.optionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.optionIcon {
+  font-size: 1.5rem;
+}
+
+.optionName {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.optionDescription {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.optionApy {
+  font-weight: bold;
+  color: #4dabf7;
+}
+
+.specialOption {
+  border-color: rgba(204, 93, 232, 0.5);
+}
+
+.specialOption .optionApy {
+  color: #cc5de8;
+}
+
+.stakingParameters {
+  margin-top: 1.5rem;
+}
+
+.parameterGroup {
+  margin-bottom: 1.5rem;
+}
+
+.parameterGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stakingInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.stakingInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.balanceInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.maxButton {
+  background: rgba(0, 123, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+  color: white;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.maxButton:hover {
+  background: rgba(0, 123, 255, 0.2);
+}
+
+.durationSlider {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  outline: none;
+  margin: 1rem 0;
+}
+
+.durationSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.durationSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.durationMarkers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rewardsPreview {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rewardsPreview h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.rewardsCalculation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rewardMetric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metricLabel {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.metricValue {
+  font-weight: bold;
+}
+
+.deployButton {
+  width: 100%;
+  background: linear-gradient(135deg, #4dabf7 0%, #9775fa 100%);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deployButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.deployButton:disabled {
+  background: linear-gradient(135deg, rgba(77, 171, 247, 0.5) 0%, rgba(151, 117, 250, 0.5) 100%);
+  cursor: not-allowed;
+}
+
+.activeStakingMissions {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.positionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activePosition {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.positionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.positionIcon {
+  font-size: 1.5rem;
+}
+
+.positionDetails h3 {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.1rem;
+}
+
+.positionDetails p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.positionProgress {
+  margin-bottom: 1rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #4dabf7, #9775fa);
+  border-radius: 4px;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.positionActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.actionButton {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.actionButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.claimButton {
+  background: rgba(40, 167, 69, 0.2);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.claimButton:hover {
+  background: rgba(40, 167, 69, 0.3);
+}
+
+.unstakeButton {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+.unstakeButton:hover {
+  background: rgba(220, 53, 69, 0.3);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.emptyStateIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@keyframes orbit1 {
+  0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+
+@keyframes orbit2 {
+  0% { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+}
+
+@keyframes orbit3 {
+  0% { transform: rotate(0deg) translateX(200px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(200px) rotate(-360deg); }
+}
+
+@keyframes orbit4 {
+  0% { transform: rotate(0deg) translateX(250px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(250px) rotate(-360deg); }
+}
+
+/* Responsive styles */
+@media (min-width: 768px) {
+  .stakingContainer {
+    padding: 2rem;
+  }
+  
+  .walletConnectBanner {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .bannerContent {
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .orbitalOptions {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .stakingContainer {
+    padding: 1rem;
+  }
+  
+  .orbitalMap {
+    height: 300px;
+  }
+  
+  .orbit1 {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .orbit2 {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .orbit3 {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .orbit4 {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .systemCore {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .orbitalToken {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+} 

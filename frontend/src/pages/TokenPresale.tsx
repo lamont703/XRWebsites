@@ -223,8 +223,18 @@ export const TokenPresale = () => {
 
   return (
     <MainLayout>
-      {showConfetti && <Confetti recycle={false} numberOfPieces={500} />}
       <div className={styles.presaleContainer}>
+        <div className={styles.presaleHeader}>
+          <h1>Token Pre-Sale</h1>
+          <p>Get early access to our platform tokens at exclusive rates</p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
+        </div>
+        {showConfetti && <Confetti recycle={false} numberOfPieces={500} />}
         <div className={styles.presaleCard}>
           <h1 className={styles.presaleTitle}>🚀 {TOKEN_NAME} Token Pre-Sale</h1>
           

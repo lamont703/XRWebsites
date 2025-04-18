@@ -431,6 +431,12 @@ export const SpatialTokenPlatform = () => {
           <p className={styles.platformSubtitle}>
             Turn digital space into programmable, monetizable real estate
           </p>
+          <button 
+            className={styles.missionControlButton}
+            onClick={() => navigate('/dashboard')}
+          >
+            ← Back to Mission Control
+          </button>
         </div>
         
         {!wallet.connected && (
